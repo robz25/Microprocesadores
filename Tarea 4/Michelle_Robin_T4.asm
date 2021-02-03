@@ -20,13 +20,13 @@
 ;                      Declaración de estructuras de datos
 ;*******************************************************************************
 
-MAX_TCL:        EQU     $1000   ;X:X:X:X:X:Array_OK : TCL_LEIDA : TCL_LISTA
+MAX_TCL:        EQU     $1000
 Tecla:          EQU     $1001
 Tecla_IN:       EQU     $1002
 Cont_Reb:       EQU     $1003
 Cont_TCL:       EQU     $1004
 Patron:         EQU     $1005
-Banderas:       EQU     $1006
+Banderas:       EQU     $1006   ;X:X:X:X:X:Array_OK : TCL_LEIDA : TCL_LISTA
 Num_Array:      EQU     $1007
 Teclas:         EQU     $100D
 
