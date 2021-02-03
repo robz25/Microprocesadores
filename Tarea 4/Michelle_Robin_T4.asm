@@ -8,7 +8,7 @@
 ;*******************************************************************************
 ;       V1
 ;       AUTORES: ROBIN GONZALEZ   B43011
-;                MICHELLE GUTIERREZ     B4
+;                MICHELLE GUTIERREZ     B43195
 ;
 ;       DESCRIPCION:    LECTURA DE TECLADO MATRICIAL:    CODIGO QUE CONSISTE
 ;                       DE 3 SUBRUTINAS Y 2 SUBRUTINAS DE INTERRUPCION QUE

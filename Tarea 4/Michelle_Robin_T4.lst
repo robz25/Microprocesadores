@@ -635,7 +635,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         ;       V1
                         ;       AUTORES: ROBIN GONZALEZ   B43011
-                        ;                MICHELLE GUTIERREZ     B4
+                        ;                MICHELLE GUTIERREZ     B43195
                         ;
                         ;       DESCRIPCION:    LECTURA DE TECLADO MATRICIAL:    CODIGO QUE CONSISTE
                         ;                       DE 3 SUBRUTINAS Y 2 SUBRUTINAS DE INTERRUPCION QUE
@@ -843,6 +843,11 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 211d                    retorno_PH0:
 211d 0b                         RTI
 
+<<<<<<< HEAD
 Executed: Wed Feb 03 16:23:40 2021
 Total cycles: 318, Total bytes: 303
+=======
+Executed: Wed Feb 03 11:42:47 2021
+Total cycles: 211, Total bytes: 209
+>>>>>>> cd7fea99c23abefa3f3bb423c6e6e886d8cd00be
 Total errors: 0, Total warnings: 0
