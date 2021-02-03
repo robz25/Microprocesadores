@@ -45,7 +45,6 @@ bkpct0     0028
 bkpct1     0029
 brp0l      002c
 brp1l      002f
-calculo    2043
 can0btr0   0142
 can0btr1   0143
 can0ctl0   0140
@@ -243,11 +242,13 @@ ecmd       0116
 ecnfg      0113
 eprot      0114
 eraseee    eeaa
+error_al_leer 207e
 estat      0115
 fclkdiv    0100
 fcmd       0106
 fcnfg      0103
 forbyp     003d
+formar_array 2098
 fprot      0104
 fsec       0101
 fstat      0105
@@ -272,6 +273,7 @@ isalpha    ee96
 isxdigit   ee92
 itcr       0015
 itest      0016
+main       2043
 max_tcl    1000
 mccnt      0076
 mcctl      0066
@@ -283,6 +285,7 @@ mode       000b
 modrr      0257
 mtst0      0014
 mtst1      0017
+mux_teclado 2097
 num_array  1007
 oc7d       0043
 oc7m       0042
@@ -310,6 +313,7 @@ perm       0254
 perp       025c
 pers       024c
 pert       0244
+ph0_isr    20a5
 pieh       0266
 piej       026e
 piep       025e
@@ -396,8 +400,12 @@ rdrt       0243
 readmem    eeae
 refdv      0035
 regbase    0000
-retorno_rti 2044
-rti_isr    2044
+retorno_ph0 20bf
+retorno_rti 20a4
+retorno_tarea_teclado 2096
+revisar_tcl_lista 208a
+revisar_teclas 2070
+rti_isr    2099
 rtictl     003b
 sc0bdh     00c8
 sc0bdl     00c9
@@ -439,6 +447,7 @@ staticvectors 0000
 strcpy     ee9a
 strlen     ee98
 synr       0034
+tarea_teclado 204d
 tc0        0050
 tc1        0052
 tc1h       007a

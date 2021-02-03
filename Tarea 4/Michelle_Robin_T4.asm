@@ -20,7 +20,7 @@
 ;                      Declaración de estructuras de datos
 ;*******************************************************************************
 
-MAX_TCL:        EQU     $1000
+MAX_TCL:        EQU     $1000   ;X:X:X:X:X:Array_OK : TCL_LEIDA : TCL_LISTA
 Tecla:          EQU     $1001
 Tecla_IN:       EQU     $1002
 Cont_Reb:       EQU     $1003
@@ -53,23 +53,23 @@ Teclas:         EQU     $100D
 
                 ORG     $2000
                 
-	MOVB #$FF,Tecla
-	MOVB #$FF,Tecla_IN
-	MOVW #$FFFF,Num_Array
-	MOVW #$FFFF,Num_Array+2
-	MOVW #$FFFF,Num_Array+4
-	CLR Cont_Reb
-	CLR Cont_TCL
-	CLR Patron
-	CLR Banderas
-	
-	BSET CRGINT,$80
-	MOVB #$0F,RTICTL
-	
-	BSET PIEH,$01
-	BCLR PPSH,$01
+        MOVB #$FF,Tecla
+        MOVB #$FF,Tecla_IN
+        MOVW #$FFFF,Num_Array
+        MOVW #$FFFF,Num_Array+2
+        MOVW #$FFFF,Num_Array+4
+        CLR Cont_Reb
+        CLR Cont_TCL
+        CLR Patron
+        CLR Banderas
+        
+        BSET CRGINT,$80
+        MOVB #$0F,RTICTL
+        
+        BSET PIEH,$01
+        BCLR PPSH,$01
 
-	MOVB $F0,DDRA
+        MOVB $F0,DDRA
 
         LDS #$3BFF
         CLI
@@ -78,17 +78,69 @@ Teclas:         EQU     $100D
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
 
+main:
+        BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+        JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
+        BRA main        ;salta siempre a main
 
 
 ;*******************************************************************************
 ;                                     SUBRUTINAS
 ;*******************************************************************************
 
-CALCULO:
 
+                        ;*******************************************************
+Tarea_Teclado:          ;                      SUBRUTINA
+                        ;*******************************************************
+                        ;Verifica estado de teclas ingresadas
+                   	;y llama a las otras subrutinas
+                        ;*******************************************************
+        TST Cont_Reb
+        BNE Retorno_Tarea_Teclado
+	JSR Mux_Teclado
+	BRSET Tecla,$FF,revisar_TCL_LISTA
+
+        BRCLR Banderas,$02,revisar_teclas
+        MOVB Tecla,Tecla_IN
+        BSET Banderas,$02
+        MOVB #10,Cont_Reb
+        BRA Retorno_Tarea_Teclado
+
+revisar_teclas:
+        LDAA Tecla
+        CMPA Tecla_IN
+        BNE error_al_leer
+        BSET Banderas,$01
+        BRA Retorno_Tarea_Teclado
+        
+error_al_leer:
+        MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
+        BCLR Banderas,$03
+        BRA Retorno_Tarea_Teclado
+
+revisar_TCL_LISTA:
+	BRCLR Banderas,$01,Retorno_Tarea_Teclado
+	BCLR Banderas,$03
+	JSR Formar_Array
+
+Retorno_Tarea_Teclado:
         RTS
 
-
+                        ;*******************************************************
+MUX_TECLADO:            ;                      SUBRUTINA
+                        ;*******************************************************
+                        ;Lee teclado matricial
+                        ;*******************************************************
+        RTS
+        
+                        ;*******************************************************
+FORMAR_ARRAY:           ;                      SUBRUTINA
+                        ;*******************************************************
+                        ;Llena arreglo Num_Array con teclas leidas
+                        ;*******************************************************
+                        
+        RTS
+        
 ;*******************************************************************************
 ;                         SUBRUTINAS DE INTERRUPCION
 ;*******************************************************************************
@@ -97,6 +149,25 @@ RTI_ISR:                ;                Subrutina RTI_ISR
                         ;*******************************************************
                         ;Subrutina que cuenta 10 ms
                         ;*******************************************************
-
+        BSET CRGFLG,$80         ;borrar bandera de interrupcion
+        BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+        DEC Cont_Reb    ;decrementar Cont_Reb
+        
 retorno_RTI:
+        RTI
+
+        
+PH0_ISR:                ;                Subrutina PH0_ISR
+                        ;*******************************************************
+                        ;Subrutina que borrar Num_Array y Array_Ok al detectar
+                        ;un flanco decreciente en PH0
+                        ;*******************************************************
+        BSET PIFH,$01   ;borramos la bandear de interrupcion
+        
+        BCLR Banderas,$04       ;borramos el bit 2
+        MOVW #$FFFF,Num_Array
+        MOVW #$FFFF,Num_Array+2
+        MOVW #$FFFF,Num_Array+4
+
+retorno_PH0:
         RTI

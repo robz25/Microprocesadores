@@ -647,7 +647,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;                      Declaración de estructuras de datos
                         ;*******************************************************************************
                         
-1000                    MAX_TCL:        EQU     $1000
+1000                    MAX_TCL:        EQU     $1000   ;X:X:X:X:X:Array_OK : TCL_LEIDA : TCL_LISTA
 1001                    Tecla:          EQU     $1001
 1002                    Tecla_IN:       EQU     $1002
 1003                    Cont_Reb:       EQU     $1003
@@ -669,12 +669,11 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 3e70                             org        $3E70  ;Debug 12
                         ;         org        $FFF0  ;Flash
-3e70 20 44                      dw RTI_ISR
+3e70 20 99                      dw RTI_ISR
                         
 3e4c                             org        $3E4C  ;Debug 12
                         ;         org        $FFCC  ;Flash
-Michelle_Robin_T4.asm:48: Error - Symbol PH0_ISR is undefined.
-3e4c 00 00                      dw PH0_ISR
+3e4c 20 a5                      dw PH0_ISR
                                 
                         ;*******************************************************************************
                         ;            Inicialización de varaibles y config de hardware
@@ -682,23 +681,23 @@ Michelle_Robin_T4.asm:48: Error - Symbol PH0_ISR is undefined.
                         
 2000                                    ORG     $2000
                                         
-2000 18 0b ff 10 01     	MOVB #$FF,Tecla
-2005 18 0b ff 10 02     	MOVB #$FF,Tecla_IN
-200a 18 03 ff ff 10 07  	MOVW #$FFFF,Num_Array
-2010 18 03 ff ff 10 09  	MOVW #$FFFF,Num_Array+2
-2016 18 03 ff ff 10 0b  	MOVW #$FFFF,Num_Array+4
-201c 79 10 03           	CLR Cont_Reb
-201f 79 10 04           	CLR Cont_TCL
-2022 79 10 05           	CLR Patron
-2025 79 10 06           	CLR Banderas
-                        	
-2028 4c 38 80           	BSET CRGINT,$80
-202b 18 0b 0f 00 3b     	MOVB #$0F,RTICTL
-                        	
-2030 1c 02 66 01        	BSET PIEH,$01
-2034 1d 02 65 01        	BCLR PPSH,$01
+2000 18 0b ff 10 01             MOVB #$FF,Tecla
+2005 18 0b ff 10 02             MOVB #$FF,Tecla_IN
+200a 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
+2010 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
+2016 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
+201c 79 10 03                   CLR Cont_Reb
+201f 79 10 04                   CLR Cont_TCL
+2022 79 10 05                   CLR Patron
+2025 79 10 06                   CLR Banderas
+                                
+2028 4c 38 80                   BSET CRGINT,$80
+202b 18 0b 0f 00 3b             MOVB #$0F,RTICTL
+                                
+2030 1c 02 66 01                BSET PIEH,$01
+2034 1d 02 65 01                BCLR PPSH,$01
                         
-2038 18 0c 00 f0 00 02  	MOVB $F0,DDRA
+2038 18 0c 00 f0 00 02          MOVB $F0,DDRA
                         
 203e cf 3b ff                   LDS #$3BFF
 2041 10 ef                      CLI
@@ -707,28 +706,100 @@ Michelle_Robin_T4.asm:48: Error - Symbol PH0_ISR is undefined.
                         ;                             PROGRAMA PRINCIPAL
                         ;*******************************************************************************
                         
+2043                    main:
+2043 1e 10 06 04 fb             BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+2048 16 20 4d                   JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
+204b 20 f6                      BRA main        ;salta siempre a main
                         
                         
                         ;*******************************************************************************
                         ;                                     SUBRUTINAS
                         ;*******************************************************************************
                         
-2043                    CALCULO:
                         
-2043 3d                         RTS
+                                                ;*******************************************************
+204d                    Tarea_Teclado:          ;                      SUBRUTINA
+                                                ;*******************************************************
+                                                ;Verifica estado de teclas ingresadas
+                                           	;y llama a las otras subrutinas
+                                                ;*******************************************************
+204d f7 10 03                   TST Cont_Reb
+2050 26 44                      BNE Retorno_Tarea_Teclado
+2052 16 20 97           	JSR Mux_Teclado
+2055 1e 10 01 ff 30     	BRSET Tecla,$FF,revisar_TCL_LISTA
                         
+205a 1f 10 06 02 11             BRCLR Banderas,$02,revisar_teclas
+205f 18 0c 10 01 10 02          MOVB Tecla,Tecla_IN
+2065 1c 10 06 02                BSET Banderas,$02
+2069 18 0b 0a 10 03             MOVB #10,Cont_Reb
+206e 20 26                      BRA Retorno_Tarea_Teclado
                         
+2070                    revisar_teclas:
+2070 b6 10 01                   LDAA Tecla
+2073 b1 10 02                   CMPA Tecla_IN
+2076 26 06                      BNE error_al_leer
+2078 1c 10 06 01                BSET Banderas,$01
+207c 20 18                      BRA Retorno_Tarea_Teclado
+                                
+207e                    error_al_leer:
+207e 18 03 ff ff 10 01          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
+2084 1d 10 06 03                BCLR Banderas,$03
+2088 20 0c                      BRA Retorno_Tarea_Teclado
+                        
+208a                    revisar_TCL_LISTA:
+208a 1f 10 06 01 07     	BRCLR Banderas,$01,Retorno_Tarea_Teclado
+208f 1d 10 06 03        	BCLR Banderas,$03
+2093 16 20 98           	JSR Formar_Array
+                        
+2096                    Retorno_Tarea_Teclado:
+2096 3d                         RTS
+                        
+                                                ;*******************************************************
+2097                    MUX_TECLADO:            ;                      SUBRUTINA
+                                                ;*******************************************************
+                                                ;Lee teclado matricial
+                                                ;*******************************************************
+2097 3d                         RTS
+                                
+                                                ;*******************************************************
+2098                    FORMAR_ARRAY:           ;                      SUBRUTINA
+                                                ;*******************************************************
+                                                ;Llena arreglo Num_Array con teclas leidas
+                                                ;*******************************************************
+                                                
+2098 3d                         RTS
+                                
                         ;*******************************************************************************
                         ;                         SUBRUTINAS DE INTERRUPCION
                         ;*******************************************************************************
                         
-2044                    RTI_ISR:                ;                Subrutina RTI_ISR
+2099                    RTI_ISR:                ;                Subrutina RTI_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que cuenta 10 ms
                                                 ;*******************************************************
+2099 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
+209c 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+20a1 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
+                                
+20a4                    retorno_RTI:
+20a4 0b                         RTI
                         
-2044                    retorno_RTI:
-2044 0b                         RTI
+                                
+20a5                    PH0_ISR:                ;                Subrutina PH0_ISR
+                                                ;*******************************************************
+                                                ;Subrutina que borrar Num_Array y Array_Ok al detectar
+                                                ;un flanco decreciente en PH0
+                                                ;*******************************************************
+20a5 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
+                                
+20a9 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
+20ad 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
+20b3 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
+20b9 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
+                        
+20bf                    retorno_PH0:
+20bf 0b                         RTI
 
-Executed: Tue Feb 02 18:40:41 2021
-Total errors: 1, Total warnings: 0
+Executed: Tue Feb 02 19:48:40 2021
+Total cycles: 211, Total bytes: 209
+Total errors: 0, Total warnings: 0
