@@ -669,11 +669,11 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 3e70                             org        $3E70  ;Debug 12
                         ;         org        $FFF0  ;Flash
-3e70 20 99                      dw RTI_ISR
+3e70 20 f7                      dw RTI_ISR
                         
 3e4c                             org        $3E4C  ;Debug 12
                         ;         org        $FFCC  ;Flash
-3e4c 20 a5                      dw PH0_ISR
+3e4c 21 03                      dw PH0_ISR
                                 
                         ;*******************************************************************************
                         ;            Inicialización de varaibles y config de hardware
@@ -721,12 +721,12 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 204d                    Tarea_Teclado:          ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Verifica estado de teclas ingresadas
-                                           	;y llama a las otras subrutinas
+                                                   ;y llama a las otras subrutinas
                                                 ;*******************************************************
 204d f7 10 03                   TST Cont_Reb
 2050 26 44                      BNE Retorno_Tarea_Teclado
-2052 16 20 97           	JSR Mux_Teclado
-2055 1e 10 01 ff 30     	BRSET Tecla,$FF,revisar_TCL_LISTA
+2052 16 20 97                   JSR Mux_Teclado
+2055 1e 10 01 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
                         
 205a 1f 10 06 02 11             BRCLR Banderas,$02,revisar_teclas
 205f 18 0c 10 01 10 02          MOVB Tecla,Tecla_IN
@@ -747,9 +747,9 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 2088 20 0c                      BRA Retorno_Tarea_Teclado
                         
 208a                    revisar_TCL_LISTA:
-208a 1f 10 06 01 07     	BRCLR Banderas,$01,Retorno_Tarea_Teclado
-208f 1d 10 06 03        	BCLR Banderas,$03
-2093 16 20 98           	JSR Formar_Array
+208a 1f 10 06 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
+208f 1d 10 06 03                BCLR Banderas,$03
+2093 16 20 98                   JSR Formar_Array
                         
 2096                    Retorno_Tarea_Teclado:
 2096 3d                         RTS
@@ -766,40 +766,83 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                                 ;*******************************************************
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
-                                                
-2098 3d                         RTS
+2098 fe 10 07                   Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
+209b 86 0b                      Ldaa #$0B
+209d c6 0e                      Ldab #$0E
+209f 72 10 04                   Inc Cont_TCL
+20a2 f1 10 00                   Cmpb MAX_TCL
+20a5 27 3e                      Beq full_array
+20a7 f7 10 04                   TST Cont_TCL
+20aa 27 22                      Beq primer_input
+20ac b1 10 02                   Cmpa Tecla_IN
+20af 27 18                      Beq reducir_contador
+20b1 f1 10 02                   Cmpb Tecla_IN
+20b4 27 0d                      Beq poner_array_ok
+20b6 f6 10 04                   Ldab Cont_TCL
+20b9 18 09 e5 10 02             Movb Tecla_IN,b,x ; No sabemos si está bien
+20be 72 10 04                   Inc Cont_TCL
+20c1 20 2e                      Bra Nodo_Final
+                                
+20c3                    poner_array_ok:
+20c3 1c 10 06 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+20c7 20 28                      Bra Nodo_Final
+                                
+20c9                    reducir_contador:
+20c9 73 10 04                   Dec Cont_TCL
+20cc 20 23                      Bra Nodo_Final
+                                
+20ce                    primer_input:
+20ce b1 10 02                   Cmpa Tecla_IN
+20d1 27 1e                      Beq Nodo_Final
+20d3 f1 10 02                   Cmpb Tecla_IN
+20d6 27 19                      Beq Nodo_Final
+20d8 f6 10 04                   Ldab Cont_TCL
+20db 18 09 e5 10 02             Movb Tecla_IN,b,x
+20e0 72 10 04                   Inc Cont_TCL
+20e3 20 0c                      Bra Nodo_Final
+                                
+20e5                    full_array:
+20e5 b1 10 02                   Cmpa Tecla_IN
+20e8 27 df                      beq reducir_contador
+20ea f1 10 02                   Cmpb Tecla_IN
+20ed 27 d4                      Beq poner_array_ok
+20ef 20 00                      Bra Nodo_Final
+                                
+20f1                    Nodo_Final:
+20f1 18 0b ff 10 02             Movb #$FF,Tecla_IN
+20f6 3d                         RTS
                                 
                         ;*******************************************************************************
                         ;                         SUBRUTINAS DE INTERRUPCION
                         ;*******************************************************************************
                         
-2099                    RTI_ISR:                ;                Subrutina RTI_ISR
+20f7                    RTI_ISR:                ;                Subrutina RTI_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que cuenta 10 ms
                                                 ;*******************************************************
-2099 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
-209c 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
-20a1 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
+20f7 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
+20fa 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+20ff 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
                                 
-20a4                    retorno_RTI:
-20a4 0b                         RTI
+2102                    retorno_RTI:
+2102 0b                         RTI
                         
                                 
-20a5                    PH0_ISR:                ;                Subrutina PH0_ISR
+2103                    PH0_ISR:                ;                Subrutina PH0_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que borrar Num_Array y Array_Ok al detectar
                                                 ;un flanco decreciente en PH0
                                                 ;*******************************************************
-20a5 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
+2103 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
                                 
-20a9 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
-20ad 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
-20b3 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
-20b9 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
+2107 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
+210b 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
+2111 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
+2117 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
                         
-20bf                    retorno_PH0:
-20bf 0b                         RTI
+211d                    retorno_PH0:
+211d 0b                         RTI
 
-Executed: Tue Feb 02 19:48:40 2021
-Total cycles: 211, Total bytes: 209
+Executed: Wed Feb 03 16:23:40 2021
+Total cycles: 318, Total bytes: 303
 Total errors: 0, Total warnings: 0

@@ -93,12 +93,12 @@ main:
 Tarea_Teclado:          ;                      SUBRUTINA
                         ;*******************************************************
                         ;Verifica estado de teclas ingresadas
-                   	;y llama a las otras subrutinas
+                           ;y llama a las otras subrutinas
                         ;*******************************************************
         TST Cont_Reb
         BNE Retorno_Tarea_Teclado
-	JSR Mux_Teclado
-	BRSET Tecla,$FF,revisar_TCL_LISTA
+        JSR Mux_Teclado
+        BRSET Tecla,$FF,revisar_TCL_LISTA
 
         BRCLR Banderas,$02,revisar_teclas
         MOVB Tecla,Tecla_IN
@@ -119,9 +119,9 @@ error_al_leer:
         BRA Retorno_Tarea_Teclado
 
 revisar_TCL_LISTA:
-	BRCLR Banderas,$01,Retorno_Tarea_Teclado
-	BCLR Banderas,$03
-	JSR Formar_Array
+        BRCLR Banderas,$01,Retorno_Tarea_Teclado
+        BCLR Banderas,$03
+        JSR Formar_Array
 
 Retorno_Tarea_Teclado:
         RTS
@@ -138,7 +138,50 @@ FORMAR_ARRAY:           ;                      SUBRUTINA
                         ;*******************************************************
                         ;Llena arreglo Num_Array con teclas leidas
                         ;*******************************************************
-                        
+        Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
+        Ldaa #$0B
+        Ldab #$0E
+        Inc Cont_TCL
+        Cmpb MAX_TCL
+        Beq full_array
+        TST Cont_TCL
+        Beq primer_input
+        Cmpa Tecla_IN
+        Beq reducir_contador
+        Cmpb Tecla_IN
+        Beq poner_array_ok
+        Ldab Cont_TCL
+        Movb Tecla_IN,b,x ; No sabemos si está bien
+        Inc Cont_TCL
+        Bra Nodo_Final
+        
+poner_array_ok:
+        Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+        Bra Nodo_Final
+        
+reducir_contador:
+        Dec Cont_TCL
+        Bra Nodo_Final
+        
+primer_input:
+        Cmpa Tecla_IN
+        Beq Nodo_Final
+        Cmpb Tecla_IN
+        Beq Nodo_Final
+        Ldab Cont_TCL
+        Movb Tecla_IN,b,x
+        Inc Cont_TCL
+        Bra Nodo_Final
+        
+full_array:
+        Cmpa Tecla_IN
+        beq reducir_contador
+        Cmpb Tecla_IN
+        Beq poner_array_ok
+        Bra Nodo_Final
+        
+Nodo_Final:
+        Movb #$FF,Tecla_IN
         RTS
         
 ;*******************************************************************************
