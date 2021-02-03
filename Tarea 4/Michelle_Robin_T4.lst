@@ -669,11 +669,11 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 3e70                             org        $3E70  ;Debug 12
                         ;         org        $FFF0  ;Flash
-3e70 20 99                      dw RTI_ISR
+3e70 20 ca                      dw RTI_ISR
                         
 3e4c                             org        $3E4C  ;Debug 12
                         ;         org        $FFCC  ;Flash
-3e4c 20 a5                      dw PH0_ISR
+3e4c 20 d6                      dw PH0_ISR
                                 
                         ;*******************************************************************************
                         ;            Inicialización de varaibles y config de hardware
@@ -749,7 +749,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 208a                    revisar_TCL_LISTA:
 208a 1f 10 06 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
 208f 1d 10 06 03                BCLR Banderas,$03
-2093 16 20 98                   JSR Formar_Array
+2093 16 20 c9                   JSR Formar_Array
                         
 2096                    Retorno_Tarea_Teclado:
 2096 3d                         RTS
@@ -759,47 +759,68 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                                 ;*******************************************************
                                                 ;Lee teclado matricial
                                                 ;*******************************************************
-2097 3d                         RTS
+2097 fe 10 0d                   LDX Teclas
+209a 87                         CLRA
+209b 18 0b ef 10 05             MOVB #$EF,Patron
+20a0                    loop_mux:
+20a0 18 0c 10 05 00 00          MOVB Patron,PORTA
+20a6 4f 00 02 19                BRCLR PORTA,$02,tecla_presionada
+20aa 42                         INCA
+20ab 4f 00 04 14                BRCLR PORTA,$04,tecla_presionada
+20af 42                         INCA
+20b0 4f 00 08 0f                BRCLR PORTA,$08,tecla_presionada
+20b4 42                         INCA
+20b5 48                         LSLA
+20b6 1f 10 05 0f 02             BRCLR Patron,$0F,nada_presionado
+20bb 20 e3                      BRA loop_mux
+                                
+20bd                    nada_presionado:
+20bd 18 0b ff 10 01             MOVB #$FF,Tecla
+20c2 3d                         RTS
+                                
+20c3                    tecla_presionada:
+20c3 18 0d e4 10 01             MOVB A,X,Tecla
+20c8 3d                         RTS
                                 
                                                 ;*******************************************************
-2098                    FORMAR_ARRAY:           ;                      SUBRUTINA
+20c9                    FORMAR_ARRAY:           ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
                                                 
-2098 3d                         RTS
+20c9 3d                         RTS
                                 
                         ;*******************************************************************************
                         ;                         SUBRUTINAS DE INTERRUPCION
                         ;*******************************************************************************
                         
-2099                    RTI_ISR:                ;                Subrutina RTI_ISR
+20ca                    RTI_ISR:                ;                Subrutina RTI_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que cuenta 10 ms
                                                 ;*******************************************************
-2099 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
-209c 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
-20a1 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
+20ca 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
+20cd 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+20d2 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
                                 
-20a4                    retorno_RTI:
-20a4 0b                         RTI
+20d5                    retorno_RTI:
+20d5 0b                         RTI
                         
                                 
-20a5                    PH0_ISR:                ;                Subrutina PH0_ISR
+20d6                    PH0_ISR:                ;                Subrutina PH0_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que borrar Num_Array y Array_Ok al detectar
                                                 ;un flanco decreciente en PH0
                                                 ;*******************************************************
-20a5 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
+20d6 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
                                 
-20a9 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
-20ad 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
-20b3 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
-20b9 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
+20da 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
+20de 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
+20e4 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
+20ea 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
                         
-20bf                    retorno_PH0:
-20bf 0b                         RTI
+20f0                    retorno_PH0:
+20f0 0b                         RTI
 
-Executed: Wed Feb 03 11:42:47 2021
-Total cycles: 211, Total bytes: 209
+Executed: Wed Feb 03 15:17:24 2021
+Total cycles: 260, Total bytes: 258
 Total errors: 0, Total warnings: 0

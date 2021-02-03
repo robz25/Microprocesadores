@@ -248,7 +248,7 @@ fclkdiv    0100
 fcmd       0106
 fcnfg      0103
 forbyp     003d
-formar_array 2098
+formar_array 20c9
 fprot      0104
 fsec       0101
 fstat      0105
@@ -273,6 +273,7 @@ isalpha    ee96
 isxdigit   ee92
 itcr       0015
 itest      0016
+loop_mux   20a0
 main       2043
 max_tcl    1000
 mccnt      0076
@@ -286,6 +287,7 @@ modrr      0257
 mtst0      0014
 mtst1      0017
 mux_teclado 2097
+nada_presionado 20bd
 num_array  1007
 oc7d       0043
 oc7m       0042
@@ -313,7 +315,7 @@ perm       0254
 perp       025c
 pers       024c
 pert       0244
-ph0_isr    20a5
+ph0_isr    20d6
 pieh       0266
 piej       026e
 piep       025e
@@ -400,12 +402,12 @@ rdrt       0243
 readmem    eeae
 refdv      0035
 regbase    0000
-retorno_ph0 20bf
-retorno_rti 20a4
+retorno_ph0 20f0
+retorno_rti 20d5
 retorno_tarea_teclado 2096
 revisar_tcl_lista 208a
 revisar_teclas 2070
-rti_isr    2099
+rti_isr    20ca
 rtictl     003b
 sc0bdh     00c8
 sc0bdl     00c9
@@ -467,6 +469,7 @@ tctl3      004a
 tctl4      004b
 tecla      1001
 tecla_in   1002
+tecla_presionada 20c3
 teclas     100d
 tflg1      004e
 tflg2      004f

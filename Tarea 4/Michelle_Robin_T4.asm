@@ -131,6 +131,27 @@ MUX_TECLADO:            ;                      SUBRUTINA
                         ;*******************************************************
                         ;Lee teclado matricial
                         ;*******************************************************
+        LDX Teclas
+        CLRA
+        MOVB #$EF,Patron
+loop_mux:
+        MOVB Patron,PORTA
+        BRCLR PORTA,$02,tecla_presionada
+        INCA
+        BRCLR PORTA,$04,tecla_presionada
+        INCA
+        BRCLR PORTA,$08,tecla_presionada
+        INCA
+        LSLA
+        BRCLR Patron,$0F,nada_presionado
+        BRA loop_mux
+        
+nada_presionado:
+        MOVB #$FF,Tecla
+        RTS
+        
+tecla_presionada:
+        MOVB A,X,Tecla
         RTS
         
                         ;*******************************************************
