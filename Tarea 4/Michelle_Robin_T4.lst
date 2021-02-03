@@ -821,6 +821,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 20f0                    retorno_PH0:
 20f0 0b                         RTI
 
-Executed: Wed Feb 03 15:17:24 2021
+Executed: Wed Feb 03 17:37:20 2021
 Total cycles: 260, Total bytes: 258
 Total errors: 0, Total warnings: 0
