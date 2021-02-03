@@ -635,7 +635,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         ;       V1
                         ;       AUTORES: ROBIN GONZALEZ   B43011
-                        ;                MICHELLE GUTIERREZ     B4
+                        ;                MICHELLE GUTIERREZ     B43195
                         ;
                         ;       DESCRIPCION:    LECTURA DE TECLADO MATRICIAL:    CODIGO QUE CONSISTE
                         ;                       DE 3 SUBRUTINAS Y 2 SUBRUTINAS DE INTERRUPCION QUE
@@ -721,12 +721,12 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 204d                    Tarea_Teclado:          ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Verifica estado de teclas ingresadas
-                                           	;y llama a las otras subrutinas
+                                                   ;y llama a las otras subrutinas
                                                 ;*******************************************************
 204d f7 10 03                   TST Cont_Reb
 2050 26 44                      BNE Retorno_Tarea_Teclado
-2052 16 20 97           	JSR Mux_Teclado
-2055 1e 10 01 ff 30     	BRSET Tecla,$FF,revisar_TCL_LISTA
+2052 16 20 97                   JSR Mux_Teclado
+2055 1e 10 01 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
                         
 205a 1f 10 06 02 11             BRCLR Banderas,$02,revisar_teclas
 205f 18 0c 10 01 10 02          MOVB Tecla,Tecla_IN
@@ -747,9 +747,9 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 2088 20 0c                      BRA Retorno_Tarea_Teclado
                         
 208a                    revisar_TCL_LISTA:
-208a 1f 10 06 01 07     	BRCLR Banderas,$01,Retorno_Tarea_Teclado
-208f 1d 10 06 03        	BCLR Banderas,$03
-2093 16 20 98           	JSR Formar_Array
+208a 1f 10 06 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
+208f 1d 10 06 03                BCLR Banderas,$03
+2093 16 20 98                   JSR Formar_Array
                         
 2096                    Retorno_Tarea_Teclado:
 2096 3d                         RTS
@@ -800,6 +800,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 20bf                    retorno_PH0:
 20bf 0b                         RTI
 
-Executed: Tue Feb 02 19:48:40 2021
+Executed: Wed Feb 03 11:42:47 2021
 Total cycles: 211, Total bytes: 209
 Total errors: 0, Total warnings: 0

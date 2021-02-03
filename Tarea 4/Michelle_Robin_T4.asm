@@ -8,7 +8,7 @@
 ;*******************************************************************************
 ;       V1
 ;       AUTORES: ROBIN GONZALEZ   B43011
-;                MICHELLE GUTIERREZ     B4
+;                MICHELLE GUTIERREZ     B43195
 ;
 ;       DESCRIPCION:    LECTURA DE TECLADO MATRICIAL:    CODIGO QUE CONSISTE
 ;                       DE 3 SUBRUTINAS Y 2 SUBRUTINAS DE INTERRUPCION QUE
@@ -93,12 +93,12 @@ main:
 Tarea_Teclado:          ;                      SUBRUTINA
                         ;*******************************************************
                         ;Verifica estado de teclas ingresadas
-                   	;y llama a las otras subrutinas
+                           ;y llama a las otras subrutinas
                         ;*******************************************************
         TST Cont_Reb
         BNE Retorno_Tarea_Teclado
-	JSR Mux_Teclado
-	BRSET Tecla,$FF,revisar_TCL_LISTA
+        JSR Mux_Teclado
+        BRSET Tecla,$FF,revisar_TCL_LISTA
 
         BRCLR Banderas,$02,revisar_teclas
         MOVB Tecla,Tecla_IN
@@ -119,9 +119,9 @@ error_al_leer:
         BRA Retorno_Tarea_Teclado
 
 revisar_TCL_LISTA:
-	BRCLR Banderas,$01,Retorno_Tarea_Teclado
-	BCLR Banderas,$03
-	JSR Formar_Array
+        BRCLR Banderas,$01,Retorno_Tarea_Teclado
+        BCLR Banderas,$03
+        JSR Formar_Array
 
 Retorno_Tarea_Teclado:
         RTS
