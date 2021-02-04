@@ -698,12 +698,13 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 2034 1d 02 65 01                BCLR PPSH,$01
                                 
                                 ;solo para debugging
+                                ;******************************************************
 2038 1c 02 6a 02                BSET DDRJ,$02
 203c 1d 02 68 02                BCLR PTJ,$02
 2040 4c 03 ff                   BSET DDRB,$FF
 2043 1c 02 5a 0f                BSET DDRP,$0F
+                                ;******************************************************
                                 
-                        
 2047 18 0c 00 f0 00 02          MOVB $F0,DDRA
                         
 204d cf 3b ff                   LDS #$3BFF
@@ -715,7 +716,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 2052                    main:
 2052 18 0c 00 80 00 01          MOVB $80,PORTB  ;debugging
-2058 1e 10 06 04 f5     	BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+2058 1e 10 06 04 f5             BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
 205d 16 20 62                   JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
 2060 20 f0                      BRA main        ;salta siempre a main
                         
@@ -798,7 +799,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
 20ea 18 0c 00 04 00 01          MOVB $04,PORTB  ;debugging
-20f0 fe 10 07           	Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
+20f0 fe 10 07                   Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
 20f3 86 0b                      Ldaa #$0B
 20f5 c6 0e                      Ldab #$0E
 20f7 72 10 04                   Inc Cont_TCL
@@ -877,6 +878,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 2181                    retorno_PH0:
 2181 0b                         RTI
 
-Executed: Wed Feb 03 18:11:28 2021
+Executed: Wed Feb 03 18:16:21 2021
 Total cycles: 407, Total bytes: 403
 Total errors: 0, Total warnings: 0

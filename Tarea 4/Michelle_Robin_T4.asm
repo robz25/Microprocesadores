@@ -70,12 +70,13 @@ Teclas:         EQU     $100D
         BCLR PPSH,$01
         
         ;solo para debugging
+        ;******************************************************
         BSET DDRJ,$02
         BCLR PTJ,$02
         BSET DDRB,$FF
         BSET DDRP,$0F
+        ;******************************************************
         
-
         MOVB $F0,DDRA
 
         LDS #$3BFF
@@ -87,7 +88,7 @@ Teclas:         EQU     $100D
 
 main:
         MOVB $80,PORTB  ;debugging
-	BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+        BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
         JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
         BRA main        ;salta siempre a main
 
@@ -170,7 +171,7 @@ FORMAR_ARRAY:           ;                      SUBRUTINA
                         ;Llena arreglo Num_Array con teclas leidas
                         ;*******************************************************
         MOVB $04,PORTB  ;debugging
-	Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
+        Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
         Ldaa #$0B
         Ldab #$0E
         Inc Cont_TCL
