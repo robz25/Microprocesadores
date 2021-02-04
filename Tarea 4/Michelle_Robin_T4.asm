@@ -68,6 +68,13 @@ Teclas:         EQU     $100D
         
         BSET PIEH,$01
         BCLR PPSH,$01
+        
+        ;solo para debugging
+        BSET DDRJ,$02
+        BCLR PTJ,$02
+        BSET DDRB,$FF
+        BSET DDRP,$0F
+        
 
         MOVB $F0,DDRA
 
@@ -79,7 +86,8 @@ Teclas:         EQU     $100D
 ;*******************************************************************************
 
 main:
-        BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+        MOVB $80,PORTB  ;debugging
+	BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
         JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
         BRA main        ;salta siempre a main
 
@@ -95,6 +103,7 @@ Tarea_Teclado:          ;                      SUBRUTINA
                         ;Verifica estado de teclas ingresadas
                            ;y llama a las otras subrutinas
                         ;*******************************************************
+        MOVB $01,PORTB  ;debugging
         TST Cont_Reb
         BNE Retorno_Tarea_Teclado
         JSR Mux_Teclado
@@ -131,6 +140,7 @@ MUX_TECLADO:            ;                      SUBRUTINA
                         ;*******************************************************
                         ;Lee teclado matricial
                         ;*******************************************************
+        MOVB $02,PORTB  ;debugging
         LDX Teclas
         CLRA
         MOVB #$EF,Patron
@@ -159,7 +169,8 @@ FORMAR_ARRAY:           ;                      SUBRUTINA
                         ;*******************************************************
                         ;Llena arreglo Num_Array con teclas leidas
                         ;*******************************************************
-        Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
+        MOVB $04,PORTB  ;debugging
+	Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
         Ldaa #$0B
         Ldab #$0E
         Inc Cont_TCL
@@ -214,6 +225,7 @@ RTI_ISR:                ;                Subrutina RTI_ISR
                         ;Subrutina que cuenta 10 ms
                         ;*******************************************************
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
+        MOVB $08,PORTB  ;debugging
         BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
         
@@ -227,6 +239,7 @@ PH0_ISR:                ;                Subrutina PH0_ISR
                         ;un flanco decreciente en PH0
                         ;*******************************************************
         BSET PIFH,$01   ;borramos la bandear de interrupcion
+        MOVB $10,PORTB  ;debugging
         
         BCLR Banderas,$04       ;borramos el bit 2
         MOVW #$FFFF,Num_Array
