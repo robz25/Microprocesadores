@@ -63,6 +63,7 @@ Print:          EQU     $1020 ; Debugging
         MOVW #$0,Print+2  ; Debugging
         MOVW #$0,Print+4  ; Debugging
         MOVW #$0,Print+6  ; Debugging
+        MOVW #$0,Print+7  ; Debugging
         CLR Cont_Reb
         CLR Cont_TCL
         CLR Patron
@@ -82,8 +83,8 @@ Print:          EQU     $1020 ; Debugging
         BSET DDRP,$0F
         ;******************************************************
         
-        MOVB $F0,DDRA
-
+        MOVB #$F0,DDRA
+        BSET PUCR,1
         LDS #$3BFF
         CLI
         
@@ -92,7 +93,7 @@ Print:          EQU     $1020 ; Debugging
 ;*******************************************************************************
 
 main:
-        MOVB #$80,PORTB  ;debugging
+        ;MOVB #$80,PORTB  ;debugging
         INC Print
         BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
         JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
@@ -151,17 +152,32 @@ Mux_Teclado:            ;                      SUBRUTINA
                         ;*******************************************************
         MOVB #$02,PORTB  ;debugging
         INC Print+2
-        LDX Teclas
+        LDX #Teclas
         CLRA
         MOVB #$EF,Patron
 loop_mux:
         MOVB Patron,PORTA
         BRCLR PORTA,$02,tecla_presionada
         INCA
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
         BRCLR PORTA,$04,tecla_presionada
         INCA
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
         BRCLR PORTA,$08,tecla_presionada
         INCA
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
         LSL Patron
         BRCLR Patron,$F0,nada_presionado
         BRA loop_mux
@@ -173,6 +189,7 @@ nada_presionado:
         
 tecla_presionada:
         MOVB A,X,Tecla
+        Inc Print+7
         RTS
         
                         ;*******************************************************
@@ -182,12 +199,13 @@ Formar_Array:           ;                      SUBRUTINA
                         ;*******************************************************
         MOVB #$04,PORTB  ;debugging
         INC Print+3
-        Ldx Num_Array   ; Cargar dirección de Num_Array en el índice Y
+        Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
         Ldaa #$0B
-        Ldab #$0E
-        Inc Cont_TCL
+        Ldab Cont_TCL
+        ;Incb
         Cmpb MAX_TCL
         Beq full_array
+        Ldab #$0E
         TST Cont_TCL
         Beq primer_input
         Cmpa Tecla_IN
@@ -201,10 +219,13 @@ Formar_Array:           ;                      SUBRUTINA
         
 poner_array_ok:
         Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+        Clr Cont_TCL
         Bra Nodo_Final
         
 reducir_contador:
         Dec Cont_TCL
+        Ldab Cont_TCL
+        Movb #$FF,b,x
         Bra Nodo_Final
         
 primer_input:
@@ -218,6 +239,7 @@ primer_input:
         Bra Nodo_Final
         
 full_array:
+        Ldab #$0E
         Cmpa Tecla_IN
         beq reducir_contador
         Cmpb Tecla_IN
@@ -255,6 +277,7 @@ PH0_ISR:                ;                Subrutina PH0_ISR
         MOVB #$10,PORTB  ;debugging
         INC Print+5
         BCLR Banderas,$04       ;borramos el bit 2
+        MOVB #00,Cont_TCL
         MOVW #$FFFF,Num_Array
         MOVW #$FFFF,Num_Array+2
         MOVW #$FFFF,Num_Array+4
