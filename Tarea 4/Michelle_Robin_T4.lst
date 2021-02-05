@@ -656,7 +656,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 1006                    Banderas:       EQU     $1006   ;X:X:X:X:X:Array_OK : TCL_LEIDA : TCL_LISTA
 1007                    Num_Array:      EQU     $1007
 100d                    Teclas:         EQU     $100D
-1020                    Print:          EQU     $1020 ; Debugging
+                        ;Print:          EQU     $1020 ; Debugging
                         
 1000                            ORG     MAX_TCL
 1000 06                         db      6
@@ -670,11 +670,11 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 3e70                             org        $3E70  ;Debug 12
                         ;         org        $FFF0  ;Flash
-3e70 21 95                      dw RTI_ISR
+3e70 21 56                      dw RTI_ISR
                         
 3e4c                             org        $3E4C  ;Debug 12
                         ;         org        $FFCC  ;Flash
-3e4c 21 a9                      dw PH0_ISR
+3e4c 21 62                      dw PH0_ISR
                                 
                         ;*******************************************************************************
                         ;            Inicialización de varaibles y config de hardware
@@ -687,45 +687,45 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 200a 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
 2010 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
 2016 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
-201c 18 03 00 00 10 20          MOVW #$0,Print ; Debugging
-2022 18 03 00 00 10 22          MOVW #$0,Print+2  ; Debugging
-2028 18 03 00 00 10 24          MOVW #$0,Print+4  ; Debugging
-202e 18 03 00 00 10 26          MOVW #$0,Print+6  ; Debugging
-2034 18 03 00 00 10 27          MOVW #$0,Print+7  ; Debugging
-203a 79 10 03                   CLR Cont_Reb
-203d 79 10 04                   CLR Cont_TCL
-2040 79 10 05                   CLR Patron
-2043 79 10 06                   CLR Banderas
+                        ;        MOVW #$0,Print ; Debugging
+                        ;        MOVW #$0,Print+2  ; Debugging
+                        ;        MOVW #$0,Print+4  ; Debugging
+                        ;        MOVW #$0,Print+6  ; Debugging
+                        ;        MOVW #$0,Print+7  ; Debugging
+201c 79 10 03                   CLR Cont_Reb
+201f 79 10 04                   CLR Cont_TCL
+2022 79 10 05                   CLR Patron
+2025 79 10 06                   CLR Banderas
                                 
-2046 4c 38 80                   BSET CRGINT,$80
-2049 18 0b 17 00 3b             MOVB #$17,RTICTL
+2028 4c 38 80                   BSET CRGINT,$80
+202b 18 0b 17 00 3b             MOVB #$17,RTICTL
                                 
-204e 1c 02 66 01                BSET PIEH,$01
-2052 1d 02 65 01                BCLR PPSH,$01
+2030 1c 02 66 01                BSET PIEH,$01
+2034 1d 02 65 01                BCLR PPSH,$01
                                 
                                 ;solo para debugging
                                 ;******************************************************
-2056 1c 02 6a 02                BSET DDRJ,$02
-205a 1d 02 68 02                BCLR PTJ,$02
-205e 4c 03 ff                   BSET DDRB,$FF
-2061 1c 02 5a 0f                BSET DDRP,$0F
+2038 1c 02 6a 02                BSET DDRJ,$02
+203c 1d 02 68 02                BCLR PTJ,$02
+2040 4c 03 ff                   BSET DDRB,$FF
+2043 1c 02 5a 0f                BSET DDRP,$0F
                                 ;******************************************************
                                 
-2065 18 0b f0 00 02             MOVB #$F0,DDRA
-206a 4c 0c 01                   BSET PUCR,1
-206d cf 3b ff                   LDS #$3BFF
-2070 10 ef                      CLI
+2047 18 0b f0 00 02             MOVB #$F0,DDRA
+204c 4c 0c 01                   BSET PUCR,1
+204f cf 3b ff                   LDS #$3BFF
+2052 10 ef                      CLI
                                 
                         ;*******************************************************************************
                         ;                             PROGRAMA PRINCIPAL
                         ;*******************************************************************************
                         
-2072                    main:
+2054                    main:
                                 ;MOVB #$80,PORTB  ;debugging
-2072 72 10 20                   INC Print
-2075 1e 10 06 04 f8             BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-207a 16 20 7f                   JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
-207d 20 f3                      BRA main        ;salta siempre a main
+                        ;        INC Print
+2054 1e 10 06 04 fb             BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+2059 16 20 5e                   JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
+205c 20 f6                      BRA main        ;salta siempre a main
                         
                         
                         ;*******************************************************************************
@@ -734,185 +734,185 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
                         
                                                 ;*******************************************************
-207f                    Tarea_Teclado:          ;                      SUBRUTINA
+205e                    Tarea_Teclado:          ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Verifica estado de teclas ingresadas
                                                    ;y llama a las otras subrutinas
                                                 ;*******************************************************
-207f 18 0b 01 00 01             MOVB #$01,PORTB  ;debugging
-2084 72 10 21                   INC Print+1
-2087 f7 10 03                   TST Cont_Reb
-208a 26 44                      BNE Retorno_Tarea_Teclado
-208c 16 20 d1                   JSR Mux_Teclado
-208f 1e 10 01 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
+                        ;        MOVB #$01,PORTB  ;debugging
+                        ;        INC Print+1
+205e f7 10 03                   TST Cont_Reb
+2061 26 44                      BNE Retorno_Tarea_Teclado
+2063 16 20 a8                   JSR Mux_Teclado
+2066 1e 10 01 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
                         
-2094 1e 10 06 02 11             BRSET Banderas,$02,revisar_teclas
-2099 18 0c 10 01 10 02          MOVB Tecla,Tecla_IN
-209f 1c 10 06 02                BSET Banderas,$02
-20a3 18 0b 0a 10 03             MOVB #10,Cont_Reb
+206b 1e 10 06 02 11             BRSET Banderas,$02,revisar_teclas
+2070 18 0c 10 01 10 02          MOVB Tecla,Tecla_IN
+2076 1c 10 06 02                BSET Banderas,$02
+207a 18 0b 0a 10 03             MOVB #10,Cont_Reb
                                 
-20a8 20 26                      BRA Retorno_Tarea_Teclado
+207f 20 26                      BRA Retorno_Tarea_Teclado
                         
-20aa                    revisar_teclas:
-20aa b6 10 01                   LDAA Tecla
-20ad b1 10 02                   CMPA Tecla_IN
-20b0 26 06                      BNE error_al_leer
-20b2 1c 10 06 01                BSET Banderas,$01
-20b6 20 18                      BRA Retorno_Tarea_Teclado
+2081                    revisar_teclas:
+2081 b6 10 01                   LDAA Tecla
+2084 b1 10 02                   CMPA Tecla_IN
+2087 26 06                      BNE error_al_leer
+2089 1c 10 06 01                BSET Banderas,$01
+208d 20 18                      BRA Retorno_Tarea_Teclado
                                 
-20b8                    error_al_leer:
-20b8 18 03 ff ff 10 01          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
-20be 1d 10 06 03                BCLR Banderas,$03
-20c2 20 0c                      BRA Retorno_Tarea_Teclado
+208f                    error_al_leer:
+208f 18 03 ff ff 10 01          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
+2095 1d 10 06 03                BCLR Banderas,$03
+2099 20 0c                      BRA Retorno_Tarea_Teclado
                         
-20c4                    revisar_TCL_LISTA:
-20c4 1f 10 06 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
-20c9 1d 10 06 03                BCLR Banderas,$03
-20cd 16 21 22                   JSR Formar_Array
+209b                    revisar_TCL_LISTA:
+209b 1f 10 06 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
+20a0 1d 10 06 03                BCLR Banderas,$03
+20a4 16 20 eb                   JSR Formar_Array
                         
-20d0                    Retorno_Tarea_Teclado:
-20d0 3d                         RTS
+20a7                    Retorno_Tarea_Teclado:
+20a7 3d                         RTS
                         
                                                 ;*******************************************************
-20d1                    Mux_Teclado:            ;                      SUBRUTINA
+20a8                    Mux_Teclado:            ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Lee teclado matricial
                                                 ;*******************************************************
-20d1 18 0b 02 00 01             MOVB #$02,PORTB  ;debugging
-20d6 72 10 22                   INC Print+2
-20d9 ce 10 0d                   LDX #Teclas
-20dc 87                         CLRA
-20dd 18 0b ef 10 05             MOVB #$EF,Patron
-20e2                    loop_mux:
-20e2 18 0c 10 05 00 00          MOVB Patron,PORTA
-20e8 4f 00 02 2d                BRCLR PORTA,$02,tecla_presionada
-20ec 42                         INCA
-20ed a7                         NOP
-20ee a7                         NOP
-20ef a7                         NOP
-20f0 a7                         NOP
-20f1 a7                         NOP
-20f2 4f 00 04 23                BRCLR PORTA,$04,tecla_presionada
-20f6 42                         INCA
-20f7 a7                         NOP
-20f8 a7                         NOP
-20f9 a7                         NOP
-20fa a7                         NOP
-20fb a7                         NOP
-20fc 4f 00 08 19                BRCLR PORTA,$08,tecla_presionada
-2100 42                         INCA
-2101 a7                         NOP
-2102 a7                         NOP
-2103 a7                         NOP
-2104 a7                         NOP
-2105 a7                         NOP
-2106 78 10 05                   LSL Patron
-2109 1f 10 05 f0 02             BRCLR Patron,$F0,nada_presionado
-210e 20 d2                      BRA loop_mux
+                        ;        MOVB #$02,PORTB  ;debugging
+                        ;        INC Print+2
+20a8 ce 10 0d                   LDX #Teclas
+20ab 87                         CLRA
+20ac 18 0b ef 10 05             MOVB #$EF,Patron
+20b1                    loop_mux:
+20b1 18 0c 10 05 00 00          MOVB Patron,PORTA
+20b7 4f 00 02 2a                BRCLR PORTA,$02,tecla_presionada
+20bb 42                         INCA
+20bc a7                         NOP
+20bd a7                         NOP
+20be a7                         NOP
+20bf a7                         NOP
+20c0 a7                         NOP
+20c1 4f 00 04 20                BRCLR PORTA,$04,tecla_presionada
+20c5 42                         INCA
+20c6 a7                         NOP
+20c7 a7                         NOP
+20c8 a7                         NOP
+20c9 a7                         NOP
+20ca a7                         NOP
+20cb 4f 00 08 16                BRCLR PORTA,$08,tecla_presionada
+20cf 42                         INCA
+20d0 a7                         NOP
+20d1 a7                         NOP
+20d2 a7                         NOP
+20d3 a7                         NOP
+20d4 a7                         NOP
+20d5 78 10 05                   LSL Patron
+20d8 1f 10 05 f0 02             BRCLR Patron,$F0,nada_presionado
+20dd 20 d2                      BRA loop_mux
                                 
-2110                    nada_presionado:
-2110 72 10 26                   Inc Print+6
-2113 18 0b ff 10 01             MOVB #$FF,Tecla
-2118 3d                         RTS
+20df                    nada_presionado:
+                        ;        Inc Print+6
+20df 18 0b ff 10 01             MOVB #$FF,Tecla
+20e4 3d                         RTS
                                 
-2119                    tecla_presionada:
-2119 18 0d e4 10 01             MOVB A,X,Tecla
-211e 72 10 27                   Inc Print+7
-2121 3d                         RTS
+20e5                    tecla_presionada:
+20e5 18 0d e4 10 01             MOVB A,X,Tecla
+                        ;        Inc Print+7
+20ea 3d                         RTS
                                 
                                                 ;*******************************************************
-2122                    Formar_Array:           ;                      SUBRUTINA
+20eb                    Formar_Array:           ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
-2122 18 0b 04 00 01             MOVB #$04,PORTB  ;debugging
-2127 72 10 23                   INC Print+3
-212a ce 10 07                   Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
-212d 86 0b                      Ldaa #$0B
-212f f6 10 04                   Ldab Cont_TCL
+                        ;        MOVB #$04,PORTB  ;debugging
+                        ;        INC Print+3
+20eb ce 10 07                   Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
+20ee 86 0b                      Ldaa #$0B
+20f0 f6 10 04                   Ldab Cont_TCL
                                 ;Incb
-2132 f1 10 00                   Cmpb MAX_TCL
-2135 27 4a                      Beq full_array
-2137 c6 0e                      Ldab #$0E
-2139 f7 10 04                   TST Cont_TCL
-213c 27 2c                      Beq primer_input
-213e b1 10 02                   Cmpa Tecla_IN
-2141 27 1b                      Beq reducir_contador
-2143 f1 10 02                   Cmpb Tecla_IN
-2146 27 0d                      Beq poner_array_ok
-2148 f6 10 04                   Ldab Cont_TCL
-214b 18 09 e5 10 02             Movb Tecla_IN,b,x ; No sabemos si está bien
-2150 72 10 04                   Inc Cont_TCL
-2153 20 3a                      Bra Nodo_Final
+20f3 f1 10 00                   Cmpb MAX_TCL
+20f6 27 4a                      Beq full_array
+20f8 c6 0e                      Ldab #$0E
+20fa f7 10 04                   TST Cont_TCL
+20fd 27 2c                      Beq primer_input
+20ff b1 10 02                   Cmpa Tecla_IN
+2102 27 1b                      Beq reducir_contador
+2104 f1 10 02                   Cmpb Tecla_IN
+2107 27 0d                      Beq poner_array_ok
+2109 f6 10 04                   Ldab Cont_TCL
+210c 18 09 e5 10 02             Movb Tecla_IN,b,x ; No sabemos si está bien
+2111 72 10 04                   Inc Cont_TCL
+2114 20 3a                      Bra Nodo_Final
                                 
-2155                    poner_array_ok:
-2155 1c 10 06 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
-2159 79 10 04                   Clr Cont_TCL
-215c 20 31                      Bra Nodo_Final
+2116                    poner_array_ok:
+2116 1c 10 06 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+211a 79 10 04                   Clr Cont_TCL
+211d 20 31                      Bra Nodo_Final
                                 
-215e                    reducir_contador:
-215e 73 10 04                   Dec Cont_TCL
-2161 f6 10 04                   Ldab Cont_TCL
-2164 18 08 e5 ff                Movb #$FF,b,x
-2168 20 25                      Bra Nodo_Final
+211f                    reducir_contador:
+211f 73 10 04                   Dec Cont_TCL
+2122 f6 10 04                   Ldab Cont_TCL
+2125 18 08 e5 ff                Movb #$FF,b,x
+2129 20 25                      Bra Nodo_Final
                                 
-216a                    primer_input:
-216a b1 10 02                   Cmpa Tecla_IN
-216d 27 20                      Beq Nodo_Final
-216f f1 10 02                   Cmpb Tecla_IN
-2172 27 1b                      Beq Nodo_Final
-2174 f6 10 04                   Ldab Cont_TCL
-2177 18 09 e5 10 02             Movb Tecla_IN,b,x
-217c 72 10 04                   Inc Cont_TCL
-217f 20 0e                      Bra Nodo_Final
+212b                    primer_input:
+212b b1 10 02                   Cmpa Tecla_IN
+212e 27 20                      Beq Nodo_Final
+2130 f1 10 02                   Cmpb Tecla_IN
+2133 27 1b                      Beq Nodo_Final
+2135 f6 10 04                   Ldab Cont_TCL
+2138 18 09 e5 10 02             Movb Tecla_IN,b,x
+213d 72 10 04                   Inc Cont_TCL
+2140 20 0e                      Bra Nodo_Final
                                 
-2181                    full_array:
-2181 c6 0e                      Ldab #$0E
-2183 b1 10 02                   Cmpa Tecla_IN
-2186 27 d6                      beq reducir_contador
-2188 f1 10 02                   Cmpb Tecla_IN
-218b 27 c8                      Beq poner_array_ok
-218d 20 00                      Bra Nodo_Final
+2142                    full_array:
+2142 c6 0e                      Ldab #$0E
+2144 b1 10 02                   Cmpa Tecla_IN
+2147 27 d6                      beq reducir_contador
+2149 f1 10 02                   Cmpb Tecla_IN
+214c 27 c8                      Beq poner_array_ok
+214e 20 00                      Bra Nodo_Final
                                 
-218f                    Nodo_Final:
-218f 18 0b ff 10 02             Movb #$FF,Tecla_IN
-2194 3d                         RTS
+2150                    Nodo_Final:
+2150 18 0b ff 10 02             Movb #$FF,Tecla_IN
+2155 3d                         RTS
                                 
                         ;*******************************************************************************
                         ;                         SUBRUTINAS DE INTERRUPCION
                         ;*******************************************************************************
                         
-2195                    RTI_ISR:                ;                Subrutina RTI_ISR
+2156                    RTI_ISR:                ;                Subrutina RTI_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que cuenta 10 ms
                                                 ;*******************************************************
-2195 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
-2198 18 0b 08 00 01             MOVB #$08,PORTB  ;debugging
-219d 72 10 24                   INC Print+4
-21a0 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
-21a5 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
+2156 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
+                        ;        MOVB #$08,PORTB  ;debugging
+                        ;        INC Print+4
+2159 1f 10 03 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+215e 73 10 03                   DEC Cont_Reb    ;decrementar Cont_Reb
                                 
-21a8                    retorno_RTI:
-21a8 0b                         RTI
+2161                    retorno_RTI:
+2161 0b                         RTI
                         
                                 
-21a9                    PH0_ISR:                ;                Subrutina PH0_ISR
+2162                    PH0_ISR:                ;                Subrutina PH0_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que borrar Num_Array y Array_Ok al detectar
                                                 ;un flanco decreciente en PH0
                                                 ;*******************************************************
-21a9 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
-21ad 18 0b 10 00 01             MOVB #$10,PORTB  ;debugging
-21b2 72 10 25                   INC Print+5
-21b5 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
-21b9 18 0b 00 10 04             MOVB #00,Cont_TCL
-21be 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
-21c4 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
-21ca 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
+2162 1c 02 67 01                BSET PIFH,$01   ;borramos la bandear de interrupcion
+                        ;        MOVB #$10,PORTB  ;debugging
+                        ;        INC Print+5
+2166 1d 10 06 04                BCLR Banderas,$04       ;borramos el bit 2
+216a 18 0b 00 10 04             MOVB #00,Cont_TCL
+216f 18 03 ff ff 10 07          MOVW #$FFFF,Num_Array
+2175 18 03 ff ff 10 09          MOVW #$FFFF,Num_Array+2
+217b 18 03 ff ff 10 0b          MOVW #$FFFF,Num_Array+4
                         
-21d0                    retorno_PH0:
-21d0 0b                         RTI
+2181                    retorno_PH0:
+2181 0b                         RTI
 
-Executed: Thu Feb 04 18:29:14 2021
-Total cycles: 482, Total bytes: 482
+Executed: Fri Feb 05 13:11:27 2021
+Total cycles: 418, Total bytes: 403
 Total errors: 0, Total warnings: 0

@@ -29,7 +29,7 @@ Patron:         EQU     $1005
 Banderas:       EQU     $1006   ;X:X:X:X:X:Array_OK : TCL_LEIDA : TCL_LISTA
 Num_Array:      EQU     $1007
 Teclas:         EQU     $100D
-Print:          EQU     $1020 ; Debugging
+;Print:          EQU     $1020 ; Debugging
 
         ORG     MAX_TCL
         db      6
@@ -59,11 +59,11 @@ Print:          EQU     $1020 ; Debugging
         MOVW #$FFFF,Num_Array
         MOVW #$FFFF,Num_Array+2
         MOVW #$FFFF,Num_Array+4
-        MOVW #$0,Print ; Debugging
-        MOVW #$0,Print+2  ; Debugging
-        MOVW #$0,Print+4  ; Debugging
-        MOVW #$0,Print+6  ; Debugging
-        MOVW #$0,Print+7  ; Debugging
+;        MOVW #$0,Print ; Debugging
+;        MOVW #$0,Print+2  ; Debugging
+;        MOVW #$0,Print+4  ; Debugging
+;        MOVW #$0,Print+6  ; Debugging
+;        MOVW #$0,Print+7  ; Debugging
         CLR Cont_Reb
         CLR Cont_TCL
         CLR Patron
@@ -94,7 +94,7 @@ Print:          EQU     $1020 ; Debugging
 
 main:
         ;MOVB #$80,PORTB  ;debugging
-        INC Print
+;        INC Print
         BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
         JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
         BRA main        ;salta siempre a main
@@ -111,8 +111,8 @@ Tarea_Teclado:          ;                      SUBRUTINA
                         ;Verifica estado de teclas ingresadas
                            ;y llama a las otras subrutinas
                         ;*******************************************************
-        MOVB #$01,PORTB  ;debugging
-        INC Print+1
+;        MOVB #$01,PORTB  ;debugging
+;        INC Print+1
         TST Cont_Reb
         BNE Retorno_Tarea_Teclado
         JSR Mux_Teclado
@@ -150,8 +150,8 @@ Mux_Teclado:            ;                      SUBRUTINA
                         ;*******************************************************
                         ;Lee teclado matricial
                         ;*******************************************************
-        MOVB #$02,PORTB  ;debugging
-        INC Print+2
+;        MOVB #$02,PORTB  ;debugging
+;        INC Print+2
         LDX #Teclas
         CLRA
         MOVB #$EF,Patron
@@ -183,13 +183,13 @@ loop_mux:
         BRA loop_mux
         
 nada_presionado:
-        Inc Print+6
+;        Inc Print+6
         MOVB #$FF,Tecla
         RTS
         
 tecla_presionada:
         MOVB A,X,Tecla
-        Inc Print+7
+;        Inc Print+7
         RTS
         
                         ;*******************************************************
@@ -197,8 +197,8 @@ Formar_Array:           ;                      SUBRUTINA
                         ;*******************************************************
                         ;Llena arreglo Num_Array con teclas leidas
                         ;*******************************************************
-        MOVB #$04,PORTB  ;debugging
-        INC Print+3
+;        MOVB #$04,PORTB  ;debugging
+;        INC Print+3
         Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
         Ldaa #$0B
         Ldab Cont_TCL
@@ -259,8 +259,8 @@ RTI_ISR:                ;                Subrutina RTI_ISR
                         ;Subrutina que cuenta 10 ms
                         ;*******************************************************
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
-        MOVB #$08,PORTB  ;debugging
-        INC Print+4
+;        MOVB #$08,PORTB  ;debugging
+;        INC Print+4
         BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
         
@@ -274,8 +274,8 @@ PH0_ISR:                ;                Subrutina PH0_ISR
                         ;un flanco decreciente en PH0
                         ;*******************************************************
         BSET PIFH,$01   ;borramos la bandear de interrupcion
-        MOVB #$10,PORTB  ;debugging
-        INC Print+5
+;        MOVB #$10,PORTB  ;debugging
+;        INC Print+5
         BCLR Banderas,$04       ;borramos el bit 2
         MOVB #00,Cont_TCL
         MOVW #$FFFF,Num_Array
