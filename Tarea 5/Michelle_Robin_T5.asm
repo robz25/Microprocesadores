@@ -49,9 +49,9 @@ DISP3:           ds      1
 DISP4:           ds      1
 CONT_7SEG:       dw      1
 Cont_Delay:      ds      1
-D2mS:            db      1
-D260uS:          db      1
-D40uS:           db      1
+D2mS:            db      200
+D260uS:          db      26
+D40uS:           db      4
 Clear_LCD:       db      $01
 ADD_L1:          db      $80
 ADD_L2:          db      $C0
@@ -190,6 +190,7 @@ loopIniDsp:
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
 
+        BRA *
 
 
 ;*******************************************************************************
@@ -304,7 +305,7 @@ RTI_ISR:                ;                Subrutina RTI_ISR
                         ;*******************************************************
                         ;Subrutina que cuenta 1 ms
                         ;*******************************************************
-
+        BSET CRGFLG,$80         ;borrar bandera de interrupcion
 retorno_RTI:
         RTI
         
