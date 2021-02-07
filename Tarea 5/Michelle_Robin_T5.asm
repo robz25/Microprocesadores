@@ -49,15 +49,16 @@ DISP3:           ds      1
 DISP4:           ds      1
 CONT_7SEG:       dw      1
 Cont_Delay:      ds      1
-D2mS:            ds      1
-D260uS:          ds      1
-D40uS:           ds      1
-Clear_LCD:       ds      1
-ADD_L1:          ds      1
-ADD_L2:          ds      1
+D2mS:            db      1
+D260uS:          db      1
+D40uS:           db      1
+Clear_LCD:       db      $01
+ADD_L1:          db      $80
+ADD_L2:          db      $C0
 Teclas:          ds      16
 SEGMENT:         ds      16
-iniDsp:          ds      16
+iniDsp:          db      $28,$28,$06,$0C
+                org $1060
 Msg1_L1:                 fcc     "  MODO CONFIG"
                 db EOM
 Msg1_L2:                 fcc     "Ingrese CantPQ"
@@ -165,6 +166,26 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         LDS #$3BFF
         CLI
         
+        ;configuracion inical de la LCD
+        CLRB
+        LDX #iniDsp
+loopIniDsp:
+        LDAA B,X
+        JSR SendCommand
+	MOVB D40uS,Cont_Delay
+        JSR Delay
+        INCB
+        CMPB #4
+        BNE loopIniDsp
+        LDAA Clear_LCD
+	JSR SendCommand
+	MOVB D2mS,Cont_Delay
+        JSR Delay
+        LDX #Msg1_L1
+        LDY #Msg1_L2
+        JSR Cargar_LCD
+        
+        
 ;*******************************************************************************
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
@@ -175,10 +196,105 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;                                     SUBRUTINAS
 ;*******************************************************************************
 
-CALCULO:
+Cargar_LCD:             ;                 Subrutina Cargar_LCD
+                        ;*******************************************************
+                        ;Envia datos a al pantalla LCD
+                        ;recibe direcciones de datos en X linea 1 y en Y linea 2
+                        ;llana a SendCommand y SendData
+                        ;*******************************************************
+        LDAA ADD_L1
+        JSR SendCommand
+        MOVB D40uS,Cont_Delay
+        JSR Delay
+loop_L1:
+        LDAA 1,J+
+        CMPA #EOM
+        BEQ inicio_L2
+        JSR SendData
+        MOVB D40uS,Cont_Delay
+        BRA loop_L1
+        
+inicio_L2:
+        LDAA ADD_L2
+	JSR SendCommand
+        MOVB D40uS,Cont_Delay
+        JSR Delay
+loop_L2:
+        LDAA 1,Y+
+        CMPA #EOM
+        BEQ retorno_cargar_LCD
+        JSR SendData
+        MOVB D40uS,Cont_Delay
+        BRA loop_L2
 
+retorno_cargar_LCD:
         RTS
 
+SendCommand:            ;                 Subrutina SendCommand
+                        ;*******************************************************
+                        ;Envia comandos a la memoria de la pantalla LCD
+                        ;recibe el comando en A
+                        ;*******************************************************
+        PSHA
+        ANDA #$F0
+        LSRA
+        LSRA
+        STAA PORTK
+        BCLR PORTK,$01
+        BSET PORTK,$02
+        MOVB D260uS,Cont_Delay
+        JSR Delay
+        BCLR PORTK,$02
+        PULA
+        ANDA #$0F
+        LSLA
+        LSLA
+        STAA PORTK
+        BCLR PORTK,$01
+        BSET PORTK,$02
+        MOVB D260uS,Cont_Delay
+        JSR Delay
+        BCLR PORTK,$02
+        RTS
+
+                        ;*******************************************************
+SendData:               ;                 Subrutina SendData
+                        ;*******************************************************
+                        ;Envia datos a la memoria de la pantalla LCD, recibe
+                        ;comando en A
+                        ;*******************************************************
+        PSHA
+        ANDA #$F0
+        LSRA
+        LSRA
+        STAA PORTK
+        BSET PORTK,$01       ;dato
+        BSET PORTK,$02
+        MOVB D260uS,Cont_Delay
+        JSR Delay
+        BCLR PORTK,$02
+        PULA
+        ANDA #$0F
+        LSLA
+        LSLA
+        STAA PORTK
+        BSET PORTK,$01  ;dato
+        BSET PORTK,$02
+        MOVB D260uS,Cont_Delay
+        JSR Delay
+        BCLR PORTK,$02
+        RTS
+
+                        ;*******************************************************
+Delay:                  ;                 Subrutina Delay
+                        ;*******************************************************
+                        ;Genera retardo para enviar información a la pantalla
+                        ;LCD, se queda en un loop hasta que la variable ha sido
+                        ;DECrementada a 0 por OC4
+                        ;*******************************************************
+        TST Cont_Delay
+        BNE Delay
+        RTS
 
 ;*******************************************************************************
 ;                         SUBRUTINAS DE INTERRUPCION
@@ -205,5 +321,13 @@ OC4_ISR:                ;                Subrutina OC4_ISR
                         ;Subrutina que genera interrupciones cada 50 KHz
                         ;*******************************************************
 
+        BSET TFLG1,$10  ;borrar int
+        TST Cont_Delay
+	BEQ retorno_OC4
+	DEC Cont_Delay
+
 retorno_OC4:
+        LDD TCNT      ;cada 30 son 20uS
+        ADDD #30       ;30 + contador en D
+        STD TC4         ;30 + contador en TC4
         RTI

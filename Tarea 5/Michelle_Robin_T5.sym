@@ -54,7 +54,6 @@ bkpct1     0029
 brillo     100e
 brp0l      002c
 brp1l      002f
-calculo    20f4
 can0btr0   0142
 can0btr1   0143
 can0ctl0   0140
@@ -216,6 +215,7 @@ can4tflg   0286
 can4tier   0287
 can4txfg   02b0
 cantpq     100b
+cargar_lcd 2123
 cforc      0041
 clear_lcd  1023
 clksel     0039
@@ -247,6 +247,7 @@ ddrm       0252
 ddrp       025a
 ddrs       024a
 ddrt       0242
+delay      21ca
 disp1      1019
 disp2      101a
 disp3      101b
@@ -287,6 +288,7 @@ ibsr       00e3
 icovw      006a
 icpar      0068
 icsys      006b
+inicio_l2  2143
 inidsp     1046
 initee     0012
 initializevectors 0000
@@ -299,6 +301,9 @@ isxdigit   ee92
 itcr       0015
 itest      0016
 leds       100d
+loop_l1    2132
+loop_l2    2152
+loopinidsp 20f8
 low        1015
 max_tcl    1001
 mccnt      0076
@@ -309,14 +314,14 @@ memsiz1    001d
 misc       0013
 mode       000b
 modrr      0257
-msg1_l1    1056
-msg1_l2    1064
-msg2_l1    1073
-msg2_l2    1080
+msg1_l1    1060
+msg1_l2    106e
+msg2_l1    107d
+msg2_l2    108a
 mtst0      0014
 mtst1      0017
 num_array  1007
-oc4_isr    20f7
+oc4_isr    21d2
 oc7d       0043
 oc7m       0042
 out2hex    ee9c
@@ -367,7 +372,7 @@ prend      3bff
 printf     ee88
 prstart    2000
 pth        0260
-pth_isr    20f6
+pth_isr    21d1
 ptih       0261
 ptij       0269
 ptim       0251
@@ -430,10 +435,11 @@ rdrt       0243
 readmem    eeae
 refdv      0035
 regbase    0000
-retorno_oc4 20f7
-retorno_pth 20f6
-retorno_rti 20f5
-rti_isr    20f5
+retorno_cargar_lcd 2163
+retorno_oc4 21dd
+retorno_pth 21d1
+retorno_rti 21d0
+rti_isr    21d0
 rtictl     003b
 sc0bdh     00c8
 sc0bdl     00c9
@@ -452,6 +458,8 @@ sc1drl     00d7
 sc1sr1     00d4
 sc1sr2     00d5
 segment    1036
+sendcommand 2164
+senddata   2197
 setuservector eea4
 sp0dr      00dd
 sp1dr      00f5
