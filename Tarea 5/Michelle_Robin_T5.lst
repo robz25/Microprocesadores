@@ -676,9 +676,9 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 101c                    DISP4:           ds      1
 101d 00 01              CONT_7SEG:       dw      1
 101f                    Cont_Delay:      ds      1
-1020 c8                 D2mS:            db      200
-1021 1a                 D260uS:          db      26
-1022 04                 D40uS:           db      4
+1020 64                 D2mS:            db      100
+1021 0d                 D260uS:          db      13
+1022 02                 D40uS:           db      2
 1023 01                 Clear_LCD:       db      $01
 1024 80                 ADD_L1:          db      $80
 1025 c0                 ADD_L2:          db      $C0
@@ -759,7 +759,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                 
                                 ;Inicializacion de hardware
                                 
-                        	;Rele:
+                                ;Rele:
 20aa 4c 09 04                   BSET DDRE,$04   ;activar pin 2 de puerto E Rele como salida
                         
                                 ;Pantalla LCD
@@ -789,7 +789,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                 ;OC4
 20df 4c 46 80                   BSET TSCR1,$80  ;encendemos Timer, NO TFFCLA
 20e2 4c 4d 04                   BSET TSCR2,$04  ;poner prescalador en 16
-20e5 4c 4c 10                   BSET TIE,$10  ;poner prescalador en 16
+20e5 4c 4c 10                   BSET TIE,$10  ;habilitar interrupcion por canal 4
 20e8 dc 44                      LDD TCNT
 20ea c3 00 1e                   ADDD #30
 20ed 5c 58                      STD TC4
@@ -806,14 +806,14 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 20f8                    loopIniDsp:
 20f8 a6 e5                      LDAA B,X
 20fa 16 21 66                   JSR SendCommand
-20fd 18 0c 10 22 10 1f  	MOVB D40uS,Cont_Delay
+20fd 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
 2103 16 21 cc                   JSR Delay
 2106 52                         INCB
 2107 c1 04                      CMPB #4
 2109 26 ed                      BNE loopIniDsp
 210b b6 10 23                   LDAA Clear_LCD
-210e 16 21 66           	JSR SendCommand
-2111 18 0c 10 20 10 1f  	MOVB D2mS,Cont_Delay
+210e 16 21 66                   JSR SendCommand
+2111 18 0c 10 20 10 1f          MOVB D2mS,Cont_Delay
 2117 16 21 cc                   JSR Delay
 211a ce 10 60                   LDX #Msg1_L1
 211d cd 10 6e                   LDY #Msg1_L2
@@ -851,7 +851,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                 
 2145                    inicio_L2:
 2145 b6 10 25                   LDAA ADD_L2
-2148 16 21 66           	JSR SendCommand
+2148 16 21 66                   JSR SendCommand
 214b 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
 2151 16 21 cc                   JSR Delay
 2154                    loop_L2:
@@ -958,8 +958,8 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 21d7 4c 4e 10                   BSET TFLG1,$10  ;borrar int
 21da f7 10 1f                   TST Cont_Delay
-21dd 27 03              	BEQ retorno_OC4
-21df 73 10 1f           	DEC Cont_Delay
+21dd 27 03                      BEQ retorno_OC4
+21df 73 10 1f                   DEC Cont_Delay
                         
 21e2                    retorno_OC4:
 21e2 dc 44                      LDD TCNT      ;cada 30 son 20uS
@@ -967,6 +967,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 21e7 5c 58                      STD TC4         ;30 + contador en TC4
 21e9 0b                         RTI
 
-Executed: Sun Feb 07 00:07:21 2021
+Executed: Mon Feb 08 15:17:12 2021
 Total cycles: 555, Total bytes: 566
 Total errors: 0, Total warnings: 0

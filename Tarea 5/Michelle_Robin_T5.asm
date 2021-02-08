@@ -49,9 +49,9 @@ DISP3:           ds      1
 DISP4:           ds      1
 CONT_7SEG:       dw      1
 Cont_Delay:      ds      1
-D2mS:            db      200
-D260uS:          db      26
-D40uS:           db      4
+D2mS:            db      100
+D260uS:          db      13
+D40uS:           db      2
 Clear_LCD:       db      $01
 ADD_L1:          db      $80
 ADD_L2:          db      $C0
@@ -125,7 +125,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         
         ;Inicializacion de hardware
         
-	;Rele:
+        ;Rele:
         BSET DDRE,$04   ;activar pin 2 de puerto E Rele como salida
 
         ;Pantalla LCD
@@ -155,7 +155,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         ;OC4
         BSET TSCR1,$80  ;encendemos Timer, NO TFFCLA
         BSET TSCR2,$04  ;poner prescalador en 16
-        BSET TIE,$10  ;poner prescalador en 16
+        BSET TIE,$10  ;habilitar interrupcion por canal 4
         LDD TCNT
         ADDD #30
         STD TC4
@@ -172,14 +172,14 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 loopIniDsp:
         LDAA B,X
         JSR SendCommand
-	MOVB D40uS,Cont_Delay
+        MOVB D40uS,Cont_Delay
         JSR Delay
         INCB
         CMPB #4
         BNE loopIniDsp
         LDAA Clear_LCD
-	JSR SendCommand
-	MOVB D2mS,Cont_Delay
+        JSR SendCommand
+        MOVB D2mS,Cont_Delay
         JSR Delay
         LDX #Msg1_L1
         LDY #Msg1_L2
@@ -217,7 +217,7 @@ loop_L1:
         
 inicio_L2:
         LDAA ADD_L2
-	JSR SendCommand
+        JSR SendCommand
         MOVB D40uS,Cont_Delay
         JSR Delay
 loop_L2:
@@ -324,8 +324,8 @@ OC4_ISR:                ;                Subrutina OC4_ISR
 
         BSET TFLG1,$10  ;borrar int
         TST Cont_Delay
-	BEQ retorno_OC4
-	DEC Cont_Delay
+        BEQ retorno_OC4
+        DEC Cont_Delay
 
 retorno_OC4:
         LDD TCNT      ;cada 30 son 20uS
