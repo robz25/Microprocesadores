@@ -315,6 +315,7 @@ PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
 
 retorno_PTH:
+        BSET PIFH,$0F
         RTI
         
 OC4_ISR:                ;                Subrutina OC4_ISR

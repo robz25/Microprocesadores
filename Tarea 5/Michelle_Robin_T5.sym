@@ -321,7 +321,7 @@ msg2_l2    108a
 mtst0      0014
 mtst1      0017
 num_array  1007
-oc4_isr    21d7
+oc4_isr    21db
 oc7d       0043
 oc7m       0042
 out2hex    ee9c
@@ -436,7 +436,7 @@ readmem    eeae
 refdv      0035
 regbase    0000
 retorno_cargar_lcd 2165
-retorno_oc4 21e2
+retorno_oc4 21e6
 retorno_pth 21d6
 retorno_rti 21d5
 rti_isr    21d2

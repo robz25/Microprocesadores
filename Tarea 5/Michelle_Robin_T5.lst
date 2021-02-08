@@ -714,7 +714,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 3e70 21 d2                      dw RTI_ISR
                                 
 3e66                             org        $3E66       ;debug12
-3e66 21 d7                      dw OC4_ISR
+3e66 21 db                      dw OC4_ISR
                                 
                         ;*******************************************************************************
                         ;          Inicializacion de estructuras de datos y config de hardware
@@ -949,24 +949,25 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                                 ;*******************************************************
                         
 21d6                    retorno_PTH:
-21d6 0b                         RTI
+21d6 1c 02 67 0f                BSET PIFH,$0F
+21da 0b                         RTI
                                 
-21d7                    OC4_ISR:                ;                Subrutina OC4_ISR
+21db                    OC4_ISR:                ;                Subrutina OC4_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que genera interrupciones cada 50 KHz
                                                 ;*******************************************************
                         
-21d7 4c 4e 10                   BSET TFLG1,$10  ;borrar int
-21da f7 10 1f                   TST Cont_Delay
-21dd 27 03                      BEQ retorno_OC4
-21df 73 10 1f                   DEC Cont_Delay
+21db 4c 4e 10                   BSET TFLG1,$10  ;borrar int
+21de f7 10 1f                   TST Cont_Delay
+21e1 27 03                      BEQ retorno_OC4
+21e3 73 10 1f                   DEC Cont_Delay
                         
-21e2                    retorno_OC4:
-21e2 dc 44                      LDD TCNT      ;cada 30 son 20uS
-21e4 c3 00 1e                   ADDD #30       ;30 + contador en D
-21e7 5c 58                      STD TC4         ;30 + contador en TC4
-21e9 0b                         RTI
+21e6                    retorno_OC4:
+21e6 dc 44                      LDD TCNT      ;cada 30 son 20uS
+21e8 c3 00 1e                   ADDD #30       ;30 + contador en D
+21eb 5c 58                      STD TC4         ;30 + contador en TC4
+21ed 0b                         RTI
 
-Executed: Mon Feb 08 15:17:12 2021
-Total cycles: 555, Total bytes: 566
+Executed: Mon Feb 08 15:20:34 2021
+Total cycles: 559, Total bytes: 570
 Total errors: 0, Total warnings: 0
