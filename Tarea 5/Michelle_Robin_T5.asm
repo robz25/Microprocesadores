@@ -49,9 +49,9 @@ DISP3:           ds      1
 DISP4:           ds      1
 CONT_7SEG:       dw      1
 Cont_Delay:      ds      1
-D2mS:            db      100
-D260uS:          db      13
-D40uS:           db      2
+D2mS:            db      200
+D260uS:          db      26
+D40uS:           db      4
 Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
