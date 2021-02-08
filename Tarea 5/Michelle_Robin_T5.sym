@@ -215,7 +215,7 @@ can4tflg   0286
 can4tier   0287
 can4txfg   02b0
 cantpq     100b
-cargar_lcd 2125
+cargar_lcd 2128
 cforc      0041
 clear_lcd  1023
 clksel     0039
@@ -247,7 +247,7 @@ ddrm       0252
 ddrp       025a
 ddrs       024a
 ddrt       0242
-delay      21d2
+delay      21d5
 disp1      1019
 disp2      101a
 disp3      101b
@@ -288,7 +288,7 @@ ibsr       00e3
 icovw      006a
 icpar      0068
 icsys      006b
-inicio_l2  2148
+inicio_l2  214b
 inidsp     1046
 initee     0012
 initializevectors 0000
@@ -301,9 +301,9 @@ isxdigit   ee92
 itcr       0015
 itest      0016
 leds       100d
-loop_l1    2134
-loop_l2    2157
-loopinidsp 20f8
+loop_l1    2137
+loop_l2    215a
+loopinidsp 20fb
 low        1015
 max_tcl    1001
 mccnt      0076
@@ -321,7 +321,7 @@ msg2_l2    108a
 mtst0      0014
 mtst1      0017
 num_array  1007
-oc4_isr    21e1
+oc4_isr    21e4
 oc7d       0043
 oc7m       0042
 out2hex    ee9c
@@ -372,7 +372,7 @@ prend      3bff
 printf     ee88
 prstart    2000
 pth        0260
-pth_isr    21dc
+pth_isr    21df
 ptih       0261
 ptij       0269
 ptim       0251
@@ -435,11 +435,11 @@ rdrt       0243
 readmem    eeae
 refdv      0035
 regbase    0000
-retorno_cargar_lcd 216b
-retorno_oc4 21ec
-retorno_pth 21dc
-retorno_rti 21db
-rti_isr    21d8
+retorno_cargar_lcd 216e
+retorno_oc4 21ef
+retorno_pth 21df
+retorno_rti 21de
+rti_isr    21db
 rtictl     003b
 sc0bdh     00c8
 sc0bdl     00c9
@@ -458,8 +458,8 @@ sc1drl     00d7
 sc1sr1     00d4
 sc1sr2     00d5
 segment    1036
-sendcommand 216c
-senddata   219f
+sendcommand 216f
+senddata   21a2
 setuservector eea4
 sp0dr      00dd
 sp1dr      00f5

@@ -49,15 +49,15 @@ DISP3:           ds      1
 DISP4:           ds      1
 CONT_7SEG:       dw      1
 Cont_Delay:      ds      1
-D2mS:            db      200
-D260uS:          db      26
-D40uS:           db      4
+D2mS:            db      100
+D260uS:          db      13
+D40uS:           db      2
 Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          ds      16
 SEGMENT:         ds      16
-iniDsp:          db      $28,$28,$06,$0C
+iniDsp:          db      $28,$28,$06,$0F
                 org $1060
 Msg1_L1:                 fcc     "  MODO CONFIG"
                 db EOM
@@ -129,7 +129,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         BSET DDRE,$04   ;activar pin 2 de puerto E Rele como salida
 
         ;Pantalla LCD
-        MOVB DDRK,$1F  ;nibble inferior como salida
+        BSET DDRK,$FF  ;nibble inferior como salida
+        BClR PORTK,$01
         
         ;Pantalla 7 segmentos
         BSET DDRP,$0F  ;poner pads de salida,apagar 7 segmentos
@@ -148,19 +149,20 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$17,RTICTL
         
         ;PTH
-        CLR DDRH
-        BSET PIEH,$0F
-        BSET PPSH,$0F   ;interrupcion en flanco creciente
+         CLR DDRH
+         BSET PIEH,$0F
+         BSET PPSH,$0F   ;interrupcion en flanco creciente
         
         ;OC4
-        BSET TSCR1,$80  ;encendemos Timer, NO TFFCLA
+        BSET TSCR1,$90  ;encendemos Timer, TFFCLA
         BSET TSCR2,$04  ;poner prescalador en 16
+        BSET TIOS,$10
         BSET TIE,$10  ;habilitar interrupcion por canal 4
-        LDD TCNT
-        ADDD #30
+        LDD #30
+        ADDD TCNT
         STD TC4
         
-        
+
 
         
         LDS #$3BFF
@@ -209,7 +211,7 @@ Cargar_LCD:             ;                 Subrutina Cargar_LCD
         JSR Delay
 loop_L1:
         LDAA 1,X+
-        CMPA EOM
+        CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
         BEQ inicio_L2
         JSR SendData
         MOVB D40uS,Cont_Delay
@@ -223,7 +225,7 @@ inicio_L2:
         JSR Delay
 loop_L2:
         LDAA 1,Y+
-        CMPA EOM
+        CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
         BEQ retorno_cargar_LCD
         JSR SendData
         MOVB D40uS,Cont_Delay
@@ -325,13 +327,13 @@ OC4_ISR:                ;                Subrutina OC4_ISR
                         ;Subrutina que genera interrupciones cada 50 KHz
                         ;*******************************************************
 
-        BSET TFLG1,$10  ;borrar int
+        BSET TFLG2,$80  ;borrar int
         TST Cont_Delay
         BEQ retorno_OC4
         DEC Cont_Delay
 
 retorno_OC4:
-        LDD TCNT      ;cada 30 son 20uS
-        ADDD #30       ;30 + contador en D
+        LDD #30      ;cada 30 son 20uS
+        ADDD TCNT       ;30 + contador en D
         STD TC4         ;30 + contador en TC4
         RTI
