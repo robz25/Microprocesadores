@@ -972,6 +972,11 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 21f4 5c 58                      STD TC4         ;30 + contador en TC4
 21f6 0b                         RTI
 
+<<<<<<< Updated upstream
 Executed: Mon Feb 08 16:55:54 2021
 Total cycles: 578, Total bytes: 579
+=======
+Executed: Mon Feb 08 15:54:37 2021
+Total cycles: 572, Total bytes: 576
+>>>>>>> Stashed changes
 Total errors: 0, Total warnings: 0
