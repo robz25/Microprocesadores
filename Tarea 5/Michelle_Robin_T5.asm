@@ -16,7 +16,7 @@
 ;                             Estructuras de datos
 ;*******************************************************************************
 
-EOM     EQU     $FF
+EOM:     EQU     $FF
 
                 ORG $1000
 Banderas:        ds      1 ;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
@@ -52,9 +52,9 @@ Cont_Delay:      ds      1
 D2mS:            db      100
 D260uS:          db      13
 D40uS:           db      2
-Clear_LCD:       db      $01
-ADD_L1:          db      $80
-ADD_L2:          db      $C0
+Clear_LCD:       db      $01 ;comando borrar pantalla
+ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
+ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          ds      16
 SEGMENT:         ds      16
 iniDsp:          db      $28,$28,$06,$0C
@@ -201,18 +201,19 @@ Cargar_LCD:             ;                 Subrutina Cargar_LCD
                         ;*******************************************************
                         ;Envia datos a al pantalla LCD
                         ;recibe direcciones de datos en X linea 1 y en Y linea 2
-                        ;llana a SendCommand y SendData
+                        ;llama a SendCommand y SendData
                         ;*******************************************************
         LDAA ADD_L1
         JSR SendCommand
         MOVB D40uS,Cont_Delay
         JSR Delay
 loop_L1:
-        LDAA 1,J+
-        CMPA #EOM
+        LDAA 1,X+
+        CMPA EOM
         BEQ inicio_L2
         JSR SendData
         MOVB D40uS,Cont_Delay
+        JSR Delay
         BRA loop_L1
         
 inicio_L2:
@@ -222,10 +223,11 @@ inicio_L2:
         JSR Delay
 loop_L2:
         LDAA 1,Y+
-        CMPA #EOM
+        CMPA EOM
         BEQ retorno_cargar_LCD
         JSR SendData
         MOVB D40uS,Cont_Delay
+        JSR Delay
         BRA loop_L2
 
 retorno_cargar_LCD:
