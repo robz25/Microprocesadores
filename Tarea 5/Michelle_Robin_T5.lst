@@ -647,7 +647,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         
 1000                                    ORG $1000
 1000                    Banderas:        ds      1 ;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
-1001                    MAX_TCL:         ds      1
+1001 02                 MAX_TCL:         db      2      ;segun enunciado
 1002                    Tecla:           ds      1
 1003                    Tecla_IN:        ds      1
 1004                    Cont_Reb:        ds      1
@@ -682,7 +682,9 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 1023 01                 Clear_LCD:       db      $01 ;comando borrar pantalla
 1024 80                 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 1025 c0                 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
-1026                    Teclas:          ds      16
+1026 01 02 03 04 05 06  Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
+     07 08 09 0b 00 0e
+     00 00 00 00
 1036                    SEGMENT:         ds      16
 1046 28 28 06 0f        iniDsp:          db      $28,$28,$06,$0F
 1060                                    org $1060
@@ -756,7 +758,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 209b 18 0b 00 10 1d             MOVB #0,CONT_7SEG
 20a0 18 0b 32 10 1d             MOVB #50,CONT_7SEG + 1
 20a5 18 0b 00 10 1f             MOVB #0,Cont_Delay
-                                
+                        
                                 ;Inicializacion de hardware
                                 
                                 ;Rele:
@@ -1130,6 +1132,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 22fb 18 0b ff 10 03             Movb #$FF,Tecla_IN
 2300 3d                         RTS
 
-Executed: Mon Feb 08 17:20:33 2021
-Total cycles: 873, Total bytes: 845
+Executed: Mon Feb 08 17:28:23 2021
+Total cycles: 873, Total bytes: 862
 Total errors: 0, Total warnings: 0

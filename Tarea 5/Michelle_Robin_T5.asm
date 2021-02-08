@@ -20,7 +20,7 @@ EOM:     EQU     $FF
 
                 ORG $1000
 Banderas:        ds      1 ;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
-MAX_TCL:         ds      1
+MAX_TCL:         db      2      ;segun enunciado
 Tecla:           ds      1
 Tecla_IN:        ds      1
 Cont_Reb:        ds      1
@@ -55,7 +55,7 @@ D40uS:           db      2
 Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
-Teclas:          ds      16
+Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
 SEGMENT:         ds      16
 iniDsp:          db      $28,$28,$06,$0F
                 org $1060
@@ -122,7 +122,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,CONT_7SEG
         MOVB #50,CONT_7SEG + 1
         MOVB #0,Cont_Delay
-        
+
         ;Inicializacion de hardware
         
         ;Rele:
