@@ -151,8 +151,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         
         ;PTH
         CLR DDRH
-       ; BSET PIEH,$0F
-       ; BSET PPSH,$0F   ;interrupcion en flanco creciente
+        BSET PIEH,$0F
+        BCLR PPSH,$0F   ;interrupcion en flanco decreciente
         
         ;OC4
         BSET TSCR1,$90  ;encendemos Timer, TFFCLA
@@ -178,6 +178,10 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;*******************************************************************************
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
+
+;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
+;  : : :  4    :   3    : 2      :    1     :   0  -> Numero de bit
+;  : : :  $10  :   $08  : $04    :   $02    :  $01 -> Mascara a utilizar
 
 main:
 
