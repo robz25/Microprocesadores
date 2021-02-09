@@ -169,7 +169,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         LDS #$3BFF
         CLI
         
-	JSR LCD_INIT
+        JSR LCD_INIT
  ;        LDX #Msg1_L1
  ;        LDY #Msg1_L2
  ;        JSR Cargar_LCD
@@ -210,7 +210,7 @@ Revisar_ModSel:
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
         ;Jsr Delay
-	;JSR LCD_INIT
+        ;JSR LCD_INIT
         Ldx #Msg2_L1
         Ldy #Msg2_L2
         Jsr Cargar_LCD
@@ -236,7 +236,7 @@ Rama_CONFIG:
         Ldy #Msg1_L2
         Jsr Cargar_LCD
 Ir_a_Modo_CONFIG:
- 	MOVB #$40,PORTB ;led 6
+         MOVB #$40,PORTB ;led 6
         Jsr MODO_CONFIG
         LBra Loop_main
         ; Cambiar CamMod se usa $10
@@ -385,12 +385,14 @@ Delay:                  ;                 Subrutina Delay
 
 RTI_ISR:                ;                Subrutina RTI_ISR
                         ;*******************************************************
-                        ;Subrutina que cuenta 1 ms
+                        ;Subrutina que descuenta valroes cada 1 ms
                         ;*******************************************************
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
-        BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+        BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
-
+seguir_RTI:
+        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos TIMER_CUENTA es 0
+        DEC TIMER_CUENTA    ;decrementar TIMER_CUENTA
 retorno_RTI:
         RTI
         
