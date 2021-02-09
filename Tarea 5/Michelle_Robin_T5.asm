@@ -189,23 +189,23 @@ Loop_main:
         Beq Antes_Rama_CONFIG
         Ldaa #$80
         Anda PTH
-        Staa TEMP
         Ldab #08
         Andb Banderas
         LSRA    ;corre a derecha un bit sin meter carry
         LSRA
         LSRA
-        lSRA
+        LSRA
+        Staa TEMP
         CBA ; ModSel = ModActual
         Beq Revisar_ModSel
-        BSET Banderas,$10
+        BSET Banderas,$10    ; Banderas.4 (Camb_Mod) en 1
         BRCLR TEMP,$08,quitar_modo_actual
         BSET Banderas,$08
 Revisar_ModSel:
         BRSET TEMP,$08,Rama_CONFIG
         BRCLR Banderas,$10,Ir_a_Modo_RUN
         BCLR Banderas,$10
-        MOVB #$08,PORTB
+        MOVB #$08,PORTB ;led 3
         ;Ldaa Clear_LCD
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
@@ -215,18 +215,18 @@ Revisar_ModSel:
         Ldy #Msg2_L2
         Jsr Cargar_LCD
 Ir_a_Modo_RUN:
-        MOVB #$04,PORTB
+        MOVB #$04,PORTB   ;led 2
         Jsr MODO_RUN
         Bra Loop_main
 quitar_modo_actual:
         BCLR Banderas,$08
         Bra Revisar_ModSel
 Antes_Rama_CONFIG:
-        BSET Banderas,$10
+        BSET Banderas,$08
 Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
-        MOVB #$80,PORTB
+        MOVB #$80,PORTB ;led 7
         ;Ldaa Clear_LCD
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
@@ -236,10 +236,12 @@ Rama_CONFIG:
         Ldy #Msg1_L2
         Jsr Cargar_LCD
 Ir_a_Modo_CONFIG:
- 	MOVB #$40,PORTB
+ 	MOVB #$40,PORTB ;led 6
         Jsr MODO_CONFIG
         LBra Loop_main
-
+        ; Cambiar CamMod se usa $10
+        ; Cambiar ModActual se usa $08
+        
        ;BRA *
 
 ;*******************************************************************************
@@ -266,6 +268,7 @@ loopIniDsp:
         
 MODO_CONFIG:
       MOVB #2,LEDS
+      INC CantPQ
       RTS
       
 MODO_RUN:
