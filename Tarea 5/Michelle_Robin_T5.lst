@@ -1132,6 +1132,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 22fb 18 0b ff 10 03             Movb #$FF,Tecla_IN
 2300 3d                         RTS
 
-Executed: Mon Feb 08 17:28:23 2021
+Executed: Mon Feb 08 17:31:10 2021
 Total cycles: 873, Total bytes: 862
 Total errors: 0, Total warnings: 0
