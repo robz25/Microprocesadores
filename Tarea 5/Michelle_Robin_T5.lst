@@ -644,6 +644,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         
 00ff                    EOM:     EQU     $FF
+00ff                    VMAX:    EQU     $FF
                         
 1000                                    ORG $1000
 1000                    Banderas:        ds      1 ;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
@@ -710,13 +711,13 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         
 3e4c                             org        $3E4C       ;debug12
-3e4c 21 f1                      dw PTH_ISR
+3e4c 22 62                      dw PTH_ISR
                                 
 3e70                             org        $3E70       ;debug12
-3e70 21 e5                      dw RTI_ISR
+3e70 22 56                      dw RTI_ISR
                                 
 3e66                             org        $3E66       ;debug12
-3e66 21 f6                      dw OC4_ISR
+3e66 22 67                      dw OC4_ISR
                                 
                         ;*******************************************************************************
                         ;          Inicializacion de estructuras de datos y config de hardware
@@ -739,25 +740,25 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 203c 18 0b 00 10 09             MOVB #0,CUENTA
 2041 18 0b 00 10 0a             MOVB #0,AcmPQ
 2046 18 0b 00 10 0b             MOVB #0,CantPQ
-204b 18 0b fa 10 0c             MOVB #250,TIMER_CUENTA
-2050 18 0b 00 10 0d             MOVB #0,LEDS
-2055 18 0b 32 10 0e             MOVB #50,BRILLO
-205a 18 0b 0f 10 0f             MOVB #15,CONT_DIG
-205f 18 0b 00 10 11             MOVB #0,DT
-2064 18 0b 00 10 12             MOVB #0,BIN1
-2069 18 0b 00 10 13             MOVB #0,BIN2
-206e 18 0b 00 10 14             MOVB #0,BCD_L
-2073 18 0b 00 10 15             MOVB #0,LOW
-2078 18 0b 00 10 16             MOVB #0,TEMP
-207d 18 0b 00 10 17             MOVB #0,BCD1
-2082 18 0b 00 10 18             MOVB #0,BCD2
-2087 18 0b 00 10 19             MOVB #0,DISP1
-208c 18 0b 00 10 1a             MOVB #0,DISP2
-2091 18 0b 00 10 1b             MOVB #0,DISP3
-2096 18 0b 00 10 1c             MOVB #0,DISP4
-209b 18 0b 00 10 1d             MOVB #0,CONT_7SEG
-20a0 18 0b 32 10 1d             MOVB #50,CONT_7SEG + 1
-20a5 18 0b 00 10 1f             MOVB #0,Cont_Delay
+204b 18 0b 00 10 0d             MOVB #0,LEDS
+2050 18 0b 32 10 0e             MOVB #50,BRILLO
+2055 18 0b 0f 10 0f             MOVB #15,CONT_DIG
+205a 18 0b 00 10 11             MOVB #0,DT
+205f 18 0b 00 10 12             MOVB #0,BIN1
+2064 18 0b 00 10 13             MOVB #0,BIN2
+2069 18 0b 00 10 14             MOVB #0,BCD_L
+206e 18 0b 00 10 15             MOVB #0,LOW
+2073 18 0b 00 10 16             MOVB #0,TEMP
+2078 18 0b 00 10 17             MOVB #0,BCD1
+207d 18 0b 00 10 18             MOVB #0,BCD2
+2082 18 0b 00 10 19             MOVB #0,DISP1
+2087 18 0b 00 10 1a             MOVB #0,DISP2
+208c 18 0b 00 10 1b             MOVB #0,DISP3
+2091 18 0b 00 10 1c             MOVB #0,DISP4
+2096 18 0b 00 10 1d             MOVB #0,CONT_7SEG
+209b 18 0b 32 10 1d             MOVB #50,CONT_7SEG + 1
+20a0 18 0b 00 10 1f             MOVB #0,Cont_Delay
+20a5 18 0b ff 10 0c             MOVB #VMAX,TIMER_CUENTA
                         
                                 ;Inicializacion de hardware
                                 
@@ -786,201 +787,270 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                 
                                 ;PTH
 20d4 79 02 62                   CLR DDRH
-20d7 1c 02 66 0f                BSET PIEH,$0F
-20db 1c 02 65 0f                BSET PPSH,$0F   ;interrupcion en flanco creciente
+                               ; BSET PIEH,$0F
+                               ; BSET PPSH,$0F   ;interrupcion en flanco creciente
                                 
                                 ;OC4
-20df 4c 46 90                   BSET TSCR1,$90  ;encendemos Timer, TFFCLA
-20e2 4c 4d 04                   BSET TSCR2,$04  ;poner prescalador en 16
-20e5 4c 40 10                   BSET TIOS,$10
-20e8 4c 4c 10                   BSET TIE,$10  ;habilitar interrupcion por canal 4
-20eb cc 00 1e                   LDD #30
-20ee d3 44                      ADDD TCNT
-20f0 5c 58                      STD TC4
+20d7 4c 46 90                   BSET TSCR1,$90  ;encendemos Timer, TFFCLA
+20da 4c 4d 04                   BSET TSCR2,$04  ;poner prescalador en 16
+20dd 4c 40 10                   BSET TIOS,$10
+20e0 4c 4c 10                   BSET TIE,$10  ;habilitar interrupcion por canal 4
+20e3 cc 00 1e                   LDD #30
+20e6 d3 44                      ADDD TCNT
+20e8 5c 58                      STD TC4
                                 
                         
                         
                                 
-20f2 cf 3b ff                   LDS #$3BFF
-20f5 10 ef                      CLI
+20ea cf 3b ff                   LDS #$3BFF
+20ed 10 ef                      CLI
                                 
-                                ;configuracion inical de la LCD
-20f7 c7                         CLRB
-20f8 ce 10 46                   LDX #iniDsp
-20fb                    loopIniDsp:
-20fb a6 e5                      LDAA B,X
-20fd 16 21 79                   JSR SendCommand
-2100 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-2106 16 21 df                   JSR Delay
-2109 52                         INCB
-210a c1 04                      CMPB #4
-210c 26 ed                      BNE loopIniDsp
-210e b6 10 23                   LDAA Clear_LCD
-2111 16 21 79                   JSR SendCommand
-2114 18 0c 10 20 10 1f          MOVB D2mS,Cont_Delay
-211a 16 21 df                   JSR Delay
-211d ce 10 60                   LDX #Msg1_L1
-2120 cd 10 6e                   LDY #Msg1_L2
-2123 16 21 32                   JSR Cargar_LCD
+20ef 16 21 70           	JSR LCD_INIT
+                         ;        LDX #Msg1_L1
+                         ;        LDY #Msg1_L2
+                         ;        JSR Cargar_LCD
                                 
                                 
                         ;*******************************************************************************
                         ;                             PROGRAMA PRINCIPAL
                         ;*******************************************************************************
                         
-2126                    main:
+20f2                    main:
                         
-2126 1e 10 00 04 fb             BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-212b 16 22 09                   JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
-212e 20 f6                      BRA main        ;salta siempre a main
+                                ;BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+                                ;JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
+20f2 1c 10 00 10                BSET Banderas,$10 ; Bandera 4 (CambMod en 1)
+20f6                    Loop_main:
+20f6 f7 10 0b                   TST CantPQ
+20f9 27 4e                      Beq Antes_Rama_CONFIG
+20fb 86 80                      Ldaa #$80
+20fd b4 02 60                   Anda PTH
+2100 7a 10 16                   Staa TEMP
+2103 c6 08                      Ldab #08
+2105 f4 10 00                   Andb Banderas
+2108 44                         LSRA    ;corre a derecha un bit sin meter carry
+2109 44                         LSRA
+210a 44                         LSRA
+210b 44                         lSRA
+210c 18 17                      CBA ; ModSel = ModActual
+210e 27 0d                      Beq Revisar_ModSel
+2110 1c 10 00 10                BSET Banderas,$10
+2114 1f 10 16 08 2a             BRCLR TEMP,$08,quitar_modo_actual
+2119 1c 10 00 08                BSET Banderas,$08
+211d                    Revisar_ModSel:
+211d 1e 10 16 08 2b             BRSET TEMP,$08,Rama_CONFIG
+2122 1f 10 00 10 12             BRCLR Banderas,$10,Ir_a_Modo_RUN
+2127 1d 10 00 10                BCLR Banderas,$10
+212b 18 0b 08 00 01             MOVB #$08,PORTB
+                                ;Ldaa Clear_LCD
+                                ;Jsr SendCommand
+                                ;MOVB D2mS,Cont_Delay
+                                ;Jsr Delay
+                        	;JSR LCD_INIT
+2130 ce 10 7d                   Ldx #Msg2_L1
+2133 cd 10 8a                   Ldy #Msg2_L2
+2136 16 21 a3                   Jsr Cargar_LCD
+2139                    Ir_a_Modo_RUN:
+2139 18 0b 04 00 01             MOVB #$04,PORTB
+213e 16 21 9d                   Jsr MODO_RUN
+2141 20 b3                      Bra Loop_main
+2143                    quitar_modo_actual:
+2143 1d 10 00 08                BCLR Banderas,$08
+2147 20 d4                      Bra Revisar_ModSel
+2149                    Antes_Rama_CONFIG:
+2149 1c 10 00 10                BSET Banderas,$10
+214d                    Rama_CONFIG:
+214d 1f 10 00 10 12             BRCLR Banderas,$10,Ir_a_Modo_CONFIG
+2152 1d 10 00 10                BCLR Banderas,$10
+2156 18 0b 80 00 01             MOVB #$80,PORTB
+                                ;Ldaa Clear_LCD
+                                ;Jsr SendCommand
+                                ;MOVB D2mS,Cont_Delay
+                                ;Jsr Delay
+                                ;JSR LCD_INIT
+215b ce 10 60                   Ldx #Msg1_L1
+215e cd 10 6e                   Ldy #Msg1_L2
+2161 16 21 a3                   Jsr Cargar_LCD
+2164                    Ir_a_Modo_CONFIG:
+2164 18 0b 40 00 01      	MOVB #$40,PORTB
+2169 16 21 97                   Jsr MODO_CONFIG
+216c 18 20 ff 86                LBra Loop_main
                         
-2130 20 fe                      BRA *
+                               ;BRA *
                         
                         ;*******************************************************************************
                         ;                                     SUBRUTINAS
                         ;*******************************************************************************
                         
-2132                    Cargar_LCD:             ;                 Subrutina Cargar_LCD
+2170                    LCD_INIT:
+                                ;configuracion inical de la LCD
+2170 c7                         CLRB
+2171 ce 10 46                   LDX #iniDsp
+2174                    loopIniDsp:
+2174 a6 e5                      LDAA B,X
+2176 16 21 ea                   JSR SendCommand
+2179 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+217f 16 22 50                   JSR Delay
+2182 52                         INCB
+2183 c1 04                      CMPB #4
+2185 26 ed                      BNE loopIniDsp
+2187 b6 10 23                   LDAA Clear_LCD
+218a 16 21 ea                   JSR SendCommand
+218d 18 0c 10 20 10 1f          MOVB D2mS,Cont_Delay
+2193 16 22 50                   JSR Delay
+2196 3d                         RTS
+                                
+2197                    MODO_CONFIG:
+2197 18 0b 02 10 0d           MOVB #2,LEDS
+219c 3d                       RTS
+                              
+219d                    MODO_RUN:
+219d 18 0b 01 10 0d           MOVB #1,LEDS
+21a2 3d                       RTS
+                              
+                        
+                        
+21a3                    Cargar_LCD:             ;                 Subrutina Cargar_LCD
                                                 ;*******************************************************
                                                 ;Envia datos a al pantalla LCD
                                                 ;recibe direcciones de datos en X linea 1 y en Y linea 2
                                                 ;llama a SendCommand y SendData
                                                 ;*******************************************************
-2132 b6 10 24                   LDAA ADD_L1
-2135 16 21 79                   JSR SendCommand
-2138 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-213e 16 21 df                   JSR Delay
-2141                    loop_L1:
-2141 a6 30                      LDAA 1,X+
-2143 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
-2145 27 0e                      BEQ inicio_L2
-2147 16 21 ac                   JSR SendData
-214a 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-2150 16 21 df                   JSR Delay
-2153 20 ec                      BRA loop_L1
+21a3 b6 10 24                   LDAA ADD_L1
+21a6 16 21 ea                   JSR SendCommand
+21a9 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+21af 16 22 50                   JSR Delay
+21b2                    loop_L1:
+21b2 a6 30                      LDAA 1,X+
+21b4 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
+21b6 27 0e                      BEQ inicio_L2
+21b8 16 22 1d                   JSR SendData
+21bb 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+21c1 16 22 50                   JSR Delay
+21c4 20 ec                      BRA loop_L1
                                 
-2155                    inicio_L2:
-2155 b6 10 25                   LDAA ADD_L2
-2158 16 21 79                   JSR SendCommand
-215b 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-2161 16 21 df                   JSR Delay
-2164                    loop_L2:
-2164 a6 70                      LDAA 1,Y+
-2166 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
-2168 27 0e                      BEQ retorno_cargar_LCD
-216a 16 21 ac                   JSR SendData
-216d 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-2173 16 21 df                   JSR Delay
-2176 20 ec                      BRA loop_L2
+21c6                    inicio_L2:
+21c6 b6 10 25                   LDAA ADD_L2
+21c9 16 21 ea                   JSR SendCommand
+21cc 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+21d2 16 22 50                   JSR Delay
+21d5                    loop_L2:
+21d5 a6 70                      LDAA 1,Y+
+21d7 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
+21d9 27 0e                      BEQ retorno_cargar_LCD
+21db 16 22 1d                   JSR SendData
+21de 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+21e4 16 22 50                   JSR Delay
+21e7 20 ec                      BRA loop_L2
                         
-2178                    retorno_cargar_LCD:
-2178 3d                         RTS
+21e9                    retorno_cargar_LCD:
+21e9 3d                         RTS
                         
-2179                    SendCommand:            ;                 Subrutina SendCommand
+21ea                    SendCommand:            ;                 Subrutina SendCommand
                                                 ;*******************************************************
                                                 ;Envia comandos a la memoria de la pantalla LCD
                                                 ;recibe el comando en A
                                                 ;*******************************************************
-2179 36                         PSHA
-217a 84 f0                      ANDA #$F0
-217c 44                         LSRA
-217d 44                         LSRA
-217e 5a 32                      STAA PORTK
-2180 4d 32 01                   BCLR PORTK,$01
-2183 4c 32 02                   BSET PORTK,$02
-2186 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-218c 16 21 df                   JSR Delay
-218f 4d 32 02                   BCLR PORTK,$02
-2192 32                         PULA
-2193 84 0f                      ANDA #$0F
-2195 48                         LSLA
-2196 48                         LSLA
-2197 5a 32                      STAA PORTK
-2199 4d 32 01                   BCLR PORTK,$01
-219c 4c 32 02                   BSET PORTK,$02
-219f 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-21a5 16 21 df                   JSR Delay
-21a8 4d 32 02                   BCLR PORTK,$02
-21ab 3d                         RTS
+21ea 36                         PSHA
+21eb 84 f0                      ANDA #$F0
+21ed 44                         LSRA
+21ee 44                         LSRA
+21ef 5a 32                      STAA PORTK
+21f1 4d 32 01                   BCLR PORTK,$01
+21f4 4c 32 02                   BSET PORTK,$02
+21f7 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+21fd 16 22 50                   JSR Delay
+2200 4d 32 02                   BCLR PORTK,$02
+2203 32                         PULA
+2204 84 0f                      ANDA #$0F
+2206 48                         LSLA
+2207 48                         LSLA
+2208 5a 32                      STAA PORTK
+220a 4d 32 01                   BCLR PORTK,$01
+220d 4c 32 02                   BSET PORTK,$02
+2210 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+2216 16 22 50                   JSR Delay
+2219 4d 32 02                   BCLR PORTK,$02
+221c 3d                         RTS
                         
                                                 ;*******************************************************
-21ac                    SendData:               ;                 Subrutina SendData
+221d                    SendData:               ;                 Subrutina SendData
                                                 ;*******************************************************
                                                 ;Envia datos a la memoria de la pantalla LCD, recibe
                                                 ;comando en A
                                                 ;*******************************************************
-21ac 36                         PSHA
-21ad 84 f0                      ANDA #$F0
-21af 44                         LSRA
-21b0 44                         LSRA
-21b1 5a 32                      STAA PORTK
-21b3 4c 32 01                   BSET PORTK,$01       ;dato
-21b6 4c 32 02                   BSET PORTK,$02
-21b9 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-21bf 16 21 df                   JSR Delay
-21c2 4d 32 02                   BCLR PORTK,$02
-21c5 32                         PULA
-21c6 84 0f                      ANDA #$0F
-21c8 48                         LSLA
-21c9 48                         LSLA
-21ca 5a 32                      STAA PORTK
-21cc 4c 32 01                   BSET PORTK,$01  ;dato
-21cf 4c 32 02                   BSET PORTK,$02
-21d2 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-21d8 16 21 df                   JSR Delay
-21db 4d 32 02                   BCLR PORTK,$02
-21de 3d                         RTS
+221d 36                         PSHA
+221e 84 f0                      ANDA #$F0
+2220 44                         LSRA
+2221 44                         LSRA
+2222 5a 32                      STAA PORTK
+2224 4c 32 01                   BSET PORTK,$01       ;dato
+2227 4c 32 02                   BSET PORTK,$02
+222a 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+2230 16 22 50                   JSR Delay
+2233 4d 32 02                   BCLR PORTK,$02
+2236 32                         PULA
+2237 84 0f                      ANDA #$0F
+2239 48                         LSLA
+223a 48                         LSLA
+223b 5a 32                      STAA PORTK
+223d 4c 32 01                   BSET PORTK,$01  ;dato
+2240 4c 32 02                   BSET PORTK,$02
+2243 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+2249 16 22 50                   JSR Delay
+224c 4d 32 02                   BCLR PORTK,$02
+224f 3d                         RTS
                         
                                                 ;*******************************************************
-21df                    Delay:                  ;                 Subrutina Delay
+2250                    Delay:                  ;                 Subrutina Delay
                                                 ;*******************************************************
                                                 ;Genera retardo para enviar informaciÃ³n a la pantalla
                                                 ;LCD, se queda en un loop hasta que la variable ha sido
                                                 ;DECrementada a 0 por OC4
                                                 ;*******************************************************
-21df f7 10 1f                   TST Cont_Delay
-21e2 26 fb                      BNE Delay
-21e4 3d                         RTS
+2250 f7 10 1f                   TST Cont_Delay
+2253 26 fb                      BNE Delay
+2255 3d                         RTS
                         
                         ;*******************************************************************************
                         ;                        SUBRUTINAS DE INTERRUPCION
                         ;*******************************************************************************
                         
-21e5                    RTI_ISR:                ;                Subrutina RTI_ISR
+2256                    RTI_ISR:                ;                Subrutina RTI_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que cuenta 1 ms
                                                 ;*******************************************************
-21e5 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
-21e8 1f 10 04 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
-21ed 73 10 04                   DEC Cont_Reb    ;decrementar Cont_Reb
+2256 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
+2259 1f 10 04 ff 03             BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+225e 73 10 04                   DEC Cont_Reb    ;decrementar Cont_Reb
                         
-21f0                    retorno_RTI:
-21f0 0b                         RTI
+2261                    retorno_RTI:
+2261 0b                         RTI
                                 
-21f1                    PTH_ISR:                ;                Subrutina PTH_ISR
+2262                    PTH_ISR:                ;                Subrutina PTH_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que lee botones conectados al puerto H
                                                 ;*******************************************************
                         
-21f1                    retorno_PTH:
-21f1 1c 02 67 0f                BSET PIFH,$0F
-21f5 0b                         RTI
+2262                    retorno_PTH:
+2262 1c 02 67 0f                BSET PIFH,$0F
+2266 0b                         RTI
                                 
-21f6                    OC4_ISR:                ;                Subrutina OC4_ISR
+2267                    OC4_ISR:                ;                Subrutina OC4_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que genera interrupciones cada 50 KHz
                                                 ;*******************************************************
                         
-21f6 4c 4f 80                   BSET TFLG2,$80  ;borrar int
-21f9 f7 10 1f                   TST Cont_Delay
-21fc 27 03                      BEQ retorno_OC4
-21fe 73 10 1f                   DEC Cont_Delay
+2267 4c 4f 80                   BSET TFLG2,$80  ;borrar int
+226a f7 10 1f                   TST Cont_Delay
+226d 27 03                      BEQ retorno_OC4
+226f 73 10 1f                   DEC Cont_Delay
                         
-2201                    retorno_OC4:
-2201 cc 00 1e                   LDD #30      ;cada 30 son 20uS
-2204 d3 44                      ADDD TCNT       ;30 + contador en D
-2206 5c 58                      STD TC4         ;30 + contador en TC4
-2208 0b                         RTI
+2272                    retorno_OC4:
+2272 cc 00 1e                   LDD #30      ;cada 30 son 20uS
+2275 d3 44                      ADDD TCNT       ;30 + contador en D
+2277 5c 58                      STD TC4         ;30 + contador en TC4
+2279 0b                         RTI
                                 
                         
                         ;*******************************************************************************
@@ -988,150 +1058,150 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         
                                                 ;*******************************************************
-2209                    Tarea_Teclado:          ;                      SUBRUTINA
+227a                    Tarea_Teclado:          ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Verifica estado de teclas ingresadas
                                                    ;y llama a las otras subrutinas
                                                 ;*******************************************************
                         ;        MOVB #$01,PORTB  ;debugging
                         ;        INC Print+1
-2209 f7 10 04                   TST Cont_Reb
-220c 26 44                      BNE Retorno_Tarea_Teclado
-220e 16 22 53                   JSR Mux_Teclado
-2211 1e 10 02 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
+227a f7 10 04                   TST Cont_Reb
+227d 26 44                      BNE Retorno_Tarea_Teclado
+227f 16 22 c4                   JSR Mux_Teclado
+2282 1e 10 02 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
                         
-2216 1e 10 00 02 11             BRSET Banderas,$02,revisar_teclas
-221b 18 0c 10 02 10 03          MOVB Tecla,Tecla_IN
-2221 1c 10 00 02                BSET Banderas,$02
-2225 18 0b 0a 10 04             MOVB #10,Cont_Reb
+2287 1e 10 00 02 11             BRSET Banderas,$02,revisar_teclas
+228c 18 0c 10 02 10 03          MOVB Tecla,Tecla_IN
+2292 1c 10 00 02                BSET Banderas,$02
+2296 18 0b 0a 10 04             MOVB #10,Cont_Reb
                         
-222a 20 26                      BRA Retorno_Tarea_Teclado
+229b 20 26                      BRA Retorno_Tarea_Teclado
                         
-222c                    revisar_teclas:
-222c b6 10 02                   LDAA Tecla
-222f b1 10 03                   CMPA Tecla_IN
-2232 26 06                      BNE error_al_leer
-2234 1c 10 00 01                BSET Banderas,$01
-2238 20 18                      BRA Retorno_Tarea_Teclado
+229d                    revisar_teclas:
+229d b6 10 02                   LDAA Tecla
+22a0 b1 10 03                   CMPA Tecla_IN
+22a3 26 06                      BNE error_al_leer
+22a5 1c 10 00 01                BSET Banderas,$01
+22a9 20 18                      BRA Retorno_Tarea_Teclado
                         
-223a                    error_al_leer:
-223a 18 03 ff ff 10 02          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
-2240 1d 10 00 03                BCLR Banderas,$03
-2244 20 0c                      BRA Retorno_Tarea_Teclado
+22ab                    error_al_leer:
+22ab 18 03 ff ff 10 02          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
+22b1 1d 10 00 03                BCLR Banderas,$03
+22b5 20 0c                      BRA Retorno_Tarea_Teclado
                         
-2246                    revisar_TCL_LISTA:
-2246 1f 10 00 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
-224b 1d 10 00 03                BCLR Banderas,$03
-224f 16 22 96                   JSR Formar_Array
+22b7                    revisar_TCL_LISTA:
+22b7 1f 10 00 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
+22bc 1d 10 00 03                BCLR Banderas,$03
+22c0 16 23 07                   JSR Formar_Array
                         
-2252                    Retorno_Tarea_Teclado:
-2252 3d                         RTS
+22c3                    Retorno_Tarea_Teclado:
+22c3 3d                         RTS
                         
                                                 ;*******************************************************
-2253                    Mux_Teclado:            ;                      SUBRUTINA
+22c4                    Mux_Teclado:            ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Lee teclado matricial
                                                 ;*******************************************************
                         ;        MOVB #$02,PORTB  ;debugging
                         ;        INC Print+2
-2253 ce 10 26                   LDX #Teclas
-2256 87                         CLRA
-2257 18 0b ef 10 06             MOVB #$EF,Patron
-225c                    loop_mux:
-225c 18 0c 10 06 00 00          MOVB Patron,PORTA
-2262 4f 00 02 2a                BRCLR PORTA,$02,tecla_presionada
-2266 42                         INCA
-2267 a7                         NOP
-2268 a7                         NOP
-2269 a7                         NOP
-226a a7                         NOP
-226b a7                         NOP
-226c 4f 00 04 20                BRCLR PORTA,$04,tecla_presionada
-2270 42                         INCA
-2271 a7                         NOP
-2272 a7                         NOP
-2273 a7                         NOP
-2274 a7                         NOP
-2275 a7                         NOP
-2276 4f 00 08 16                BRCLR PORTA,$08,tecla_presionada
-227a 42                         INCA
-227b a7                         NOP
-227c a7                         NOP
-227d a7                         NOP
-227e a7                         NOP
-227f a7                         NOP
-2280 78 10 06                   LSL Patron
-2283 1f 10 06 f0 02             BRCLR Patron,$F0,nada_presionado
-2288 20 d2                      BRA loop_mux
+22c4 ce 10 26                   LDX #Teclas
+22c7 87                         CLRA
+22c8 18 0b ef 10 06             MOVB #$EF,Patron
+22cd                    loop_mux:
+22cd 18 0c 10 06 00 00          MOVB Patron,PORTA
+22d3 4f 00 02 2a                BRCLR PORTA,$02,tecla_presionada
+22d7 42                         INCA
+22d8 a7                         NOP
+22d9 a7                         NOP
+22da a7                         NOP
+22db a7                         NOP
+22dc a7                         NOP
+22dd 4f 00 04 20                BRCLR PORTA,$04,tecla_presionada
+22e1 42                         INCA
+22e2 a7                         NOP
+22e3 a7                         NOP
+22e4 a7                         NOP
+22e5 a7                         NOP
+22e6 a7                         NOP
+22e7 4f 00 08 16                BRCLR PORTA,$08,tecla_presionada
+22eb 42                         INCA
+22ec a7                         NOP
+22ed a7                         NOP
+22ee a7                         NOP
+22ef a7                         NOP
+22f0 a7                         NOP
+22f1 78 10 06                   LSL Patron
+22f4 1f 10 06 f0 02             BRCLR Patron,$F0,nada_presionado
+22f9 20 d2                      BRA loop_mux
                         
-228a                    nada_presionado:
+22fb                    nada_presionado:
                         ;        Inc Print+6
-228a 18 0b ff 10 02             MOVB #$FF,Tecla
-228f 3d                         RTS
+22fb 18 0b ff 10 02             MOVB #$FF,Tecla
+2300 3d                         RTS
                         
-2290                    tecla_presionada:
-2290 18 0d e4 10 02             MOVB A,X,Tecla
+2301                    tecla_presionada:
+2301 18 0d e4 10 02             MOVB A,X,Tecla
                         ;        Inc Print+7
-2295 3d                         RTS
+2306 3d                         RTS
                         
                                                 ;*******************************************************
-2296                    Formar_Array:           ;                      SUBRUTINA
+2307                    Formar_Array:           ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
                         ;        MOVB #$04,PORTB  ;debugging
                         ;        INC Print+3
-2296 ce 10 07                   Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
-2299 86 0b                      Ldaa #$0B
-229b f6 10 05                   Ldab Cont_TCL
+2307 ce 10 07                   Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
+230a 86 0b                      Ldaa #$0B
+230c f6 10 05                   Ldab Cont_TCL
                                 ;Incb
-229e f1 10 01                   Cmpb MAX_TCL
-22a1 27 4a                      Beq full_array
-22a3 c6 0e                      Ldab #$0E
-22a5 f7 10 05                   TST Cont_TCL
-22a8 27 2c                      Beq primer_input
-22aa b1 10 03                   Cmpa Tecla_IN
-22ad 27 1b                      Beq reducir_contador
-22af f1 10 03                   Cmpb Tecla_IN
-22b2 27 0d                      Beq poner_array_ok
-22b4 f6 10 05                   Ldab Cont_TCL
-22b7 18 09 e5 10 03             Movb Tecla_IN,b,x ; No sabemos si está bien
-22bc 72 10 05                   Inc Cont_TCL
-22bf 20 3a                      Bra Nodo_Final
+230f f1 10 01                   Cmpb MAX_TCL
+2312 27 4a                      Beq full_array
+2314 c6 0e                      Ldab #$0E
+2316 f7 10 05                   TST Cont_TCL
+2319 27 2c                      Beq primer_input
+231b b1 10 03                   Cmpa Tecla_IN
+231e 27 1b                      Beq reducir_contador
+2320 f1 10 03                   Cmpb Tecla_IN
+2323 27 0d                      Beq poner_array_ok
+2325 f6 10 05                   Ldab Cont_TCL
+2328 18 09 e5 10 03             Movb Tecla_IN,b,x ; No sabemos si está bien
+232d 72 10 05                   Inc Cont_TCL
+2330 20 3a                      Bra Nodo_Final
                         
-22c1                    poner_array_ok:
-22c1 1c 10 00 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
-22c5 79 10 05                   Clr Cont_TCL
-22c8 20 31                      Bra Nodo_Final
+2332                    poner_array_ok:
+2332 1c 10 00 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+2336 79 10 05                   Clr Cont_TCL
+2339 20 31                      Bra Nodo_Final
                         
-22ca                    reducir_contador:
-22ca 73 10 05                   Dec Cont_TCL
-22cd f6 10 05                   Ldab Cont_TCL
-22d0 18 08 e5 ff                Movb #$FF,b,x
-22d4 20 25                      Bra Nodo_Final
+233b                    reducir_contador:
+233b 73 10 05                   Dec Cont_TCL
+233e f6 10 05                   Ldab Cont_TCL
+2341 18 08 e5 ff                Movb #$FF,b,x
+2345 20 25                      Bra Nodo_Final
                         
-22d6                    primer_input:
-22d6 b1 10 03                   Cmpa Tecla_IN
-22d9 27 20                      Beq Nodo_Final
-22db f1 10 03                   Cmpb Tecla_IN
-22de 27 1b                      Beq Nodo_Final
-22e0 f6 10 05                   Ldab Cont_TCL
-22e3 18 09 e5 10 03             Movb Tecla_IN,b,x
-22e8 72 10 05                   Inc Cont_TCL
-22eb 20 0e                      Bra Nodo_Final
+2347                    primer_input:
+2347 b1 10 03                   Cmpa Tecla_IN
+234a 27 20                      Beq Nodo_Final
+234c f1 10 03                   Cmpb Tecla_IN
+234f 27 1b                      Beq Nodo_Final
+2351 f6 10 05                   Ldab Cont_TCL
+2354 18 09 e5 10 03             Movb Tecla_IN,b,x
+2359 72 10 05                   Inc Cont_TCL
+235c 20 0e                      Bra Nodo_Final
                         
-22ed                    full_array:
-22ed c6 0e                      Ldab #$0E
-22ef b1 10 03                   Cmpa Tecla_IN
-22f2 27 d6                      beq reducir_contador
-22f4 f1 10 03                   Cmpb Tecla_IN
-22f7 27 c8                      Beq poner_array_ok
-22f9 20 00                      Bra Nodo_Final
+235e                    full_array:
+235e c6 0e                      Ldab #$0E
+2360 b1 10 03                   Cmpa Tecla_IN
+2363 27 d6                      beq reducir_contador
+2365 f1 10 03                   Cmpb Tecla_IN
+2368 27 c8                      Beq poner_array_ok
+236a 20 00                      Bra Nodo_Final
                         
-22fb                    Nodo_Final:
-22fb 18 0b ff 10 03             Movb #$FF,Tecla_IN
-2300 3d                         RTS
+236c                    Nodo_Final:
+236c 18 0b ff 10 03             Movb #$FF,Tecla_IN
+2371 3d                         RTS
 
-Executed: Mon Feb 08 17:31:10 2021
-Total cycles: 873, Total bytes: 862
+Executed: Mon Feb 08 22:52:25 2021
+Total cycles: 1000, Total bytes: 975
 Total errors: 0, Total warnings: 0

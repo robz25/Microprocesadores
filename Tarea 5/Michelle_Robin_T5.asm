@@ -17,6 +17,7 @@
 ;*******************************************************************************
 
 EOM:     EQU     $FF
+VMAX:    EQU     $FF
 
                 ORG $1000
 Banderas:        ds      1 ;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
@@ -103,7 +104,6 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,CUENTA
         MOVB #0,AcmPQ
         MOVB #0,CantPQ
-        MOVB #250,TIMER_CUENTA
         MOVB #0,LEDS
         MOVB #50,BRILLO
         MOVB #15,CONT_DIG
@@ -122,6 +122,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,CONT_7SEG
         MOVB #50,CONT_7SEG + 1
         MOVB #0,Cont_Delay
+        MOVB #VMAX,TIMER_CUENTA
 
         ;Inicializacion de hardware
         
@@ -150,8 +151,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         
         ;PTH
         CLR DDRH
-        BSET PIEH,$0F
-        BSET PPSH,$0F   ;interrupcion en flanco creciente
+       ; BSET PIEH,$0F
+       ; BSET PPSH,$0F   ;interrupcion en flanco creciente
         
         ;OC4
         BSET TSCR1,$90  ;encendemos Timer, TFFCLA
@@ -168,6 +169,84 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         LDS #$3BFF
         CLI
         
+	JSR LCD_INIT
+ ;        LDX #Msg1_L1
+ ;        LDY #Msg1_L2
+ ;        JSR Cargar_LCD
+        
+        
+;*******************************************************************************
+;                             PROGRAMA PRINCIPAL
+;*******************************************************************************
+
+main:
+
+        ;BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
+        ;JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
+        BSET Banderas,$10 ; Bandera 4 (CambMod en 1)
+Loop_main:
+        TST CantPQ
+        Beq Antes_Rama_CONFIG
+        Ldaa #$80
+        Anda PTH
+        Staa TEMP
+        Ldab #08
+        Andb Banderas
+        LSRA    ;corre a derecha un bit sin meter carry
+        LSRA
+        LSRA
+        lSRA
+        CBA ; ModSel = ModActual
+        Beq Revisar_ModSel
+        BSET Banderas,$10
+        BRCLR TEMP,$08,quitar_modo_actual
+        BSET Banderas,$08
+Revisar_ModSel:
+        BRSET TEMP,$08,Rama_CONFIG
+        BRCLR Banderas,$10,Ir_a_Modo_RUN
+        BCLR Banderas,$10
+        MOVB #$08,PORTB
+        ;Ldaa Clear_LCD
+        ;Jsr SendCommand
+        ;MOVB D2mS,Cont_Delay
+        ;Jsr Delay
+	;JSR LCD_INIT
+        Ldx #Msg2_L1
+        Ldy #Msg2_L2
+        Jsr Cargar_LCD
+Ir_a_Modo_RUN:
+        MOVB #$04,PORTB
+        Jsr MODO_RUN
+        Bra Loop_main
+quitar_modo_actual:
+        BCLR Banderas,$08
+        Bra Revisar_ModSel
+Antes_Rama_CONFIG:
+        BSET Banderas,$10
+Rama_CONFIG:
+        BRCLR Banderas,$10,Ir_a_Modo_CONFIG
+        BCLR Banderas,$10
+        MOVB #$80,PORTB
+        ;Ldaa Clear_LCD
+        ;Jsr SendCommand
+        ;MOVB D2mS,Cont_Delay
+        ;Jsr Delay
+        ;JSR LCD_INIT
+        Ldx #Msg1_L1
+        Ldy #Msg1_L2
+        Jsr Cargar_LCD
+Ir_a_Modo_CONFIG:
+ 	MOVB #$40,PORTB
+        Jsr MODO_CONFIG
+        LBra Loop_main
+
+       ;BRA *
+
+;*******************************************************************************
+;                                     SUBRUTINAS
+;*******************************************************************************
+
+LCD_INIT:
         ;configuracion inical de la LCD
         CLRB
         LDX #iniDsp
@@ -183,26 +262,17 @@ loopIniDsp:
         JSR SendCommand
         MOVB D2mS,Cont_Delay
         JSR Delay
-        LDX #Msg1_L1
-        LDY #Msg1_L2
-        JSR Cargar_LCD
+        RTS
         
-        
-;*******************************************************************************
-;                             PROGRAMA PRINCIPAL
-;*******************************************************************************
+MODO_CONFIG:
+      MOVB #2,LEDS
+      RTS
+      
+MODO_RUN:
+      MOVB #1,LEDS
+      RTS
+      
 
-main:
-
-        BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-        JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
-        BRA main        ;salta siempre a main
-
-        BRA *
-
-;*******************************************************************************
-;                                     SUBRUTINAS
-;*******************************************************************************
 
 Cargar_LCD:             ;                 Subrutina Cargar_LCD
                         ;*******************************************************
