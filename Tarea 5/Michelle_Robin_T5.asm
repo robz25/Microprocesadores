@@ -57,7 +57,7 @@ Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         ds      16
+SEGMENT:         ds      $3F,$06,$5B,$4F,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
 iniDsp:          db      $28,$28,$06,$0F
                 org $1060
 Msg1_L1:                 fcc     "  MODO CONFIG"
@@ -151,8 +151,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         
         ;PTH
         CLR DDRH
-        BSET PIEH,$0F
-        BCLR PPSH,$0F   ;interrupcion en flanco decreciente
+       ; BSET PIEH,$0F
+       ; BSET PPSH,$0F   ;interrupcion en flanco creciente
         
         ;OC4
         BSET TSCR1,$90  ;encendemos Timer, TFFCLA
@@ -178,10 +178,6 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;*******************************************************************************
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
-
-;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
-;  : : :  4    :   3    : 2      :    1     :   0  -> Numero de bit
-;  : : :  $10  :   $08  : $04    :   $02    :  $01 -> Mascara a utilizar
 
 main:
 
@@ -389,14 +385,12 @@ Delay:                  ;                 Subrutina Delay
 
 RTI_ISR:                ;                Subrutina RTI_ISR
                         ;*******************************************************
-                        ;Subrutina que descuenta valroes cada 1 ms
+                        ;Subrutina que cuenta 1 ms
                         ;*******************************************************
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
-        BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
+        BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
-seguir_RTI:
-        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos TIMER_CUENTA es 0
-        DEC TIMER_CUENTA    ;decrementar TIMER_CUENTA
+
 retorno_RTI:
         RTI
         
