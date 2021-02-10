@@ -266,14 +266,39 @@ loopIniDsp:
         JSR Delay
         RTS
         
-MODO_CONFIG:
-      MOVB #2,LEDS
-      INC CantPQ
-      RTS
+MODO_CONFIG:            ;                 Subrutina MODO_CONFIG
+                        ;*******************************************************
+                        ;
+                        ;*******************************************************
+       MOVB #2,LEDS
+       INC CantPQ
+       RTS
+       
       
-MODO_RUN:
-      MOVB #1,LEDS
-      RTS
+MODO_RUN:               ;                 Subrutina MODO_RUN
+                        ;*******************************************************
+                        ; Subrutina que lleva la cuenta de tornillos
+                        ;*******************************************************
+	MOVB #1,LEDS
+	TST TIMER_CUENTA
+        BNE retorno_MODO_RUN
+        MOVB #VMAX,TIMER_CUENTA
+        INC CUENTA
+        LDAA CUENTA
+        CMPA CantPQ
+        BNE retorno_MODO_RUN
+        BCLR CRGINT,$80 ;apagar RTI
+        INC AcmPQ
+        BSET PORTE,$04
+        LDAA #100
+        CMPA AcmPQ
+        BNE retorno_MODO_RUN
+        CLR AcmPQ
+	
+retorno_MODO_RUN:
+        MOVB CUENTA,BIN1
+        MOVB AcmPQ,BIN2
+        RTS
       
 
 
