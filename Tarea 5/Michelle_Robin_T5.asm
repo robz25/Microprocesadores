@@ -57,7 +57,7 @@ Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         ds      $3F,$06,$5B,$4F,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
+SEGMENT:         ds      16
 iniDsp:          db      $28,$28,$06,$0F
                 org $1060
 Msg1_L1:                 fcc     "  MODO CONFIG"
@@ -76,13 +76,13 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 
          org        $3E4C       ;debug12
         dw PTH_ISR
-        
+
          org        $3E70       ;debug12
         dw RTI_ISR
-        
+
          org        $3E66       ;debug12
         dw OC4_ISR
-        
+
 ;*******************************************************************************
 ;          Inicializacion de estructuras de datos y config de hardware
 ;*******************************************************************************
@@ -103,10 +103,10 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$FF,Num_Array+5
         MOVB #0,CUENTA
         MOVB #0,AcmPQ
-        MOVB #0,CantPQ
+        MOVB #1,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
-        MOVB #1,CONT_DIG ; Empezamos a contar en 1 con los LEDS
+        MOVB #15,CONT_DIG
         MOVB #0,DT
         MOVB #0,BIN1
         MOVB #0,BIN2
@@ -125,35 +125,35 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #VMAX,TIMER_CUENTA
 
         ;Inicializacion de hardware
-        
+
         ;Rele:
         BSET DDRE,$04   ;activar pin 2 de puerto E Rele como salida
 
         ;Pantalla LCD
         BSET DDRK,$FF  ;nibble inferior como salida
         BClR PORTK,$01
-        
+
         ;Pantalla 7 segmentos
         BSET DDRP,$0F  ;poner pads de salida,apagar 7 segmentos
-        
+
         ;LEDS
         MOVB #$FF,DDRB
         BSET DDRJ,$02   ;bit 2 como salida
         BCLR PTJ,$02    ;bit 2 en 0, catodo comun
-                
+
         ;Teclado matricial
         MOVB #$F0,DDRA
         BSET PUCR,$01
-        
+
         ;RTI
         BSET CRGINT,$80
         MOVB #$17,RTICTL
-        
+
         ;PTH
         CLR DDRH
        ; BSET PIEH,$0F
        ; BSET PPSH,$0F   ;interrupcion en flanco creciente
-        
+
         ;OC4
         BSET TSCR1,$90  ;encendemos Timer, TFFCLA
         BSET TSCR2,$04  ;poner prescalador en 16
@@ -162,19 +162,19 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         LDD #30
         ADDD TCNT
         STD TC4
-        
 
 
-        
+
+
         LDS #$3BFF
         CLI
-        
+
         JSR LCD_INIT
  ;        LDX #Msg1_L1
  ;        LDY #Msg1_L2
  ;        JSR Cargar_LCD
-        
-        
+
+
 ;*******************************************************************************
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
@@ -236,12 +236,12 @@ Rama_CONFIG:
         Ldy #Msg1_L2
         Jsr Cargar_LCD
 Ir_a_Modo_CONFIG:
-         MOVB #$40,PORTB ;led 6
+        MOVB #$40,PORTB ;led 6
         Jsr MODO_CONFIG
         LBra Loop_main
         ; Cambiar CamMod se usa $10
         ; Cambiar ModActual se usa $08
-        
+
        ;BRA *
 
 ;*******************************************************************************
@@ -265,34 +265,32 @@ loopIniDsp:
         MOVB D2mS,Cont_Delay
         JSR Delay
         RTS
-        
-MODO_CONFIG:            ;                 Subrutina MODO_CONFIG
-                        ;*******************************************************
-                        ;
-                        ;*******************************************************
-       MOVB #2,LEDS
-       BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
-       Jsr BCD_BIN
-       Ldaa #25
-       Cmpa CantPQ
-       Blo no_valido
-       Ldaa #85
-       Cmpa CantPQ
-       Blo valido
-no_valido:
-       BClr Banderas,$04
-       Clr CantPQ
-       Rts
-valido:
-       BClr Banderas,$04
-       Movb CantPQ,BIN1
-       Rts
-llamar_Tarea_Teclado:
-       Jsr Tarea_Teclado
-       Rts
 
-       
-      
+MODO_CONFIG:
+      MOVB #2,LEDS
+      ;INC CantPQ
+      MOVB #2,LEDS
+      BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
+      Jsr BCD_BIN
+      Ldaa #25
+      Cmpa CantPQ
+      Blo no_valido
+      Ldaa #85
+      Cmpa CantPQ
+      Blo valido
+no_valido:
+      BClr Banderas,$04
+      Clr CantPQ
+      Rts
+valido:
+      BClr Banderas,$04
+      Movb CantPQ,BIN1
+      Rts
+llamar_Tarea_Teclado:
+      Jsr Tarea_Teclado
+      Rts
+
+
 MODO_RUN:               ;                 Subrutina MODO_RUN
                         ;*******************************************************
                         ; Subrutina que lleva la cuenta de tornillos
@@ -312,12 +310,13 @@ MODO_RUN:               ;                 Subrutina MODO_RUN
         CMPA AcmPQ
         BNE retorno_MODO_RUN
         CLR AcmPQ
-        
+
 retorno_MODO_RUN:
         MOVB CUENTA,BIN1
         MOVB AcmPQ,BIN2
         RTS
-      
+
+
 
 
 Cargar_LCD:             ;                 Subrutina Cargar_LCD
@@ -326,6 +325,11 @@ Cargar_LCD:             ;                 Subrutina Cargar_LCD
                         ;recibe direcciones de datos en X linea 1 y en Y linea 2
                         ;llama a SendCommand y SendData
                         ;*******************************************************
+        LDAA Clear_LCD  ;para borrar info anterior en pantalla LCD
+        JSR SendCommand
+        MOVB D2mS,Cont_Delay
+        JSR Delay
+
         LDAA ADD_L1
         JSR SendCommand
         MOVB D40uS,Cont_Delay
@@ -338,7 +342,7 @@ loop_L1:
         MOVB D40uS,Cont_Delay
         JSR Delay
         BRA loop_L1
-        
+
 inicio_L2:
         LDAA ADD_L2
         JSR SendCommand
@@ -414,7 +418,7 @@ SendData:               ;                 Subrutina SendData
                         ;*******************************************************
 Delay:                  ;                 Subrutina Delay
                         ;*******************************************************
-                        ;Genera retardo para enviar informaciÃ³n a la pantalla
+                        ;Genera retardo para enviar información a la pantalla
                         ;LCD, se queda en un loop hasta que la variable ha sido
                         ;DECrementada a 0 por OC4
                         ;*******************************************************
@@ -422,6 +426,19 @@ Delay:                  ;                 Subrutina Delay
         BNE Delay
         RTS
 
+
+BCD_BIN:                 ;          Subrutina BCD_BIN
+                         ;******************************************************
+                         ;  Se encarga de convertir un número de BCD a Binario
+                         ;******************************************************
+         Ldx #Num_Array
+         Ldab #$A
+         Ldaa 1,+X
+         Mul
+         Ldaa 0,X
+         Aba
+         Staa CantPQ
+         Rts
 
 BIN_BCD:                 ;          Subrutina BIN_BCD
                          ;**********************************************************
@@ -456,7 +473,6 @@ no_mayor_a_50:
          Rol BCD_L
          Rts
 
-
 BCD_7SEG:                ;          Subrutina BCD_7SEG
                          ;**********************************************************
                          ;  Carga los valores correspondientes a ser desplegados
@@ -484,6 +500,7 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
          Lsra
          Movb A,X,DISP4
          Rts
+
 
 CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
                          ;******************************************************
@@ -527,20 +544,7 @@ BCD2_es_cero:
          Movb #$BB,BCD2
          Rts
 
-BCD_BIN:                 ;          Subrutina BCD_BIN
-                         ;******************************************************
-                         ;  Se encarga de convertir un número de BCD a Binario
-                         ;******************************************************
-         Ldx #Num_Array
-         Ldab #$A
-         Ldaa 1,+X
-         Mul
-         Ldaa 0,X
-         Aba
-         Staa CantPQ
-         Rts
-                         
-                         
+
 
 ;*******************************************************************************
 ;                        SUBRUTINAS DE INTERRUPCION
@@ -556,7 +560,7 @@ RTI_ISR:                ;                Subrutina RTI_ISR
 
 retorno_RTI:
         RTI
-        
+
 PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
                         ;Subrutina que lee botones conectados al puerto H
@@ -565,7 +569,7 @@ PTH_ISR:                ;                Subrutina PTH_ISR
 retorno_PTH:
         BSET PIFH,$0F
         RTI
-        
+
 OC4_ISR:                ;                Subrutina OC4_ISR
                         ;*******************************************************
                         ;Subrutina que genera interrupciones cada 50 KHz
@@ -581,9 +585,6 @@ retorno_OC4:
         ADDD TCNT       ;30 + contador en D
         STD TC4         ;30 + contador en TC4
         RTI
-
-
-
 
 
 ;*******************************************************************************
@@ -684,7 +685,7 @@ Formar_Array:           ;                      SUBRUTINA
                         ;*******************************************************
 ;        MOVB #$04,PORTB  ;debugging
 ;        INC Print+3
-        Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
+        Ldx #Num_Array   ; Cargar direcci?n de Num_Array en el ?ndice Y
         Ldaa #$0B
         Ldab Cont_TCL
         ;Incb
@@ -698,7 +699,7 @@ Formar_Array:           ;                      SUBRUTINA
         Cmpb Tecla_IN
         Beq poner_array_ok
         Ldab Cont_TCL
-        Movb Tecla_IN,b,x ; No sabemos si está bien
+        Movb Tecla_IN,b,x ; No sabemos si est? bien
         Inc Cont_TCL
         Bra Nodo_Final
 

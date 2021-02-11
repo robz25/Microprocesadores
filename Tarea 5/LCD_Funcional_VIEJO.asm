@@ -163,13 +163,10 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         ADDD TCNT
         STD TC4
 
-
-
-
         LDS #$3BFF
         CLI
 
-	JSR LCD_INIT
+        JSR LCD_INIT
  ;        LDX #Msg1_L1
  ;        LDY #Msg1_L2
  ;        JSR Cargar_LCD
@@ -210,7 +207,7 @@ Revisar_ModSel:
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
         ;Jsr Delay
-	;JSR LCD_INIT
+        ;JSR LCD_INIT
         Ldx #Msg2_L1
         Ldy #Msg2_L2
         Jsr Cargar_LCD
@@ -236,7 +233,7 @@ Rama_CONFIG:
         Ldy #Msg1_L2
         Jsr Cargar_LCD
 Ir_a_Modo_CONFIG:
- 	MOVB #$40,PORTB ;led 6
+         MOVB #$40,PORTB ;led 6
         Jsr MODO_CONFIG
         LBra Loop_main
         ; Cambiar CamMod se usa $10
@@ -283,6 +280,11 @@ Cargar_LCD:             ;                 Subrutina Cargar_LCD
                         ;recibe direcciones de datos en X linea 1 y en Y linea 2
                         ;llama a SendCommand y SendData
                         ;*******************************************************
+        LDAA Clear_LCD  ;para borrar info anterior en pantalla LCD
+        JSR SendCommand
+        MOVB D2mS,Cont_Delay
+        JSR Delay
+        
         LDAA ADD_L1
         JSR SendCommand
         MOVB D40uS,Cont_Delay
