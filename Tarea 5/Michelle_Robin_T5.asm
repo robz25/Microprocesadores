@@ -151,8 +151,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 
         ;PTH
         CLR DDRH
-       ; BSET PIEH,$0F
-       ; BSET PPSH,$0F   ;interrupcion en flanco creciente
+        BSET PIEH,$0F
+        BCLR PPSH,$0F   ;interrupcion en flanco decreciente
 
         ;OC4
         BSET TSCR1,$90  ;encendemos Timer, TFFCLA
