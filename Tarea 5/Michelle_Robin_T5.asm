@@ -106,7 +106,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
-        MOVB #15,CONT_DIG
+        MOVB #1,CONT_DIG ; Empezamos a contar en 1 con los LEDS
         MOVB #0,DT
         MOVB #0,BIN1
         MOVB #0,BIN2
@@ -462,7 +462,7 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
                          ;  Carga los valores correspondientes a ser desplegados
                          ; en la pantalla de 7 segmentos
                          ;**********************************************************
-         Ldx SEGMENT
+         Ldx #SEGMENT
          Ldaa $0F
          Anda BCD2
          Movb A,X,DISP2
@@ -531,9 +531,9 @@ BCD_BIN:                 ;          Subrutina BCD_BIN
                          ;******************************************************
                          ;  Se encarga de convertir un número de BCD a Binario
                          ;******************************************************
-         Ldx Num_Array
+         Ldx #Num_Array
          Ldab #$A
-         Ldaa 1,+X   ; REVISAR !!!!!!!!!!!!!! no funciona en simulador
+         Ldaa 1,+X
          Mul
          Ldaa 0,X
          Aba

@@ -742,7 +742,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 2046 18 0b 00 10 0b             MOVB #0,CantPQ
 204b 18 0b 00 10 0d             MOVB #0,LEDS
 2050 18 0b 32 10 0e             MOVB #50,BRILLO
-2055 18 0b 0f 10 0f             MOVB #15,CONT_DIG
+2055 18 0b 01 10 0f             MOVB #1,CONT_DIG ; Empezamos a contar en 1 con los LEDS
 205a 18 0b 00 10 11             MOVB #0,DT
 205f 18 0b 00 10 12             MOVB #0,BIN1
 2064 18 0b 00 10 13             MOVB #0,BIN2
@@ -1167,9 +1167,9 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                                  ;******************************************************
                                                  ;  Se encarga de convertir un número de BCD a Binario
                                                  ;******************************************************
-2374 fe 10 07                    Ldx Num_Array
+2374 ce 10 07                    Ldx #Num_Array
 2377 c6 0a                       Ldab #$A
-2379 a6 20                       Ldaa 1,+X   ; REVISAR !!!!!!!!!!!!!! no funciona en simulador
+2379 a6 20                       Ldaa 1,+X
 237b 12                          Mul
 237c a6 00                       Ldaa 0,X
 237e 18 06                       Aba
@@ -1371,6 +1371,6 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 249a 18 0b ff 10 03             Movb #$FF,Tecla_IN
 249f 3d                         RTS
 
-Executed: Wed Feb 10 22:21:49 2021
-Total cycles: 1366, Total bytes: 1277
+Executed: Thu Feb 11 12:41:01 2021
+Total cycles: 1364, Total bytes: 1277
 Total errors: 0, Total warnings: 0
