@@ -271,8 +271,26 @@ MODO_CONFIG:            ;                 Subrutina MODO_CONFIG
                         ;
                         ;*******************************************************
        MOVB #2,LEDS
-       INC CantPQ
-       RTS
+       BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
+       Jsr BCD_BIN
+       Ldaa #25
+       Cmpa CantPQ
+       Blo no_valido
+       Ldaa #85
+       Cmpa CantPQ
+       Blo valido
+no_valido:
+       BClr Banderas,$04
+       Clr CantPQ
+       Rts
+valido:
+       BClr Banderas,$04
+       Movb CantPQ,BIN1
+       Rts
+llamar_Tarea_Teclado:
+       Jsr Tarea_Teclado
+       Rts
+
        
       
 MODO_RUN:               ;                 Subrutina MODO_RUN
@@ -409,7 +427,7 @@ BIN_BCD:                 ;          Subrutina BIN_BCD
                          ;**********************************************************
                          ;Subrutina que pasa un número de binario (BIN) a BCD (BCD_l)
                          ;**********************************************************
-	 Ldaa BIN1
+         ;Ldaa BIN1   ;  Tengo que meter el número binario en el acumulador A antes
          Ldab #7
          Movb #0,BCD_L
 Loop1:   Lsla
@@ -466,7 +484,63 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
          Lsra
          Movb A,X,DISP4
          Rts
-         
+
+CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
+                         ;******************************************************
+                         ;  Se encarga de poner BIN1 y BIN2 en el acumulador dos
+                         ;  para llamar a BIN_BCD y guardar los resultados
+                         ; según corresponda, además devuelve $B si un LED
+                         ; debe estar apagado
+                         ;******************************************************
+         Ldaa BIN1
+         Jsr BIN_BCD
+         Movb BCD_L,BCD1
+         Ldaa BIN2
+         Jsr BIN_BCD
+         Movb BCD_L,BCD2
+         Tst BCD1
+         Beq es_cero
+         Ldaa BCD1
+         Cmpa #10
+         Blo BCD1_es_menor_a_10
+revisar_BCD2:
+         Tst BCD2
+         Beq BCD2_es_cero
+         Ldaa BCD2
+         Cmpa #10
+         Blo BCD2_es_menor_a_10
+         Rts
+BCD1_es_menor_a_10:
+         Ldaa #$B0
+         Eora BCD1
+         Staa BCD1
+         Bra revisar_BCD2
+BCD2_es_menor_a_10:
+         Ldaa #$B0
+         Eora BCD2
+         Staa BCD2
+         Rts
+es_cero:
+         Movb #$BB,BCD1
+         Bra revisar_BCD2
+BCD2_es_cero:
+         Movb #$BB,BCD2
+         Rts
+
+BCD_BIN:                 ;          Subrutina BCD_BIN
+                         ;******************************************************
+                         ;  Se encarga de convertir un número de BCD a Binario
+                         ;******************************************************
+         Ldx Num_Array
+         Ldab #$A
+         Ldaa 1,+X   ; REVISAR !!!!!!!!!!!!!! no funciona en simulador
+         Mul
+         Ldaa 0,X
+         Aba
+         Staa CantPQ
+         Rts
+                         
+                         
 
 ;*******************************************************************************
 ;                        SUBRUTINAS DE INTERRUPCION
