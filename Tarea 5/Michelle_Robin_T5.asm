@@ -279,8 +279,8 @@ MODO_RUN:               ;                 Subrutina MODO_RUN
                         ;*******************************************************
                         ; Subrutina que lleva la cuenta de tornillos
                         ;*******************************************************
-	MOVB #1,LEDS
-	TST TIMER_CUENTA
+        MOVB #1,LEDS
+        TST TIMER_CUENTA
         BNE retorno_MODO_RUN
         MOVB #VMAX,TIMER_CUENTA
         INC CUENTA
@@ -294,7 +294,7 @@ MODO_RUN:               ;                 Subrutina MODO_RUN
         CMPA AcmPQ
         BNE retorno_MODO_RUN
         CLR AcmPQ
-	
+        
 retorno_MODO_RUN:
         MOVB CUENTA,BIN1
         MOVB AcmPQ,BIN2
@@ -404,6 +404,70 @@ Delay:                  ;                 Subrutina Delay
         BNE Delay
         RTS
 
+
+BIN_BCD:                 ;          Subrutina BIN_BCD
+                         ;**********************************************************
+                         ;Subrutina que pasa un número de binario (BIN) a BCD (BCD_l)
+                         ;**********************************************************
+	 Ldaa BIN1
+         Ldab #7
+         Movb #0,BCD_L
+Loop1:   Lsla
+         Rol BCD_L
+         Staa TEMP
+         Ldaa #$0F
+         Anda BCD_L
+         Cmpa #5
+         Blo no_mayor_a_5
+         Adda #3
+no_mayor_a_5:
+         Staa LOW
+         Ldaa #$F0
+         Anda BCD_L
+         Cmpa #50
+         Blo no_mayor_a_50
+         Adda #30
+no_mayor_a_50:
+         Adda LOW
+         Staa BCD_L
+         Ldaa TEMP
+         Decb
+         Tstb
+         Bne Loop1
+         Lsla
+         Rol BCD_L
+         Rts
+
+
+BCD_7SEG:                ;          Subrutina BCD_7SEG
+                         ;**********************************************************
+                         ;  Carga los valores correspondientes a ser desplegados
+                         ; en la pantalla de 7 segmentos
+                         ;**********************************************************
+         Ldx SEGMENT
+         Ldaa $0F
+         Anda BCD2
+         Movb A,X,DISP2
+         Ldaa $F0
+         Anda BCD2
+         Lsra
+         Lsra
+         Lsra
+         Lsra
+         Movb A,X,DISP1
+         Ldaa $0F
+         Anda BCD1
+         Movb A,X,DISP3
+         Ldaa $F0
+         Anda BCD1
+         Lsra
+         Lsra
+         Lsra
+         Lsra
+         Movb A,X,DISP4
+         Rts
+         
+
 ;*******************************************************************************
 ;                        SUBRUTINAS DE INTERRUPCION
 ;*******************************************************************************
@@ -443,7 +507,10 @@ retorno_OC4:
         ADDD TCNT       ;30 + contador en D
         STD TC4         ;30 + contador en TC4
         RTI
-        
+
+
+
+
 
 ;*******************************************************************************
 ;                           SUBRUTINAS DE TAREA 4
