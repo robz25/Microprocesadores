@@ -101,8 +101,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$FF,Num_Array+3
         MOVB #$FF,Num_Array+4
         MOVB #$FF,Num_Array+5
-        MOVB #0,CUENTA
-        MOVB #0,AcmPQ
+        MOVB #99,CUENTA
+        MOVB #99,AcmPQ
         MOVB #0,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
@@ -171,99 +171,10 @@ main:
         JSR MODO_RUN
 	BRA main
 	
-	
-        ;BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-        ;JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
-        BSET Banderas,$10 ; Bandera 4 (CambMod en 1)
-Loop_main:
-        TST CantPQ
-        Beq Antes_Rama_CONFIG
-        Ldaa #$80
-        Anda PTH
-        Ldab #08
-        Andb Banderas
-        LSRA    ;corre a derecha un bit sin meter carry
-        LSRA
-        LSRA
-        LSRA
-        Staa TEMP
-        CBA ; ModSel = ModActual
-        Beq Revisar_ModSel
-        BSET Banderas,$10    ; Banderas.4 (Camb_Mod) en 1
-        BRCLR TEMP,$08,quitar_modo_actual
-        BSET Banderas,$08
-Revisar_ModSel:
-        BRSET TEMP,$08,Rama_CONFIG
-        BRCLR Banderas,$10,Ir_a_Modo_RUN
-        BCLR Banderas,$10
-        MOVB #$08,PORTB ;led 3
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
-        Ldx #Msg2_L1
-        Ldy #Msg2_L2
-        Jsr Cargar_LCD
-Ir_a_Modo_RUN:
-        MOVB #$04,PORTB   ;led 2
-        Jsr MODO_RUN
-        Bra Loop_main
-quitar_modo_actual:
-        BCLR Banderas,$08
-        Bra Revisar_ModSel
-Antes_Rama_CONFIG:
-        BSET Banderas,$08
-Rama_CONFIG:
-        BRCLR Banderas,$10,Ir_a_Modo_CONFIG
-        BCLR Banderas,$10
-        MOVB #$80,PORTB ;led 7
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
-        Ldx #Msg1_L1
-        Ldy #Msg1_L2
-        Jsr Cargar_LCD
-Ir_a_Modo_CONFIG:
-         MOVB #$40,PORTB ;led 6
-        Jsr MODO_CONFIG
-        LBra Loop_main
-        ; Cambiar CamMod se usa $10
-        ; Cambiar ModActual se usa $08
-
-       ;BRA *
 
 ;*******************************************************************************
 ;                                     SUBRUTINAS
 ;*******************************************************************************
-
-MODO_CONFIG:            ;                 Subrutina MODO_CONFIG
-                        ;*******************************************************
-                        ;
-                        ;*******************************************************
-       MOVB #2,LEDS
-       BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
-       Jsr BCD_BIN
-       Ldaa #25
-       Cmpa CantPQ
-       Blo no_valido
-       Ldaa #85
-       Cmpa CantPQ
-       Blo valido
-no_valido:
-       BClr Banderas,$04
-       Clr CantPQ
-       Rts
-valido:
-       BClr Banderas,$04
-       Movb CantPQ,BIN1
-       Rts
-llamar_Tarea_Teclado:
-       Jsr Tarea_Teclado
-       Rts
-
 
 
 MODO_RUN:               ;                 Subrutina MODO_RUN
@@ -315,7 +226,8 @@ RTI_ISR:                ;                Subrutina RTI_ISR
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
         BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
-
+        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+        DEC TIMER_CUENTA ;decrementar Cont_Reb
 retorno_RTI:
         RTI
 
@@ -325,9 +237,67 @@ PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
 
 retorno_PTH:
-        BSET PIFH,$0F
-        RTI
+        BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
+        BRSET PIFH,$01,saltar_pth0
+        BSET PIFH,$01
+        CLR CUENTA
+        BCLR PORTE,$04  ;apagar Relé
+        BSET CRGINT,$80  ;encender RTI
+        BRA retorno_PTH_ISR
+        
+saltar_pth0:
+        TST Cont_Reb
+        BNE retorno_PTH_ISR
+        BRSET Tecla,$80,segundo_ingreso
+        MOVB PIFH,Tecla
+        LDAA #$0F
+        ANDA PIFH
+        STAA PIFH
+        MOVB #10,Cont_Reb
+        BSET Tecla,$80  ;indicar que ya entro por primera vez
+        BRA retorno_PTH_ISR
 
+segundo_ingreso:
+        BCLR Tecla,$80
+        LDAB PIFH
+        CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
+	BEQ lectura_correcta
+	MOVB #$FF,Tecla
+
+retorno_PTH_ISR:
+        RTI
+        
+lectura_correcta:
+        LDAA BRILLO
+        BRSET PIFH,$04,disminuir_brillo
+        BRSET PIFH,$08,aumentar_brillo
+        BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
+        BRSET PIFH,$02,AcmCLEAR
+	BRA retorno_PTH_ISR
+
+AcmCLEAR:
+        BSET PIFH,$02
+        CLR AcmPQ
+	BRA retorno_PTH_ISR
+	
+aumentar_brillo:
+        BSET PIFH,$08
+        CMPA #95
+        BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
+        ADDA #5
+        STAA BRILLO
+	BRA retorno_PTH_ISR
+	
+disminuir_brillo:
+        BSET PIFH,$04
+	CMPA #5
+	BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
+	SUBA #5
+	STAA BRILLO
+	BRA retorno_PTH_ISR
+	
+	
+	
 OC4_ISR:                ;                Subrutina OC4_ISR
                         ;*******************************************************
                         ;Subrutina que genera interrupciones cada 50 KHz
@@ -346,153 +316,3 @@ retorno_OC4:
 
 
 
-
-
-;*******************************************************************************
-;                           SUBRUTINAS DE TAREA 4
-;*******************************************************************************
-
-                        ;*******************************************************
-Tarea_Teclado:          ;                      SUBRUTINA
-                        ;*******************************************************
-                        ;Verifica estado de teclas ingresadas
-                           ;y llama a las otras subrutinas
-                        ;*******************************************************
-;        MOVB #$01,PORTB  ;debugging
-;        INC Print+1
-        TST Cont_Reb
-        BNE Retorno_Tarea_Teclado
-        JSR Mux_Teclado
-        BRSET Tecla,$FF,revisar_TCL_LISTA
-
-        BRSET Banderas,$02,revisar_teclas
-        MOVB Tecla,Tecla_IN
-        BSET Banderas,$02
-        MOVB #10,Cont_Reb
-
-        BRA Retorno_Tarea_Teclado
-
-revisar_teclas:
-        LDAA Tecla
-        CMPA Tecla_IN
-        BNE error_al_leer
-        BSET Banderas,$01
-        BRA Retorno_Tarea_Teclado
-
-error_al_leer:
-        MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
-        BCLR Banderas,$03
-        BRA Retorno_Tarea_Teclado
-
-revisar_TCL_LISTA:
-        BRCLR Banderas,$01,Retorno_Tarea_Teclado
-        BCLR Banderas,$03
-        JSR Formar_Array
-
-Retorno_Tarea_Teclado:
-        RTS
-
-                        ;*******************************************************
-Mux_Teclado:            ;                      SUBRUTINA
-                        ;*******************************************************
-                        ;Lee teclado matricial
-                        ;*******************************************************
-;        MOVB #$02,PORTB  ;debugging
-;        INC Print+2
-        LDX #Teclas
-        CLRA
-        MOVB #$EF,Patron
-loop_mux:
-        MOVB Patron,PORTA
-        BRCLR PORTA,$02,tecla_presionada
-        INCA
-        NOP
-        NOP
-        NOP
-        NOP
-        NOP
-        BRCLR PORTA,$04,tecla_presionada
-        INCA
-        NOP
-        NOP
-        NOP
-        NOP
-        NOP
-        BRCLR PORTA,$08,tecla_presionada
-        INCA
-        NOP
-        NOP
-        NOP
-        NOP
-        NOP
-        LSL Patron
-        BRCLR Patron,$F0,nada_presionado
-        BRA loop_mux
-
-nada_presionado:
-;        Inc Print+6
-        MOVB #$FF,Tecla
-        RTS
-
-tecla_presionada:
-        MOVB A,X,Tecla
-;        Inc Print+7
-        RTS
-
-                        ;*******************************************************
-Formar_Array:           ;                      SUBRUTINA
-                        ;*******************************************************
-                        ;Llena arreglo Num_Array con teclas leidas
-                        ;*******************************************************
-;        MOVB #$04,PORTB  ;debugging
-;        INC Print+3
-        Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
-        Ldaa #$0B
-        Ldab Cont_TCL
-        ;Incb
-        Cmpb MAX_TCL
-        Beq full_array
-        Ldab #$0E
-        TST Cont_TCL
-        Beq primer_input
-        Cmpa Tecla_IN
-        Beq reducir_contador
-        Cmpb Tecla_IN
-        Beq poner_array_ok
-        Ldab Cont_TCL
-        Movb Tecla_IN,b,x ; No sabemos si está bien
-        Inc Cont_TCL
-        Bra Nodo_Final
-
-poner_array_ok:
-        Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
-        Clr Cont_TCL
-        Bra Nodo_Final
-
-reducir_contador:
-        Dec Cont_TCL
-        Ldab Cont_TCL
-        Movb #$FF,b,x
-        Bra Nodo_Final
-
-primer_input:
-        Cmpa Tecla_IN
-        Beq Nodo_Final
-        Cmpb Tecla_IN
-        Beq Nodo_Final
-        Ldab Cont_TCL
-        Movb Tecla_IN,b,x
-        Inc Cont_TCL
-        Bra Nodo_Final
-
-full_array:
-        Ldab #$0E
-        Cmpa Tecla_IN
-        beq reducir_contador
-        Cmpb Tecla_IN
-        Beq poner_array_ok
-        Bra Nodo_Final
-
-Nodo_Final:
-        Movb #$FF,Tecla_IN
-        RTS
