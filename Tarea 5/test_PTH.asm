@@ -152,12 +152,12 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         ;PTH
         CLR DDRH
         BSET PIEH,$0F
-        BSET PPSH,$0F   ;interrupcion en flanco creciente
+        BClr PPSH,$0F   ;interrupcion en flanco decreciente
 
-            LDS #$3BFF
+        LDS #$3BFF
         CLI
 
-        JSR LCD_INIT
+        ;JSR LCD_INIT
  ;        LDX #Msg1_L1
  ;        LDY #Msg1_L2
  ;        JSR Cargar_LCD
@@ -169,8 +169,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 
 main:
         JSR MODO_RUN
-	BRA main
-	
+        BRA main
+        
 
 ;*******************************************************************************
 ;                                     SUBRUTINAS
@@ -238,7 +238,7 @@ PTH_ISR:                ;                Subrutina PTH_ISR
 
 retorno_PTH:
         BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
-        BRSET PIFH,$01,saltar_pth0
+        BRCLR PIFH,$01,saltar_pth0
         BSET PIFH,$01
         CLR CUENTA
         BCLR PORTE,$04  ;apagar Relé
@@ -248,56 +248,56 @@ retorno_PTH:
 saltar_pth0:
         TST Cont_Reb
         BNE retorno_PTH_ISR
-        BRSET Tecla,$80,segundo_ingreso
+        BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
         MOVB PIFH,Tecla
         LDAA #$0F
         ANDA PIFH
         STAA PIFH
-        MOVB #10,Cont_Reb
-        BSET Tecla,$80  ;indicar que ya entro por primera vez
+        MOVB #5,Cont_Reb
+        ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
         BRA retorno_PTH_ISR
 
 segundo_ingreso:
-        BCLR Tecla,$80
         LDAB PIFH
         CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
-	BEQ lectura_correcta
-	MOVB #$FF,Tecla
+        BEQ lectura_correcta
+        MOVB #$FF,Tecla
 
 retorno_PTH_ISR:
         RTI
         
 lectura_correcta:
+        BSET Tecla,$80
         LDAA BRILLO
         BRSET PIFH,$04,disminuir_brillo
         BRSET PIFH,$08,aumentar_brillo
         BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
         BRSET PIFH,$02,AcmCLEAR
-	BRA retorno_PTH_ISR
+        BRA retorno_PTH_ISR
 
 AcmCLEAR:
         BSET PIFH,$02
         CLR AcmPQ
-	BRA retorno_PTH_ISR
-	
+        BRA retorno_PTH_ISR
+        
 aumentar_brillo:
         BSET PIFH,$08
         CMPA #95
         BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
         ADDA #5
         STAA BRILLO
-	BRA retorno_PTH_ISR
-	
+        BRA retorno_PTH_ISR
+        
 disminuir_brillo:
         BSET PIFH,$04
-	CMPA #5
-	BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
-	SUBA #5
-	STAA BRILLO
-	BRA retorno_PTH_ISR
-	
-	
-	
+        CMPA #5
+        BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
+        SUBA #5
+        STAA BRILLO
+        BRA retorno_PTH_ISR
+        
+        
+        
 OC4_ISR:                ;                Subrutina OC4_ISR
                         ;*******************************************************
                         ;Subrutina que genera interrupciones cada 50 KHz
@@ -313,6 +313,5 @@ retorno_OC4:
         ADDD TCNT       ;30 + contador en D
         STD TC4         ;30 + contador en TC4
         RTI
-
 
 
