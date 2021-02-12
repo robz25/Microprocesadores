@@ -570,21 +570,110 @@ retorno_PTH:
         BSET PIFH,$0F
         RTI
 
-OC4_ISR:                ;                Subrutina OC4_ISR
+OC4_ISR:
+
+
+; SUBRUTINA OCA VIEJA:
+
+        BSET TFLG2,$80  ;borrar int
+                        ;                Subrutina OC4_ISR
                         ;*******************************************************
                         ;Subrutina que genera interrupciones cada 50 KHz
                         ;*******************************************************
+        Tst Cont_Delay
+        LBne Decrementar_Cont_Delay
+aumentar_CONT_TICKS:
+        Inc CONT_TICKS
+        Ldaa #100
+        Cmpa CONT_TICKS
+        Bne Manipular_CONT_7SEG
+        Clr CONT_TICKS
+        Lsl CONT_DIG
+        Ldaa #$10
+        Cmpa CONT_DIG
+        LBeq poner_1_CONT_DIG
+Manipular_CONT_7SEG:
+        Ldd CONT_7SEG
+        Addd #1
+        Std CONT_7SEG
+        Ldd #5000
+        Cpd CONT_7SEG
+        Beq Llamar_subrutinas
+Antes_de_revisar_CONT_DIG:
+        Ldaa #100
+        Suba BRILLO
+        Tab
+        Ldaa #100
+        Sba
+        Staa DT
+        Cmpa CONT_TICKS ; lo que está en a es DT (se acaba de guardar)
+        Bhs  Portb_cero
+        Ldaa #1
+        Cmpa CONT_DIG
+        Beq CONT_DIG_es_1
+        Ldaa #2
+        Cmpa CONT_DIG
+        Beq CONT_DIG_es_2
+        Ldaa #4
+        Cmpa CONT_DIG
+        Beq CONT_DIG_es_4
+        Ldaa #8
+        Cmpa CONT_DIG
+        Beq CONT_DIG_es_8
+        Movb DISP1,PORTB
+        ;PTP.[3:0] <- $E
+        Bset PTJ,$2
+Antes_de_retornar:
+        Ldd TCNT
+        Addd #30
+        Std TC4
+        Rti
 
-        BSET TFLG2,$80  ;borrar int
-        TST Cont_Delay
-        BEQ retorno_OC4
-        DEC Cont_Delay
+CONT_DIG_es_8:
+        Movb DISP2,PORTB
+        ;PTP.[3:0] <- $D
+        Bset PTJ,$2
+        Bra Antes_de_retornar
 
-retorno_OC4:
-        LDD #30      ;cada 30 son 20uS
-        ADDD TCNT       ;30 + contador en D
-        STD TC4         ;30 + contador en TC4
-        RTI
+CONT_DIG_es_4:
+        Movb DISP3,PORTB
+        ;PTP.[3:0] <- $B
+        Bset PTJ,$2
+        Bra Antes_de_retornar
+
+CONT_DIG_es_2:
+        Movb DISP4,PORTB
+        ;PTP.[2:0] <- 7
+        Bset PTJ,$2
+        Bra Antes_de_retornar
+
+CONT_DIG_es_1:
+        Movb LEDS,PORTB
+        Bset PTP,$F
+        BClr PTJ,$2
+        Bra Antes_de_retornar
+
+Portb_cero:
+        Movb #$0,PORTB
+        Bra Antes_de_retornar
+
+Llamar_subrutinas:
+        Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
+        Jsr CONV_BIN_BCD
+        Jsr BCD_7SEG
+        LBra Antes_de_revisar_CONT_DIG
+
+poner_1_CONT_DIG:
+        Ldaa #1
+        Staa CONT_DIG
+        LBra Manipular_CONT_7SEG
+
+Decrementar_Cont_Delay:
+        Dec Cont_Delay
+        LBra aumentar_CONT_TICKS
+
+
+
 
 
 ;*******************************************************************************
