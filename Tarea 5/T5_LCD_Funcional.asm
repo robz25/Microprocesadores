@@ -57,7 +57,7 @@ Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         ds      16
+SEGMENT:         db      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
 iniDsp:          db      $28,$28,$06,$0F
                 org $1060
 Msg1_L1:                 fcc     "  MODO CONFIG"
@@ -102,8 +102,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$FF,Num_Array+4
         MOVB #$FF,Num_Array+5
         MOVB #99,CUENTA
-        MOVB #99,AcmPQ
-        MOVB #1,CantPQ
+        MOVB #0,AcmPQ
+        MOVB #0,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
         MOVB #1,CONT_DIG        ;para que funcione bien OC4
@@ -120,7 +120,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,DISP3
         MOVB #0,DISP4
         MOVB #0,CONT_7SEG
-        MOVB #50,CONT_7SEG + 1
+        MOVB #50,CONT_7SEG + 1     ; estaba en 50
         MOVB #0,Cont_Delay
         MOVB #VMAX,TIMER_CUENTA
 
@@ -459,9 +459,9 @@ no_mayor_a_5:
          Staa LOW
          Ldaa #$F0
          Anda BCD_L
-         Cmpa #50
+         Cmpa #$50
          Blo no_mayor_a_50
-         Adda #30
+         Adda #$30
 no_mayor_a_50:
          Adda LOW
          Staa BCD_L
@@ -479,26 +479,26 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
                          ; en la pantalla de 7 segmentos
                          ;**********************************************************
          Ldx #SEGMENT
-         Ldaa $0F
+         Ldaa #$0F
          Anda BCD2
          Movb A,X,DISP2
-         Ldaa $F0
+         Ldaa #$F0
          Anda BCD2
          Lsra
          Lsra
          Lsra
          Lsra
          Movb A,X,DISP1
-         Ldaa $0F
+         Ldaa #$0F
          Anda BCD1
-         Movb A,X,DISP3
-         Ldaa $F0
-         Anda BCD1
-         Lsra
-         Lsra
-         Lsra
-         Lsra
          Movb A,X,DISP4
+         Ldaa #$F0
+         Anda BCD1
+         Lsra
+         Lsra
+         Lsra
+         Lsra
+         Movb A,X,DISP3
          Rts
 
 
@@ -518,14 +518,14 @@ CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
          Tst BCD1
          Beq es_cero
          Ldaa BCD1
-         Cmpa #10
-         Blo BCD1_es_menor_a_10
+         Cmpa #9
+         Bls BCD1_es_menor_a_10
 revisar_BCD2:
          Tst BCD2
          Beq BCD2_es_cero
          Ldaa BCD2
-         Cmpa #10
-         Blo BCD2_es_menor_a_10
+         Cmpa #9
+         Bls BCD2_es_menor_a_10
          Rts
 BCD1_es_menor_a_10:
          Ldaa #$B0
