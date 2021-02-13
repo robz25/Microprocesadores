@@ -183,8 +183,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,LEDS
         MOVB #$3F,DISP1
         MOVB #$3F,DISP2
-        MOVB #$3F,DISP3
-        MOVB #$3F,DISP4
+        MOVB #$06,DISP3
+        MOVB #$5B,DISP4
 
         LDAA #255
 main:        MOVB D5mS,Cont_Delay
@@ -193,9 +193,9 @@ main:        MOVB D5mS,Cont_Delay
         
         MOVB #$1,LEDS
         MOVB #$06,DISP1
-        MOVB #$06,DISP2
-        MOVB #$06,DISP3
-        MOVB #$06,DISP4
+        MOVB #$5B,DISP2
+        MOVB #$4F,DISP3
+        MOVB #$66,DISP4
 
         LDAA #255
 main_1:        MOVB D5mS,Cont_Delay
@@ -204,9 +204,9 @@ main_1:        MOVB D5mS,Cont_Delay
         
         MOVB #$2,LEDS
         MOVB #$5B,DISP1
-        MOVB #$5B,DISP2
-        MOVB #$5B,DISP3
-        MOVB #$5B,DISP4
+        MOVB #$66,DISP2
+        MOVB #$6D,DISP3
+        MOVB #$7D,DISP4
 
         LDAA #255
 main_2:        MOVB D5mS,Cont_Delay
@@ -215,9 +215,9 @@ main_2:        MOVB D5mS,Cont_Delay
         
         MOVB #$4,LEDS
         MOVB #$4F,DISP1
-        MOVB #$4F,DISP2
-        MOVB #$4F,DISP3
-        MOVB #$4F,DISP4
+        MOVB #$7D,DISP2
+        MOVB #$07,DISP3
+        MOVB #$7F,DISP4
 
         LDAA #255
 main_3:        MOVB D5mS,Cont_Delay
@@ -226,9 +226,9 @@ main_3:        MOVB D5mS,Cont_Delay
         
         MOVB #$8,LEDS
         MOVB #$66,DISP1
-        MOVB #$66,DISP2
-        MOVB #$66,DISP3
-        MOVB #$66,DISP4
+        MOVB #$6F,DISP2
+        MOVB #$3F,DISP3
+        MOVB #$06,DISP4
 
         LDAA #255
 main_4:        MOVB D5mS,Cont_Delay
@@ -237,7 +237,7 @@ main_4:        MOVB D5mS,Cont_Delay
         
         MOVB #$10,LEDS
         MOVB #$6D,DISP1
-        MOVB #$6D,DISP2
+        MOVB #$3F,DISP2
         MOVB #$6D,DISP3
         MOVB #$6D,DISP4
 
@@ -249,7 +249,7 @@ main_5:        MOVB D5mS,Cont_Delay
         MOVB #$20,LEDS
         MOVB #$7D,DISP1
         MOVB #$7D,DISP2
-        MOVB #$7D,DISP3
+        MOVB #$3F,DISP3
         MOVB #$7D,DISP4
         
         LDAA #255
@@ -261,7 +261,7 @@ main_6:        MOVB D5mS,Cont_Delay
         MOVB #$7F,DISP1
         MOVB #$7F,DISP2
         MOVB #$7F,DISP3
-        MOVB #$7F,DISP4
+        MOVB #$3F,DISP4
         
         LDAA #255
 main_7:        MOVB D5mS,Cont_Delay
@@ -270,7 +270,7 @@ main_7:        MOVB D5mS,Cont_Delay
         
         MOVB #$80,LEDS
         MOVB #$6F,DISP1
-        MOVB #$6F,DISP2
+        MOVB #$3F,DISP2
         MOVB #$6F,DISP3
         MOVB #$6F,DISP4
         
@@ -282,7 +282,7 @@ main_8:        MOVB D5mS,Cont_Delay
         MOVB #0,LEDS
         MOVB #$40,DISP1
         MOVB #$40,DISP2
-        MOVB #$40,DISP3
+        MOVB #$3F,DISP3
         MOVB #$40,DISP4
         
         LDAA #255
