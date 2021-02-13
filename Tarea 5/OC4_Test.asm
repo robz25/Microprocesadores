@@ -613,20 +613,20 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
                          ; en la pantalla de 7 segmentos
                          ;**********************************************************
          Ldx #SEGMENT
-         Ldaa $0F
+         Ldaa #$0F
          Anda BCD2
          Movb A,X,DISP2
-         Ldaa $F0
+         Ldaa #$F0
          Anda BCD2
          Lsra
          Lsra
          Lsra
          Lsra
          Movb A,X,DISP1
-         Ldaa $0F
+         Ldaa #$0F
          Anda BCD1
          Movb A,X,DISP3
-         Ldaa $F0
+         Ldaa #$F0
          Anda BCD1
          Lsra
          Lsra
