@@ -180,7 +180,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
 
-        MOVB #1,LEDS
+        MOVB #0,LEDS
         MOVB #$3F,DISP1
         MOVB #$3F,DISP2
         MOVB #$3F,DISP3
@@ -189,9 +189,9 @@ main:
         LDAA #255
         MOVB D5mS,Cont_Delay
         JSR Delay
-        DBNE main
+        DBNE A,main
         
-        MOVB #$06,LEDS
+        MOVB #$1,LEDS
         MOVB #$06,DISP1
         MOVB #$06,DISP2
         MOVB #$06,DISP3
@@ -200,9 +200,9 @@ main_1:
         LDAA #255
         MOVB D5mS,main_1:
         JSR Delay
-        DBNE main_1
+        DBNE A,main_1
         
-        MOVB #$5B,LEDS
+        MOVB #$2,LEDS
         MOVB #$5B,DISP1
         MOVB #$5B,DISP2
         MOVB #$5B,DISP3
@@ -211,9 +211,9 @@ main_2:
         LDAA #255
         MOVB D5mS,main_2:
         JSR Delay
-        DBNE main_2
+        DBNE A,main_2
         
-        MOVB #$4F,LEDS
+        MOVB #$4,LEDS
         MOVB #$4F,DISP1
         MOVB #$4F,DISP2
         MOVB #$4F,DISP3
@@ -222,9 +222,9 @@ main_3:
         LDAA #255
         MOVB D5mS,main_3:
         JSR Delay
-        DBNE main_3
+        DBNE A,main_3
         
-        MOVB #$66,LEDS
+        MOVB #$8,LEDS
         MOVB #$66,DISP1
         MOVB #$66,DISP2
         MOVB #$66,DISP3
@@ -233,9 +233,9 @@ main_4:
         LDAA #255
         MOVB D5mS,main_4:
         JSR Delay
-        DBNE main_4
+        DBNE A,main_4
         
-        MOVB #6,LEDS
+        MOVB #10,LEDS
         MOVB #$6D,DISP1
         MOVB #$6D,DISP2
         MOVB #$6D,DISP3
@@ -244,9 +244,9 @@ main_5:
         LDAA #255
         MOVB D5mS,main_5:
         JSR Delay
-        DBNE main_5
+        DBNE A,main_5
 
-        MOVB #7,LEDS
+        MOVB #20,LEDS
         MOVB #$7D,DISP1
         MOVB #$7D,DISP2
         MOVB #$7D,DISP3
@@ -256,9 +256,9 @@ main_6:
         LDAA #255
         MOVB D5mS,main_6:
         JSR Delay
-        DBNE main_6
+        DBNE A,main_6
         
-        MOVB #8,LEDS
+        MOVB #40,LEDS
         MOVB #$7F,DISP1
         MOVB #$7F,DISP2
         MOVB #$7F,DISP3
@@ -268,9 +268,9 @@ main_7:
         LDAA #255
         MOVB D5mS,main_7:
         JSR Delay
-        DBNE main_7
+        DBNE A,main_7
         
-        MOVB #9,LEDS
+        MOVB #80,LEDS
         MOVB #$6F,DISP1
         MOVB #$6F,DISP2
         MOVB #$6F,DISP3
@@ -280,7 +280,7 @@ main_8:
         LDAA #255
         MOVB D5mS,main_8:
         JSR Delay
-        DBNE main_8
+        DBNE A,main_8
         
         MOVB #0,LEDS
         MOVB #$40,DISP1
@@ -292,7 +292,7 @@ main_9:
         LDAA #255
         MOVB D5mS,main_9:
         JSR Delay
-        DBNE main_9
+        DBNE A,main_9
         
         BRA *
 
@@ -675,7 +675,8 @@ RTI_ISR:                ;                Subrutina RTI_ISR
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
         BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
-        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+seguir_RTI:
+	BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC TIMER_CUENTA
 retorno_RTI:
         RTI
