@@ -198,7 +198,7 @@ main:   JSR Delay
         MOVB #$06,DISP4
 
         LDAA #255
-        MOVB D5mS,main_1:
+        MOVB D5mS,Cont_Delay
 main_1:        JSR Delay
         DBNE A,main_1
         
@@ -209,7 +209,7 @@ main_1:        JSR Delay
         MOVB #$5B,DISP4
 
         LDAA #255
-        MOVB D5mS,main_2:
+        MOVB D5mS,Cont_Delay
 main_2:        JSR Delay
         DBNE A,main_2
         
@@ -220,7 +220,7 @@ main_2:        JSR Delay
         MOVB #$4F,DISP4
 
         LDAA #255
-        MOVB D5mS,main_3:
+        MOVB D5mS,Cont_Delay
 main_3:        JSR Delay
         DBNE A,main_3
         
@@ -231,7 +231,7 @@ main_3:        JSR Delay
         MOVB #$66,DISP4
 
         LDAA #255
-        MOVB D5mS,main_4:
+        MOVB D5mS,Cont_Delay
 main_4:        JSR Delay
         DBNE A,main_4
         
@@ -242,7 +242,7 @@ main_4:        JSR Delay
         MOVB #$6D,DISP4
 
         LDAA #255
-        MOVB D5mS,main_5:
+        MOVB D5mS,Cont_Delay
 main_5:        JSR Delay
         DBNE A,main_5
 
@@ -253,7 +253,7 @@ main_5:        JSR Delay
         MOVB #$7D,DISP4
         
         LDAA #255
-        MOVB D5mS,main_6:
+        MOVB D5mS,Cont_Delay
 main_6:        JSR Delay
         DBNE A,main_6
         
@@ -264,7 +264,7 @@ main_6:        JSR Delay
         MOVB #$7F,DISP4
         
         LDAA #255
-        MOVB D5mS,main_7:
+        MOVB D5mS,Cont_Delay
 main_7:        JSR Delay
         DBNE A,main_7
         
@@ -275,7 +275,7 @@ main_7:        JSR Delay
         MOVB #$6F,DISP4
         
         LDAA #255
-        MOVB D5mS,main_8:
+        MOVB D5mS,Cont_Delay
 main_8:        JSR Delay
         DBNE A,main_8
         
@@ -286,7 +286,7 @@ main_8:        JSR Delay
         MOVB #$40,DISP4
         
         LDAA #255
-        MOVB D5mS,main_9:
+        MOVB D5mS,Cont_Delay
 main_9:        JSR Delay
         DBNE A,main_9
         
