@@ -171,9 +171,9 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         CLI
 
         JSR LCD_INIT
- ;        LDX #Msg1_L1
- ;        LDY #Msg1_L2
- ;        JSR Cargar_LCD
+        LDX #Msg1_L1
+        LDY #Msg1_L2
+        JSR Cargar_LCD
 
 
 ;*******************************************************************************
@@ -185,10 +185,10 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$3F,DISP2
         MOVB #$3F,DISP3
         MOVB #$3F,DISP4
-main:
+
         LDAA #255
         MOVB D5mS,Cont_Delay
-        JSR Delay
+main:   JSR Delay
         DBNE A,main
         
         MOVB #$1,LEDS
@@ -196,10 +196,10 @@ main:
         MOVB #$06,DISP2
         MOVB #$06,DISP3
         MOVB #$06,DISP4
-main_1:
+
         LDAA #255
         MOVB D5mS,main_1:
-        JSR Delay
+main_1:        JSR Delay
         DBNE A,main_1
         
         MOVB #$2,LEDS
@@ -207,10 +207,10 @@ main_1:
         MOVB #$5B,DISP2
         MOVB #$5B,DISP3
         MOVB #$5B,DISP4
-main_2:
+
         LDAA #255
         MOVB D5mS,main_2:
-        JSR Delay
+main_2:        JSR Delay
         DBNE A,main_2
         
         MOVB #$4,LEDS
@@ -218,10 +218,10 @@ main_2:
         MOVB #$4F,DISP2
         MOVB #$4F,DISP3
         MOVB #$4F,DISP4
-main_3:
+
         LDAA #255
         MOVB D5mS,main_3:
-        JSR Delay
+main_3:        JSR Delay
         DBNE A,main_3
         
         MOVB #$8,LEDS
@@ -229,10 +229,10 @@ main_3:
         MOVB #$66,DISP2
         MOVB #$66,DISP3
         MOVB #$66,DISP4
-main_4:
+
         LDAA #255
         MOVB D5mS,main_4:
-        JSR Delay
+main_4:        JSR Delay
         DBNE A,main_4
         
         MOVB #10,LEDS
@@ -240,10 +240,10 @@ main_4:
         MOVB #$6D,DISP2
         MOVB #$6D,DISP3
         MOVB #$6D,DISP4
-main_5:
+
         LDAA #255
         MOVB D5mS,main_5:
-        JSR Delay
+main_5:        JSR Delay
         DBNE A,main_5
 
         MOVB #20,LEDS
@@ -252,10 +252,9 @@ main_5:
         MOVB #$7D,DISP3
         MOVB #$7D,DISP4
         
-main_6:
         LDAA #255
         MOVB D5mS,main_6:
-        JSR Delay
+main_6:        JSR Delay
         DBNE A,main_6
         
         MOVB #40,LEDS
@@ -264,10 +263,9 @@ main_6:
         MOVB #$7F,DISP3
         MOVB #$7F,DISP4
         
-main_7:
         LDAA #255
         MOVB D5mS,main_7:
-        JSR Delay
+main_7:        JSR Delay
         DBNE A,main_7
         
         MOVB #80,LEDS
@@ -276,10 +274,9 @@ main_7:
         MOVB #$6F,DISP3
         MOVB #$6F,DISP4
         
-main_8:
         LDAA #255
         MOVB D5mS,main_8:
-        JSR Delay
+main_8:        JSR Delay
         DBNE A,main_8
         
         MOVB #0,LEDS
@@ -288,10 +285,9 @@ main_8:
         MOVB #$40,DISP3
         MOVB #$40,DISP4
         
-main_9:
         LDAA #255
         MOVB D5mS,main_9:
-        JSR Delay
+main_9:        JSR Delay
         DBNE A,main_9
         
         BRA *
