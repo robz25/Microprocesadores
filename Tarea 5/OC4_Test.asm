@@ -235,7 +235,7 @@ main_4:        MOVB D5mS,Cont_Delay
         JSR Delay
         DBNE A,main_4
         
-        MOVB #10,LEDS
+        MOVB #$10,LEDS
         MOVB #$6D,DISP1
         MOVB #$6D,DISP2
         MOVB #$6D,DISP3
@@ -246,7 +246,7 @@ main_5:        MOVB D5mS,Cont_Delay
         JSR Delay
         DBNE A,main_5
 
-        MOVB #20,LEDS
+        MOVB #$20,LEDS
         MOVB #$7D,DISP1
         MOVB #$7D,DISP2
         MOVB #$7D,DISP3
@@ -257,7 +257,7 @@ main_6:        MOVB D5mS,Cont_Delay
         JSR Delay
         DBNE A,main_6
         
-        MOVB #40,LEDS
+        MOVB #$40,LEDS
         MOVB #$7F,DISP1
         MOVB #$7F,DISP2
         MOVB #$7F,DISP3
@@ -268,7 +268,7 @@ main_7:        MOVB D5mS,Cont_Delay
         JSR Delay
         DBNE A,main_7
         
-        MOVB #80,LEDS
+        MOVB #$80,LEDS
         MOVB #$6F,DISP1
         MOVB #$6F,DISP2
         MOVB #$6F,DISP3
