@@ -181,8 +181,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;*******************************************************************************
 
         MOVB #0,LEDS
-        MOVB #2,BIN1
-        MOVB #5,BIN2
+        MOVB #74,BIN1
+        MOVB #74,BIN2
 ;        MOVB #$3F,DISP1
 ;        MOVB #$3F,DISP2
 ;        MOVB #$06,DISP3
@@ -190,12 +190,12 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 
         LDAA #255
 main:        MOVB D5mS,Cont_Delay
-	  JSR Delay
+          JSR Delay
         DBNE A,main
         
         MOVB #$1,LEDS
-        MOVB #7,BIN1
-        MOVB #9,BIN2
+        MOVB #77,BIN1
+        MOVB #77,BIN2
 ;        MOVB #$06,DISP1
 ;        MOVB #$5B,DISP2
 ;        MOVB #$4F,DISP3
@@ -207,8 +207,8 @@ main_1:        MOVB D5mS,Cont_Delay
         DBNE A,main_1
         
         MOVB #$2,LEDS
-        MOVB #10,BIN1
-        MOVB #10,BIN2
+        MOVB #66,BIN1
+        MOVB #66,BIN2
 ;;        MOVB #$5B,DISP1
 ;;        MOVB #$66,DISP2
 ;        MOVB #$6D,DISP3
@@ -220,8 +220,8 @@ main_2:        MOVB D5mS,Cont_Delay
         DBNE A,main_2
         
         MOVB #$4,LEDS
-        MOVB #15,BIN1
-        MOVB #19,BIN2
+        MOVB #82,BIN1
+        MOVB #82,BIN2
 ;        MOVB #$4F,DISP1
 ;        MOVB #$7D,DISP2
 ;        MOVB #$07,DISP3
@@ -233,8 +233,8 @@ main_3:        MOVB D5mS,Cont_Delay
         DBNE A,main_3
         
         MOVB #$8,LEDS
-        MOVB #20,BIN1
-        MOVB #30,BIN2
+        MOVB #83,BIN1
+        MOVB #83,BIN2
  ;       MOVB #$66,DISP1
  ;       MOVB #$6F,DISP2
  ;       MOVB #$3F,DISP3
@@ -246,8 +246,8 @@ main_4:        MOVB D5mS,Cont_Delay
         DBNE A,main_4
         
         MOVB #$10,LEDS
-        MOVB #40,BIN1
-        MOVB #50,BIN2
+        MOVB #84,BIN1
+        MOVB #84,BIN2
     ;    MOVB #$6D,DISP1
   ;      MOVB #$3F,DISP2
    ;     MOVB #$6D,DISP3
@@ -259,8 +259,8 @@ main_5:        MOVB D5mS,Cont_Delay
         DBNE A,main_5
 
         MOVB #$20,LEDS
-        MOVB #60,BIN1
-        MOVB #70,BIN2
+        MOVB #85,BIN1
+        MOVB #85,BIN2
      ;   MOVB #$7D,DISP1
       ;  MOVB #$7D,DISP2
        ; MOVB #$3F,DISP3
@@ -272,8 +272,8 @@ main_6:        MOVB D5mS,Cont_Delay
         DBNE A,main_6
         
         MOVB #$40,LEDS
-        MOVB #80,BIN1
-        MOVB #90,BIN2
+        MOVB #86,BIN1
+        MOVB #86,BIN2
 ;        MOVB #$7F,DISP1
 ;        MOVB #$7F,DISP2
 ;        MOVB #$7F,DISP3
@@ -286,7 +286,7 @@ main_7:        MOVB D5mS,Cont_Delay
         
         MOVB #$80,LEDS
         MOVB #87,BIN1
-        MOVB #56,BIN2
+        MOVB #87,BIN2
 ;        MOVB #$6F,DISP1
 ;        MOVB #$3F,DISP2
 ;        MOVB #$6F,DISP3
@@ -298,8 +298,8 @@ main_8:        MOVB D5mS,Cont_Delay
         DBNE A,main_8
         
         MOVB #0,LEDS
-        MOVB #99,BIN1
-        MOVB #91,BIN2
+        MOVB #88,BIN1
+        MOVB #88,BIN2
 ;        MOVB #$40,DISP1
 ;        MOVB #$40,DISP2
 ;        MOVB #$3F,DISP3
@@ -593,9 +593,9 @@ no_mayor_a_5:
          Staa LOW
          Ldaa #$F0
          Anda BCD_L
-         Cmpa #50
+         Cmpa #$50
          Blo no_mayor_a_50
-         Adda #30
+         Adda #$30
 no_mayor_a_50:
          Adda LOW
          Staa BCD_L
@@ -603,7 +603,7 @@ no_mayor_a_50:
 ;         Decb
 ;         Tstb
          DBne B,Loop1
-;         Lsla
+         Lsla  ; No quitar, entender later xD
          Rol BCD_L
          Rts
 
@@ -625,14 +625,14 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
          Movb A,X,DISP1
          Ldaa #$0F
          Anda BCD1
-         Movb A,X,DISP3
+         Movb A,X,DISP4
          Ldaa #$F0
          Anda BCD1
          Lsra
          Lsra
          Lsra
          Lsra
-         Movb A,X,DISP4
+         Movb A,X,DISP3
          Rts
 
 
@@ -652,14 +652,14 @@ CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
          Tst BCD1
          Beq es_cero
          Ldaa BCD1
-         Cmpa #10
-         Blo BCD1_es_menor_a_10
+         Cmpa #9
+         Bls BCD1_es_menor_a_10
 revisar_BCD2:
          Tst BCD2
          Beq BCD2_es_cero
          Ldaa BCD2
-         Cmpa #10
-         Blo BCD2_es_menor_a_10
+         Cmpa #9
+         Bls BCD2_es_menor_a_10
          Rts
 BCD1_es_menor_a_10:
          Ldaa #$B0
@@ -692,7 +692,7 @@ RTI_ISR:                ;                Subrutina RTI_ISR
         BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
 seguir_RTI:
-	BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC TIMER_CUENTA
 retorno_RTI:
         RTI
