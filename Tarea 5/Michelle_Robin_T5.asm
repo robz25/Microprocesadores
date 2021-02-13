@@ -106,7 +106,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #1,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
-        MOVB #1,CONT_DIG
+        MOVB #1,CONT_DIG        ;para que funcione bien OC4
         MOVB #0,DT
         MOVB #0,BIN1
         MOVB #0,BIN2
@@ -630,34 +630,36 @@ disminuir_brillo:
         BRA retorno_PTH_ISR
 
 OC4_ISR:
-
-
-
-
-        BSET TFLG2,$80  ;borrar int
+;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
                         ;                Subrutina OC4_ISR
                         ;*******************************************************
                         ;Subrutina que genera interrupciones cada 50 KHz
                         ;*******************************************************
         Tst Cont_Delay
-        LBne Decrementar_Cont_Delay
+        BEQ aumentar_CONT_TICKS
+        Dec Cont_Delay
 aumentar_CONT_TICKS:
         Inc CONT_TICKS
         Ldaa #100
         Cmpa CONT_TICKS
-        Bne Manipular_CONT_7SEG
+        Bne aumentar_CONT_7SEG
         Clr CONT_TICKS
         Lsl CONT_DIG
         Ldaa #$10
         Cmpa CONT_DIG
-        LBeq poner_1_CONT_DIG
-Manipular_CONT_7SEG:
+        BNE aumentar_CONT_7SEG
+        MOVB #1,CONT_DIG
+aumentar_CONT_7SEG:    ;aumentar cont7_seg
         Ldd CONT_7SEG
         Addd #1
         Std CONT_7SEG
-        Ldd #5000
-        Cpd CONT_7SEG
-        LBeq Llamar_subrutinas
+;        Ldd #5000
+        Cpd #5000
+        BNE Antes_de_revisar_CONT_DIG
+        Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
+        Jsr CONV_BIN_BCD
+        Jsr BCD_7SEG
+
 Antes_de_revisar_CONT_DIG:
         Ldaa #100
         Suba BRILLO
@@ -680,7 +682,9 @@ Antes_de_revisar_CONT_DIG:
         Cmpa CONT_DIG
         Beq CONT_DIG_es_8
         Movb DISP1,PORTB
-        Bset PTP,$0E     ;PTP.[3:0] <- $E
+        LDAA #$0E
+        MOVB #$0E,PTP   ;que hay en el nibble superior de P?
+;        Bset PTP,$0E     ;PTP.[3:0] <- $E
         Bset PTJ,$2
 Antes_de_retornar:
         Ldd TCNT
@@ -690,49 +694,35 @@ Antes_de_retornar:
 
 CONT_DIG_es_8:
         Movb DISP2,PORTB
-        Bset PTP,$0D   ;PTP.[3:0] <- $D
+        MOVB #$0D,PTP
+;        Bset PTP,$0D   ;PTP.[3:0] <- $D
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_4:
         Movb DISP3,PORTB
-        Bset PTP,$0B ;PTP.[3:0] <- $B
+        MOVB #$0B,PTP
+;        Bset PTP,$0B ;PTP.[3:0] <- $B
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_2:
         Movb DISP4,PORTB
-        Bset PTP,$07 ;PTP.[2:0] <- 7
+        MOVB #$07,PTP
+;        Bset PTP,$07 ;PTP.[2:0] <- 7
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_1:
         Movb LEDS,PORTB
-        Bset PTP,$F
+        MOVB #$0F,PTP
+;        Bset PTP,$F
         BClr PTJ,$2
         Bra Antes_de_retornar
 
 Portb_cero:
         Movb #$0,PORTB
         Bra Antes_de_retornar
-
-Llamar_subrutinas:
-        Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
-        Jsr CONV_BIN_BCD
-        Jsr BCD_7SEG
-        LBra Antes_de_revisar_CONT_DIG
-
-poner_1_CONT_DIG:
-        Ldaa #1
-        Staa CONT_DIG
-        LBra Manipular_CONT_7SEG
-
-Decrementar_Cont_Delay:
-        Dec Cont_Delay
-        LBra aumentar_CONT_TICKS
-
-
-
 
 
 ;*******************************************************************************
