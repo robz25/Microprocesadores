@@ -555,9 +555,10 @@ RTI_ISR:                ;                Subrutina RTI_ISR
                         ;Subrutina que cuenta 1 ms
                         ;*******************************************************
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
-        BRCLR Cont_Reb,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+        BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
-
+        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+        DEC TIMER_CUENTA
 retorno_RTI:
         RTI
 
