@@ -57,7 +57,7 @@ Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         ds      16
+SEGMENT:         ds      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
 iniDsp:          db      $28,$28,$06,$0F
 D5mS:            db      250
                 org $1060
@@ -600,10 +600,10 @@ no_mayor_a_50:
          Adda LOW
          Staa BCD_L
          Ldaa TEMP
-         Decb
-         Tstb
-         Bne Loop1
-         Lsla
+;         Decb
+;         Tstb
+         DBne B,Loop1
+;         Lsla
          Rol BCD_L
          Rts
 
