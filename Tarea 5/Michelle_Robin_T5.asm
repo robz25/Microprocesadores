@@ -267,7 +267,7 @@ loopIniDsp:
         RTS
 
 MODO_CONFIG:
-      MOVB #2,LEDS
+      ;MOVB #2,LEDS
       ;INC CantPQ
       MOVB #2,LEDS
       BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
@@ -557,6 +557,7 @@ RTI_ISR:                ;                Subrutina RTI_ISR
         BSET CRGFLG,$80         ;borrar bandera de interrupcion
         BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
+seguir_RTI:
         BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC TIMER_CUENTA
 retorno_RTI:

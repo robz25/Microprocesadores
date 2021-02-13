@@ -711,13 +711,13 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         
 3e4c                             org        $3E4C       ;debug12
-3e4c 23 b4                      dw PTH_ISR
+3e4c 23 af                      dw PTH_ISR
                         
 3e70                             org        $3E70       ;debug12
-3e70 23 a0                      dw RTI_ISR
+3e70 23 9b                      dw RTI_ISR
                         
 3e66                             org        $3E66       ;debug12
-3e66 24 3e                      dw OC4_ISR
+3e66 24 39                      dw OC4_ISR
                         
                         ;*******************************************************************************
                         ;          Inicializacion de estructuras de datos y config de hardware
@@ -849,10 +849,10 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                 ;JSR LCD_INIT
 2138 ce 10 7d                   Ldx #Msg2_L1
 213b cd 10 8a                   Ldy #Msg2_L2
-213e 16 22 10                   Jsr Cargar_LCD
+213e 16 22 0b                   Jsr Cargar_LCD
 2141                    Ir_a_Modo_RUN:
 2141 18 0b 04 00 01             MOVB #$04,PORTB   ;led 2
-2146 16 21 d6                   Jsr MODO_RUN
+2146 16 21 d1                   Jsr MODO_RUN
 2149 20 b3                      Bra Loop_main
 214b                    quitar_modo_actual:
 214b 1d 10 00 08                BCLR Banderas,$08
@@ -870,7 +870,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                                 ;JSR LCD_INIT
 2163 ce 10 60                   Ldx #Msg1_L1
 2166 cd 10 6e                   Ldy #Msg1_L2
-2169 16 22 10                   Jsr Cargar_LCD
+2169 16 22 0b                   Jsr Cargar_LCD
 216c                    Ir_a_Modo_CONFIG:
 216c 18 0b 40 00 01             MOVB #$40,PORTB ;led 6
 2171 16 21 9f                   Jsr MODO_CONFIG
@@ -890,295 +890,295 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 2179 ce 10 46                   LDX #iniDsp
 217c                    loopIniDsp:
 217c a6 e5                      LDAA B,X
-217e 16 22 66                   JSR SendCommand
+217e 16 22 61                   JSR SendCommand
 2181 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-2187 16 22 cc                   JSR Delay
+2187 16 22 c7                   JSR Delay
 218a 52                         INCB
 218b c1 04                      CMPB #4
 218d 26 ed                      BNE loopIniDsp
 218f b6 10 23                   LDAA Clear_LCD
-2192 16 22 66                   JSR SendCommand
+2192 16 22 61                   JSR SendCommand
 2195 18 0c 10 20 10 1f          MOVB D2mS,Cont_Delay
-219b 16 22 cc                   JSR Delay
+219b 16 22 c7                   JSR Delay
 219e 3d                         RTS
                         
 219f                    MODO_CONFIG:
-219f 18 0b 02 10 0d           MOVB #2,LEDS
+                              ;MOVB #2,LEDS
                               ;INC CantPQ
-21a4 18 0b 02 10 0d           MOVB #2,LEDS
-21a9 1f 10 00 04 24           BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
-21ae 16 22 d2                 Jsr BCD_BIN
-21b1 86 19                    Ldaa #25
-21b3 b1 10 0b                 Cmpa CantPQ
-21b6 25 07                    Blo no_valido
-21b8 86 55                    Ldaa #85
-21ba b1 10 0b                 Cmpa CantPQ
-21bd 25 08                    Blo valido
-21bf                    no_valido:
-21bf 1d 10 00 04              BClr Banderas,$04
-21c3 79 10 0b                 Clr CantPQ
-21c6 3d                       Rts
-21c7                    valido:
-21c7 1d 10 00 04              BClr Banderas,$04
-21cb 18 0c 10 0b 10 12        Movb CantPQ,BIN1
-21d1 3d                       Rts
-21d2                    llamar_Tarea_Teclado:
-21d2 16 25 0f                 Jsr Tarea_Teclado
-21d5 3d                       Rts
+219f 18 0b 02 10 0d           MOVB #2,LEDS
+21a4 1f 10 00 04 24           BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
+21a9 16 22 cd                 Jsr BCD_BIN
+21ac 86 19                    Ldaa #25
+21ae b1 10 0b                 Cmpa CantPQ
+21b1 25 07                    Blo no_valido
+21b3 86 55                    Ldaa #85
+21b5 b1 10 0b                 Cmpa CantPQ
+21b8 25 08                    Blo valido
+21ba                    no_valido:
+21ba 1d 10 00 04              BClr Banderas,$04
+21be 79 10 0b                 Clr CantPQ
+21c1 3d                       Rts
+21c2                    valido:
+21c2 1d 10 00 04              BClr Banderas,$04
+21c6 18 0c 10 0b 10 12        Movb CantPQ,BIN1
+21cc 3d                       Rts
+21cd                    llamar_Tarea_Teclado:
+21cd 16 25 0a                 Jsr Tarea_Teclado
+21d0 3d                       Rts
                         
                         
-21d6                    MODO_RUN:               ;                 Subrutina MODO_RUN
+21d1                    MODO_RUN:               ;                 Subrutina MODO_RUN
                                                 ;*******************************************************
                                                 ; Subrutina que lleva la cuenta de tornillos
                                                 ;*******************************************************
-21d6 18 0b 01 10 0d             MOVB #1,LEDS
-21db f7 10 0c                   TST TIMER_CUENTA
-21de 26 23                      BNE retorno_MODO_RUN
-21e0 18 0b ff 10 0c             MOVB #VMAX,TIMER_CUENTA
-21e5 72 10 09                   INC CUENTA
-21e8 b6 10 09                   LDAA CUENTA
-21eb b1 10 0b                   CMPA CantPQ
-21ee 26 13                      BNE retorno_MODO_RUN
-21f0 4d 38 80                   BCLR CRGINT,$80 ;apagar RTI
-21f3 72 10 0a                   INC AcmPQ
-21f6 4c 08 04                   BSET PORTE,$04
-21f9 86 64                      LDAA #100
-21fb b1 10 0a                   CMPA AcmPQ
-21fe 26 03                      BNE retorno_MODO_RUN
-2200 79 10 0a                   CLR AcmPQ
+21d1 18 0b 01 10 0d             MOVB #1,LEDS
+21d6 f7 10 0c                   TST TIMER_CUENTA
+21d9 26 23                      BNE retorno_MODO_RUN
+21db 18 0b ff 10 0c             MOVB #VMAX,TIMER_CUENTA
+21e0 72 10 09                   INC CUENTA
+21e3 b6 10 09                   LDAA CUENTA
+21e6 b1 10 0b                   CMPA CantPQ
+21e9 26 13                      BNE retorno_MODO_RUN
+21eb 4d 38 80                   BCLR CRGINT,$80 ;apagar RTI
+21ee 72 10 0a                   INC AcmPQ
+21f1 4c 08 04                   BSET PORTE,$04
+21f4 86 64                      LDAA #100
+21f6 b1 10 0a                   CMPA AcmPQ
+21f9 26 03                      BNE retorno_MODO_RUN
+21fb 79 10 0a                   CLR AcmPQ
                         
-2203                    retorno_MODO_RUN:
-2203 18 0c 10 09 10 12          MOVB CUENTA,BIN1
-2209 18 0c 10 0a 10 13          MOVB AcmPQ,BIN2
-220f 3d                         RTS
-                        
-                        
+21fe                    retorno_MODO_RUN:
+21fe 18 0c 10 09 10 12          MOVB CUENTA,BIN1
+2204 18 0c 10 0a 10 13          MOVB AcmPQ,BIN2
+220a 3d                         RTS
                         
                         
-2210                    Cargar_LCD:             ;                 Subrutina Cargar_LCD
+                        
+                        
+220b                    Cargar_LCD:             ;                 Subrutina Cargar_LCD
                                                 ;*******************************************************
                                                 ;Envia datos a al pantalla LCD
                                                 ;recibe direcciones de datos en X linea 1 y en Y linea 2
                                                 ;llama a SendCommand y SendData
                                                 ;*******************************************************
-2210 b6 10 23                   LDAA Clear_LCD  ;para borrar info anterior en pantalla LCD
-2213 16 22 66                   JSR SendCommand
-2216 18 0c 10 20 10 1f          MOVB D2mS,Cont_Delay
-221c 16 22 cc                   JSR Delay
+220b b6 10 23                   LDAA Clear_LCD  ;para borrar info anterior en pantalla LCD
+220e 16 22 61                   JSR SendCommand
+2211 18 0c 10 20 10 1f          MOVB D2mS,Cont_Delay
+2217 16 22 c7                   JSR Delay
                         
-221f b6 10 24                   LDAA ADD_L1
-2222 16 22 66                   JSR SendCommand
-2225 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-222b 16 22 cc                   JSR Delay
-222e                    loop_L1:
-222e a6 30                      LDAA 1,X+
-2230 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
-2232 27 0e                      BEQ inicio_L2
-2234 16 22 99                   JSR SendData
-2237 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-223d 16 22 cc                   JSR Delay
-2240 20 ec                      BRA loop_L1
+221a b6 10 24                   LDAA ADD_L1
+221d 16 22 61                   JSR SendCommand
+2220 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+2226 16 22 c7                   JSR Delay
+2229                    loop_L1:
+2229 a6 30                      LDAA 1,X+
+222b 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
+222d 27 0e                      BEQ inicio_L2
+222f 16 22 94                   JSR SendData
+2232 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+2238 16 22 c7                   JSR Delay
+223b 20 ec                      BRA loop_L1
                         
-2242                    inicio_L2:
-2242 b6 10 25                   LDAA ADD_L2
-2245 16 22 66                   JSR SendCommand
-2248 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-224e 16 22 cc                   JSR Delay
-2251                    loop_L2:
-2251 a6 70                      LDAA 1,Y+
-2253 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
-2255 27 0e                      BEQ retorno_cargar_LCD
-2257 16 22 99                   JSR SendData
-225a 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
-2260 16 22 cc                   JSR Delay
-2263 20 ec                      BRA loop_L2
+223d                    inicio_L2:
+223d b6 10 25                   LDAA ADD_L2
+2240 16 22 61                   JSR SendCommand
+2243 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+2249 16 22 c7                   JSR Delay
+224c                    loop_L2:
+224c a6 70                      LDAA 1,Y+
+224e 81 ff                      CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
+2250 27 0e                      BEQ retorno_cargar_LCD
+2252 16 22 94                   JSR SendData
+2255 18 0c 10 22 10 1f          MOVB D40uS,Cont_Delay
+225b 16 22 c7                   JSR Delay
+225e 20 ec                      BRA loop_L2
                         
-2265                    retorno_cargar_LCD:
-2265 3d                         RTS
+2260                    retorno_cargar_LCD:
+2260 3d                         RTS
                         
-2266                    SendCommand:            ;                 Subrutina SendCommand
+2261                    SendCommand:            ;                 Subrutina SendCommand
                                                 ;*******************************************************
                                                 ;Envia comandos a la memoria de la pantalla LCD
                                                 ;recibe el comando en A
                                                 ;*******************************************************
-2266 36                         PSHA
-2267 84 f0                      ANDA #$F0
-2269 44                         LSRA
-226a 44                         LSRA
-226b 5a 32                      STAA PORTK
-226d 4d 32 01                   BCLR PORTK,$01
-2270 4c 32 02                   BSET PORTK,$02
-2273 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-2279 16 22 cc                   JSR Delay
-227c 4d 32 02                   BCLR PORTK,$02
-227f 32                         PULA
-2280 84 0f                      ANDA #$0F
-2282 48                         LSLA
-2283 48                         LSLA
-2284 5a 32                      STAA PORTK
-2286 4d 32 01                   BCLR PORTK,$01
-2289 4c 32 02                   BSET PORTK,$02
-228c 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-2292 16 22 cc                   JSR Delay
-2295 4d 32 02                   BCLR PORTK,$02
-2298 3d                         RTS
+2261 36                         PSHA
+2262 84 f0                      ANDA #$F0
+2264 44                         LSRA
+2265 44                         LSRA
+2266 5a 32                      STAA PORTK
+2268 4d 32 01                   BCLR PORTK,$01
+226b 4c 32 02                   BSET PORTK,$02
+226e 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+2274 16 22 c7                   JSR Delay
+2277 4d 32 02                   BCLR PORTK,$02
+227a 32                         PULA
+227b 84 0f                      ANDA #$0F
+227d 48                         LSLA
+227e 48                         LSLA
+227f 5a 32                      STAA PORTK
+2281 4d 32 01                   BCLR PORTK,$01
+2284 4c 32 02                   BSET PORTK,$02
+2287 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+228d 16 22 c7                   JSR Delay
+2290 4d 32 02                   BCLR PORTK,$02
+2293 3d                         RTS
                         
                                                 ;*******************************************************
-2299                    SendData:               ;                 Subrutina SendData
+2294                    SendData:               ;                 Subrutina SendData
                                                 ;*******************************************************
                                                 ;Envia datos a la memoria de la pantalla LCD, recibe
                                                 ;comando en A
                                                 ;*******************************************************
-2299 36                         PSHA
-229a 84 f0                      ANDA #$F0
-229c 44                         LSRA
-229d 44                         LSRA
-229e 5a 32                      STAA PORTK
-22a0 4c 32 01                   BSET PORTK,$01       ;dato
-22a3 4c 32 02                   BSET PORTK,$02
-22a6 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-22ac 16 22 cc                   JSR Delay
-22af 4d 32 02                   BCLR PORTK,$02
-22b2 32                         PULA
-22b3 84 0f                      ANDA #$0F
-22b5 48                         LSLA
-22b6 48                         LSLA
-22b7 5a 32                      STAA PORTK
-22b9 4c 32 01                   BSET PORTK,$01  ;dato
-22bc 4c 32 02                   BSET PORTK,$02
-22bf 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
-22c5 16 22 cc                   JSR Delay
-22c8 4d 32 02                   BCLR PORTK,$02
-22cb 3d                         RTS
+2294 36                         PSHA
+2295 84 f0                      ANDA #$F0
+2297 44                         LSRA
+2298 44                         LSRA
+2299 5a 32                      STAA PORTK
+229b 4c 32 01                   BSET PORTK,$01       ;dato
+229e 4c 32 02                   BSET PORTK,$02
+22a1 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+22a7 16 22 c7                   JSR Delay
+22aa 4d 32 02                   BCLR PORTK,$02
+22ad 32                         PULA
+22ae 84 0f                      ANDA #$0F
+22b0 48                         LSLA
+22b1 48                         LSLA
+22b2 5a 32                      STAA PORTK
+22b4 4c 32 01                   BSET PORTK,$01  ;dato
+22b7 4c 32 02                   BSET PORTK,$02
+22ba 18 0c 10 21 10 1f          MOVB D260uS,Cont_Delay
+22c0 16 22 c7                   JSR Delay
+22c3 4d 32 02                   BCLR PORTK,$02
+22c6 3d                         RTS
                         
                                                 ;*******************************************************
-22cc                    Delay:                  ;                 Subrutina Delay
+22c7                    Delay:                  ;                 Subrutina Delay
                                                 ;*******************************************************
                                                 ;Genera retardo para enviar información a la pantalla
                                                 ;LCD, se queda en un loop hasta que la variable ha sido
                                                 ;DECrementada a 0 por OC4
                                                 ;*******************************************************
-22cc f7 10 1f                   TST Cont_Delay
-22cf 26 fb                      BNE Delay
-22d1 3d                         RTS
+22c7 f7 10 1f                   TST Cont_Delay
+22ca 26 fb                      BNE Delay
+22cc 3d                         RTS
                         
                         
-22d2                    BCD_BIN:                 ;          Subrutina BCD_BIN
+22cd                    BCD_BIN:                 ;          Subrutina BCD_BIN
                                                  ;******************************************************
                                                  ;  Se encarga de convertir un número de BCD a Binario
                                                  ;******************************************************
-22d2 ce 10 07                    Ldx #Num_Array
-22d5 c6 0a                       Ldab #$A
-22d7 a6 20                       Ldaa 1,+X
-22d9 12                          Mul
-22da a6 00                       Ldaa 0,X
-22dc 18 06                       Aba
-22de 7a 10 0b                    Staa CantPQ
-22e1 3d                          Rts
+22cd ce 10 07                    Ldx #Num_Array
+22d0 c6 0a                       Ldab #$A
+22d2 a6 20                       Ldaa 1,+X
+22d4 12                          Mul
+22d5 a6 00                       Ldaa 0,X
+22d7 18 06                       Aba
+22d9 7a 10 0b                    Staa CantPQ
+22dc 3d                          Rts
                         
-22e2                    BIN_BCD:                 ;          Subrutina BIN_BCD
+22dd                    BIN_BCD:                 ;          Subrutina BIN_BCD
                                                  ;**********************************************************
                                                  ;Subrutina que pasa un número de binario (BIN) a BCD (BCD_l)
                                                  ;**********************************************************
                                  ;Ldaa BIN1   ;  Tengo que meter el número binario en el acumulador A antes
-22e2 c6 07                       Ldab #7
-22e4 18 0b 00 10 14              Movb #0,BCD_L
-22e9 48                 Loop1:   Lsla
-22ea 75 10 14                    Rol BCD_L
-22ed 7a 10 16                    Staa TEMP
-22f0 86 0f                       Ldaa #$0F
-22f2 b4 10 14                    Anda BCD_L
-22f5 81 05                       Cmpa #5
-22f7 25 02                       Blo no_mayor_a_5
-22f9 8b 03                       Adda #3
-22fb                    no_mayor_a_5:
-22fb 7a 10 15                    Staa LOW
-22fe 86 f0                       Ldaa #$F0
-2300 b4 10 14                    Anda BCD_L
-2303 81 32                       Cmpa #50
-2305 25 02                       Blo no_mayor_a_50
-2307 8b 1e                       Adda #30
-2309                    no_mayor_a_50:
-2309 bb 10 15                    Adda LOW
-230c 7a 10 14                    Staa BCD_L
-230f b6 10 16                    Ldaa TEMP
-2312 53                          Decb
-2313 d7                          Tstb
-2314 26 d3                       Bne Loop1
-2316 48                          Lsla
-2317 75 10 14                    Rol BCD_L
-231a 3d                          Rts
+22dd c6 07                       Ldab #7
+22df 18 0b 00 10 14              Movb #0,BCD_L
+22e4 48                 Loop1:   Lsla
+22e5 75 10 14                    Rol BCD_L
+22e8 7a 10 16                    Staa TEMP
+22eb 86 0f                       Ldaa #$0F
+22ed b4 10 14                    Anda BCD_L
+22f0 81 05                       Cmpa #5
+22f2 25 02                       Blo no_mayor_a_5
+22f4 8b 03                       Adda #3
+22f6                    no_mayor_a_5:
+22f6 7a 10 15                    Staa LOW
+22f9 86 f0                       Ldaa #$F0
+22fb b4 10 14                    Anda BCD_L
+22fe 81 32                       Cmpa #50
+2300 25 02                       Blo no_mayor_a_50
+2302 8b 1e                       Adda #30
+2304                    no_mayor_a_50:
+2304 bb 10 15                    Adda LOW
+2307 7a 10 14                    Staa BCD_L
+230a b6 10 16                    Ldaa TEMP
+230d 53                          Decb
+230e d7                          Tstb
+230f 26 d3                       Bne Loop1
+2311 48                          Lsla
+2312 75 10 14                    Rol BCD_L
+2315 3d                          Rts
                         
-231b                    BCD_7SEG:                ;          Subrutina BCD_7SEG
+2316                    BCD_7SEG:                ;          Subrutina BCD_7SEG
                                                  ;**********************************************************
                                                  ;  Carga los valores correspondientes a ser desplegados
                                                  ; en la pantalla de 7 segmentos
                                                  ;**********************************************************
-231b ce 10 36                    Ldx #SEGMENT
-231e 96 0f                       Ldaa $0F
-2320 b4 10 18                    Anda BCD2
-2323 18 0d e4 10 1a              Movb A,X,DISP2
-2328 96 f0                       Ldaa $F0
-232a b4 10 18                    Anda BCD2
-232d 44                          Lsra
-232e 44                          Lsra
-232f 44                          Lsra
-2330 44                          Lsra
-2331 18 0d e4 10 19              Movb A,X,DISP1
-2336 96 0f                       Ldaa $0F
-2338 b4 10 17                    Anda BCD1
-233b 18 0d e4 10 1b              Movb A,X,DISP3
-2340 96 f0                       Ldaa $F0
-2342 b4 10 17                    Anda BCD1
-2345 44                          Lsra
-2346 44                          Lsra
-2347 44                          Lsra
-2348 44                          Lsra
-2349 18 0d e4 10 1c              Movb A,X,DISP4
-234e 3d                          Rts
+2316 ce 10 36                    Ldx #SEGMENT
+2319 96 0f                       Ldaa $0F
+231b b4 10 18                    Anda BCD2
+231e 18 0d e4 10 1a              Movb A,X,DISP2
+2323 96 f0                       Ldaa $F0
+2325 b4 10 18                    Anda BCD2
+2328 44                          Lsra
+2329 44                          Lsra
+232a 44                          Lsra
+232b 44                          Lsra
+232c 18 0d e4 10 19              Movb A,X,DISP1
+2331 96 0f                       Ldaa $0F
+2333 b4 10 17                    Anda BCD1
+2336 18 0d e4 10 1b              Movb A,X,DISP3
+233b 96 f0                       Ldaa $F0
+233d b4 10 17                    Anda BCD1
+2340 44                          Lsra
+2341 44                          Lsra
+2342 44                          Lsra
+2343 44                          Lsra
+2344 18 0d e4 10 1c              Movb A,X,DISP4
+2349 3d                          Rts
                         
                         
-234f                    CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
+234a                    CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
                                                  ;******************************************************
                                                  ;  Se encarga de poner BIN1 y BIN2 en el acumulador dos
                                                  ;  para llamar a BIN_BCD y guardar los resultados
                                                  ; según corresponda, además devuelve $B si un LED
                                                  ; debe estar apagado
                                                  ;******************************************************
-234f b6 10 12                    Ldaa BIN1
-2352 16 22 e2                    Jsr BIN_BCD
-2355 18 0c 10 14 10 17           Movb BCD_L,BCD1
-235b b6 10 13                    Ldaa BIN2
-235e 16 22 e2                    Jsr BIN_BCD
-2361 18 0c 10 14 10 18           Movb BCD_L,BCD2
-2367 f7 10 17                    Tst BCD1
-236a 27 27                       Beq es_cero
-236c b6 10 17                    Ldaa BCD1
-236f 81 0a                       Cmpa #10
-2371 25 0d                       Blo BCD1_es_menor_a_10
-2373                    revisar_BCD2:
-2373 f7 10 18                    Tst BCD2
-2376 27 22                       Beq BCD2_es_cero
-2378 b6 10 18                    Ldaa BCD2
-237b 81 0a                       Cmpa #10
-237d 25 0b                       Blo BCD2_es_menor_a_10
-237f 3d                          Rts
-2380                    BCD1_es_menor_a_10:
-2380 86 b0                       Ldaa #$B0
-2382 b8 10 17                    Eora BCD1
-2385 7a 10 17                    Staa BCD1
-2388 20 e9                       Bra revisar_BCD2
-238a                    BCD2_es_menor_a_10:
-238a 86 b0                       Ldaa #$B0
-238c b8 10 18                    Eora BCD2
-238f 7a 10 18                    Staa BCD2
-2392 3d                          Rts
-2393                    es_cero:
-2393 18 0b bb 10 17              Movb #$BB,BCD1
-2398 20 d9                       Bra revisar_BCD2
-239a                    BCD2_es_cero:
-239a 18 0b bb 10 18              Movb #$BB,BCD2
-239f 3d                          Rts
+234a b6 10 12                    Ldaa BIN1
+234d 16 22 dd                    Jsr BIN_BCD
+2350 18 0c 10 14 10 17           Movb BCD_L,BCD1
+2356 b6 10 13                    Ldaa BIN2
+2359 16 22 dd                    Jsr BIN_BCD
+235c 18 0c 10 14 10 18           Movb BCD_L,BCD2
+2362 f7 10 17                    Tst BCD1
+2365 27 27                       Beq es_cero
+2367 b6 10 17                    Ldaa BCD1
+236a 81 0a                       Cmpa #10
+236c 25 0d                       Blo BCD1_es_menor_a_10
+236e                    revisar_BCD2:
+236e f7 10 18                    Tst BCD2
+2371 27 22                       Beq BCD2_es_cero
+2373 b6 10 18                    Ldaa BCD2
+2376 81 0a                       Cmpa #10
+2378 25 0b                       Blo BCD2_es_menor_a_10
+237a 3d                          Rts
+237b                    BCD1_es_menor_a_10:
+237b 86 b0                       Ldaa #$B0
+237d b8 10 17                    Eora BCD1
+2380 7a 10 17                    Staa BCD1
+2383 20 e9                       Bra revisar_BCD2
+2385                    BCD2_es_menor_a_10:
+2385 86 b0                       Ldaa #$B0
+2387 b8 10 18                    Eora BCD2
+238a 7a 10 18                    Staa BCD2
+238d 3d                          Rts
+238e                    es_cero:
+238e 18 0b bb 10 17              Movb #$BB,BCD1
+2393 20 d9                       Bra revisar_BCD2
+2395                    BCD2_es_cero:
+2395 18 0b bb 10 18              Movb #$BB,BCD2
+239a 3d                          Rts
                         
                         
                         
@@ -1186,202 +1186,181 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;                        SUBRUTINAS DE INTERRUPCION
                         ;*******************************************************************************
                         
-23a0                    RTI_ISR:                ;                Subrutina RTI_ISR
+239b                    RTI_ISR:                ;                Subrutina RTI_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que cuenta 1 ms
                                                 ;*******************************************************
-23a0 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
-Michelle_Robin_T5.asm:558: Error - Symbol seguir_RTI is undefined.
-Michelle_Robin_T5.asm:558: Error - Branch target out of range or missing.
-23a3 1f 10 04 ff                BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
-23a7 73 10 04                   DEC Cont_Reb    ;decrementar Cont_Reb
-23aa 1f 10 0c ff 04             BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
-23af 73 10 0c                   DEC TIMER_CUENTA
-Michelle_Robin_T5.asm:562: Error - Phasing error.
-23b2                    retorno_RTI:
-23b2 0b                         RTI
+239b 4c 37 80                   BSET CRGFLG,$80         ;borrar bandera de interrupcion
+239e 1f 10 04 ff 03             BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
+23a3 73 10 04                   DEC Cont_Reb    ;decrementar Cont_Reb
+23a6                    seguir_RTI:
+23a6 1f 10 0c ff 03             BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
+23ab 73 10 0c                   DEC TIMER_CUENTA
+23ae                    retorno_RTI:
+23ae 0b                         RTI
                         
                         
                         
                         
-Michelle_Robin_T5.asm:568: Error - Phasing error.
-23b3                    PTH_ISR:                ;                Subrutina PTH_ISR
+23af                    PTH_ISR:                ;                Subrutina PTH_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que lee botones conectados al puerto H
                                                 ;*******************************************************
                         
-Michelle_Robin_T5.asm:573: Error - Phasing error.
-23b3                    retorno_PTH:
-23b3 1e 10 00 08 15             BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
-23b8 1f 02 67 01 10             BRCLR PIFH,$01,saltar_pth0
-23bd 1c 02 67 01                BSET PIFH,$01
-23c1 79 10 09                   CLR CUENTA
-23c4 4d 08 04                   BCLR PORTE,$04  ;apagar Relé
-23c7 4c 38 80                   BSET CRGINT,$80  ;encender RTI
-23ca 20 2d                      BRA retorno_PTH_ISR
+23af                    retorno_PTH:
+23af 1e 10 00 08 14             BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
+23b4 1f 02 67 01 0f             BRCLR PIFH,$01,saltar_pth0
+23b9 1c 02 67 01                BSET PIFH,$01
+23bd 79 10 09                   CLR CUENTA
+23c0 4d 08 04                   BCLR PORTE,$04  ;apagar Relé
+23c3 4c 38 80                   BSET CRGINT,$80  ;encender RTI
+23c6 20 2c                      BRA retorno_PTH_ISR
                         
-Michelle_Robin_T5.asm:582: Error - Phasing error.
-23cc                    saltar_pth0:
-23cc f7 10 04                   TST Cont_Reb
-23cf 26 28                      BNE retorno_PTH_ISR
-23d1 1f 10 02 80 16             BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
-23d6 18 0c 02 67 10 02          MOVB PIFH,Tecla
-23dc 86 0f                      LDAA #$0F
-23de b4 02 67                   ANDA PIFH
-23e1 7a 02 67                   STAA PIFH
-23e4 18 0b 05 10 04             MOVB #5,Cont_Reb
+23c8                    saltar_pth0:
+23c8 f7 10 04                   TST Cont_Reb
+23cb 26 27                      BNE retorno_PTH_ISR
+23cd 1f 10 02 80 15             BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
+23d2 18 0c 02 67 10 02          MOVB PIFH,Tecla
+23d8 86 0f                      LDAA #$0F
+23da b4 02 67                   ANDA PIFH
+23dd 7a 02 67                   STAA PIFH
+23e0 18 0b 05 10 04             MOVB #5,Cont_Reb
                                 ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
-23e9 20 0e                      BRA retorno_PTH_ISR
+23e5 20 0d                      BRA retorno_PTH_ISR
                         
-Michelle_Robin_T5.asm:594: Error - Phasing error.
-23eb                    segundo_ingreso:
-23eb f6 02 67                   LDAB PIFH
-23ee f1 10 02                   CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
-23f1 27 07                      BEQ lectura_correcta
-23f3 18 0b ff 10 02             MOVB #$FF,Tecla
+23e7                    segundo_ingreso:
+23e7 f6 02 67                   LDAB PIFH
+23ea f1 10 02                   CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
+23ed 27 06                      BEQ lectura_correcta
+23ef 18 0b ff 10 02             MOVB #$FF,Tecla
                         
-Michelle_Robin_T5.asm:600: Error - Phasing error.
-23f8                    retorno_PTH_ISR:
-23f8 0b                         RTI
+23f4                    retorno_PTH_ISR:
+23f4 0b                         RTI
                         
-Michelle_Robin_T5.asm:603: Error - Phasing error.
-23f9                    lectura_correcta:
-23f9 1c 10 02 80                BSET Tecla,$80
-23fd b6 10 0e                   LDAA BRILLO
-2400 1e 02 67 04 2a             BRSET PIFH,$04,disminuir_brillo
-2405 1e 02 67 08 16             BRSET PIFH,$08,aumentar_brillo
-240a 1e 10 00 08 ea             BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
-240f 1e 02 67 02 03             BRSET PIFH,$02,AcmCLEAR
-2414 20 e3                      BRA retorno_PTH_ISR
+23f5                    lectura_correcta:
+23f5 1c 10 02 80                BSET Tecla,$80
+23f9 b6 10 0e                   LDAA BRILLO
+23fc 1e 02 67 04 29             BRSET PIFH,$04,disminuir_brillo
+2401 1e 02 67 08 15             BRSET PIFH,$08,aumentar_brillo
+2406 1e 10 00 08 e9             BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
+240b 1e 02 67 02 02             BRSET PIFH,$02,AcmCLEAR
+2410 20 e2                      BRA retorno_PTH_ISR
                         
-Michelle_Robin_T5.asm:612: Error - Phasing error.
-2416                    AcmCLEAR:
-2416 1c 02 67 02                BSET PIFH,$02
-241a 79 10 0a                   CLR AcmPQ
-241d 20 da                      BRA retorno_PTH_ISR
+2412                    AcmCLEAR:
+2412 1c 02 67 02                BSET PIFH,$02
+2416 79 10 0a                   CLR AcmPQ
+2419 20 d9                      BRA retorno_PTH_ISR
                         
-Michelle_Robin_T5.asm:617: Error - Phasing error.
-241f                    aumentar_brillo:
-241f 1c 02 67 08                BSET PIFH,$08
-2423 81 5f                      CMPA #95
-2425 24 d2                      BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
-2427 8b 05                      ADDA #5
-2429 7a 10 0e                   STAA BRILLO
-242c 20 cb                      BRA retorno_PTH_ISR
+241b                    aumentar_brillo:
+241b 1c 02 67 08                BSET PIFH,$08
+241f 81 5f                      CMPA #95
+2421 24 d1                      BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
+2423 8b 05                      ADDA #5
+2425 7a 10 0e                   STAA BRILLO
+2428 20 ca                      BRA retorno_PTH_ISR
                         
-Michelle_Robin_T5.asm:625: Error - Phasing error.
-242e                    disminuir_brillo:
-242e 1c 02 67 04                BSET PIFH,$04
-2432 81 05                      CMPA #5
-2434 23 c3                      BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
-2436 80 05                      SUBA #5
-2438 7a 10 0e                   STAA BRILLO
-243b 20 bc                      BRA retorno_PTH_ISR
+242a                    disminuir_brillo:
+242a 1c 02 67 04                BSET PIFH,$04
+242e 81 05                      CMPA #5
+2430 23 c2                      BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
+2432 80 05                      SUBA #5
+2434 7a 10 0e                   STAA BRILLO
+2437 20 bb                      BRA retorno_PTH_ISR
                         
-Michelle_Robin_T5.asm:633: Error - Phasing error.
-243d                    OC4_ISR:
+2439                    OC4_ISR:
                         ;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
                                                 ;                Subrutina OC4_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que genera interrupciones cada 50 KHz
                                                 ;*******************************************************
-243d f7 10 1f                   Tst Cont_Delay
-2440 27 04                      BEQ aumentar_CONT_TICKS
-2442 73 10 1f                   Dec Cont_Delay
-Michelle_Robin_T5.asm:642: Error - Phasing error.
-2445                    aumentar_CONT_TICKS:
-2445 72 10 10                   Inc CONT_TICKS
-2448 86 64                      Ldaa #100
-244a b1 10 10                   Cmpa CONT_TICKS
-244d 26 13                      Bne aumentar_CONT_7SEG
-244f 79 10 10                   Clr CONT_TICKS
-2452 78 10 0f                   Lsl CONT_DIG
-2455 86 10                      Ldaa #$10
-2457 b1 10 0f                   Cmpa CONT_DIG
-245a 26 06                      BNE aumentar_CONT_7SEG
-245c 18 0b 01 10 0f             MOVB #1,CONT_DIG
-Michelle_Robin_T5.asm:653: Error - Phasing error.
-2461                    aumentar_CONT_7SEG:    ;aumentar cont7_seg
-2461 fc 10 1d                   Ldd CONT_7SEG
-2464 c3 00 01                   Addd #1
-2467 7c 10 1d                   Std CONT_7SEG
+2439 f7 10 1f                   Tst Cont_Delay
+243c 27 03                      BEQ aumentar_CONT_TICKS
+243e 73 10 1f                   Dec Cont_Delay
+2441                    aumentar_CONT_TICKS:
+2441 72 10 10                   Inc CONT_TICKS
+2444 86 64                      Ldaa #100
+2446 b1 10 10                   Cmpa CONT_TICKS
+2449 26 12                      Bne aumentar_CONT_7SEG
+244b 79 10 10                   Clr CONT_TICKS
+244e 78 10 0f                   Lsl CONT_DIG
+2451 86 10                      Ldaa #$10
+2453 b1 10 0f                   Cmpa CONT_DIG
+2456 26 05                      BNE aumentar_CONT_7SEG
+2458 18 0b 01 10 0f             MOVB #1,CONT_DIG
+245d                    aumentar_CONT_7SEG:    ;aumentar cont7_seg
+245d fc 10 1d                   Ldd CONT_7SEG
+2460 c3 00 01                   Addd #1
+2463 7c 10 1d                   Std CONT_7SEG
                         ;        Ldd #5000
-246a 8c 13 88                   Cpd #5000
-246d 26 0d                      BNE Antes_de_revisar_CONT_DIG
-246f 18 03 00 00 10 1d          Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
-2475 16 23 4f                   Jsr CONV_BIN_BCD
-2478 16 23 1b                   Jsr BCD_7SEG
+2466 8c 13 88                   Cpd #5000
+2469 26 0c                      BNE Antes_de_revisar_CONT_DIG
+246b 18 03 00 00 10 1d          Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
+2471 16 23 4a                   Jsr CONV_BIN_BCD
+2474 16 23 16                   Jsr BCD_7SEG
                         
-Michelle_Robin_T5.asm:664: Error - Phasing error.
-247b                    Antes_de_revisar_CONT_DIG:
-247b 86 64                      Ldaa #100
-247d b0 10 0e                   Suba BRILLO
-2480 18 0e                      Tab
-2482 86 64                      Ldaa #100
-2484 18 16                      Sba
-2486 7a 10 11                   Staa DT
-2489 b1 10 10                   Cmpa CONT_TICKS ; lo que está en a es DT (se acaba de guardar)
-248c 24 7a                      Bhs  Portb_cero
-248e 86 01                      Ldaa #1
-2490 b1 10 0f                   Cmpa CONT_DIG
-2493 27 62                      Beq CONT_DIG_es_1
-2495 86 02                      Ldaa #2
-2497 b1 10 0f                   Cmpa CONT_DIG
-249a 27 4a                      Beq CONT_DIG_es_2
-249c 86 04                      Ldaa #4
-249e b1 10 0f                   Cmpa CONT_DIG
-24a1 27 32                      Beq CONT_DIG_es_4
-24a3 86 08                      Ldaa #8
-24a5 b1 10 0f                   Cmpa CONT_DIG
-24a8 27 1a                      Beq CONT_DIG_es_8
-24aa 18 0c 10 19 00 01          Movb DISP1,PORTB
-24b0 86 0e                      LDAA #$0E
-24b2 18 0b 0e 02 58             MOVB #$0E,PTP   ;que hay en el nibble superior de P?
+2477                    Antes_de_revisar_CONT_DIG:
+2477 86 64                      Ldaa #100
+2479 b0 10 0e                   Suba BRILLO
+247c 18 0e                      Tab
+247e 86 64                      Ldaa #100
+2480 18 16                      Sba
+2482 7a 10 11                   Staa DT
+2485 b1 10 10                   Cmpa CONT_TICKS ; lo que está en a es DT (se acaba de guardar)
+2488 24 79                      Bhs  Portb_cero
+248a 86 01                      Ldaa #1
+248c b1 10 0f                   Cmpa CONT_DIG
+248f 27 61                      Beq CONT_DIG_es_1
+2491 86 02                      Ldaa #2
+2493 b1 10 0f                   Cmpa CONT_DIG
+2496 27 49                      Beq CONT_DIG_es_2
+2498 86 04                      Ldaa #4
+249a b1 10 0f                   Cmpa CONT_DIG
+249d 27 31                      Beq CONT_DIG_es_4
+249f 86 08                      Ldaa #8
+24a1 b1 10 0f                   Cmpa CONT_DIG
+24a4 27 19                      Beq CONT_DIG_es_8
+24a6 18 0c 10 19 00 01          Movb DISP1,PORTB
+24ac 86 0e                      LDAA #$0E
+24ae 18 0b 0e 02 58             MOVB #$0E,PTP   ;que hay en el nibble superior de P?
                         ;        Bset PTP,$0E     ;PTP.[3:0] <- $E
-24b7 1c 02 68 02                Bset PTJ,$2
-Michelle_Robin_T5.asm:690: Error - Phasing error.
-24bb                    Antes_de_retornar:
-24bb dc 44                      Ldd TCNT
-24bd c3 00 1e                   Addd #30
-24c0 5c 58                      Std TC4
-24c2 0b                         Rti
+24b3 1c 02 68 02                Bset PTJ,$2
+24b7                    Antes_de_retornar:
+24b7 dc 44                      Ldd TCNT
+24b9 c3 00 1e                   Addd #30
+24bc 5c 58                      Std TC4
+24be 0b                         Rti
                         
-Michelle_Robin_T5.asm:696: Error - Phasing error.
-24c3                    CONT_DIG_es_8:
-24c3 18 0c 10 1a 00 01          Movb DISP2,PORTB
-24c9 18 0b 0d 02 58             MOVB #$0D,PTP
+24bf                    CONT_DIG_es_8:
+24bf 18 0c 10 1a 00 01          Movb DISP2,PORTB
+24c5 18 0b 0d 02 58             MOVB #$0D,PTP
                         ;        Bset PTP,$0D   ;PTP.[3:0] <- $D
-24ce 1c 02 68 02                Bset PTJ,$2
-24d2 20 e8                      Bra Antes_de_retornar
+24ca 1c 02 68 02                Bset PTJ,$2
+24ce 20 e7                      Bra Antes_de_retornar
                         
-Michelle_Robin_T5.asm:703: Error - Phasing error.
-24d4                    CONT_DIG_es_4:
-24d4 18 0c 10 1b 00 01          Movb DISP3,PORTB
-24da 18 0b 0b 02 58             MOVB #$0B,PTP
+24d0                    CONT_DIG_es_4:
+24d0 18 0c 10 1b 00 01          Movb DISP3,PORTB
+24d6 18 0b 0b 02 58             MOVB #$0B,PTP
                         ;        Bset PTP,$0B ;PTP.[3:0] <- $B
-24df 1c 02 68 02                Bset PTJ,$2
-24e3 20 d7                      Bra Antes_de_retornar
+24db 1c 02 68 02                Bset PTJ,$2
+24df 20 d6                      Bra Antes_de_retornar
                         
-Michelle_Robin_T5.asm:710: Error - Phasing error.
-24e5                    CONT_DIG_es_2:
-24e5 18 0c 10 1c 00 01          Movb DISP4,PORTB
-24eb 18 0b 07 02 58             MOVB #$07,PTP
+24e1                    CONT_DIG_es_2:
+24e1 18 0c 10 1c 00 01          Movb DISP4,PORTB
+24e7 18 0b 07 02 58             MOVB #$07,PTP
                         ;        Bset PTP,$07 ;PTP.[2:0] <- 7
-24f0 1c 02 68 02                Bset PTJ,$2
-24f4 20 c6                      Bra Antes_de_retornar
+24ec 1c 02 68 02                Bset PTJ,$2
+24f0 20 c5                      Bra Antes_de_retornar
                         
-Michelle_Robin_T5.asm:717: Error - Phasing error.
-24f6                    CONT_DIG_es_1:
-24f6 18 0c 10 0d 00 01          Movb LEDS,PORTB
-24fc 18 0b 0f 02 58             MOVB #$0F,PTP
+24f2                    CONT_DIG_es_1:
+24f2 18 0c 10 0d 00 01          Movb LEDS,PORTB
+24f8 18 0b 0f 02 58             MOVB #$0F,PTP
                         ;        Bset PTP,$F
-2501 1d 02 68 02                BClr PTJ,$2
-2505 20 b5                      Bra Antes_de_retornar
+24fd 1d 02 68 02                BClr PTJ,$2
+2501 20 b4                      Bra Antes_de_retornar
                         
-Michelle_Robin_T5.asm:724: Error - Phasing error.
-2507                    Portb_cero:
-2507 18 0b 00 00 01             Movb #$0,PORTB
-250c 20 ae                      Bra Antes_de_retornar
+2503                    Portb_cero:
+2503 18 0b 00 00 01             Movb #$0,PORTB
+2508 20 ad                      Bra Antes_de_retornar
                         
                         
                         ;*******************************************************************************
@@ -1389,164 +1368,150 @@ Michelle_Robin_T5.asm:724: Error - Phasing error.
                         ;*******************************************************************************
                         
                                                 ;*******************************************************
-Michelle_Robin_T5.asm:734: Error - Phasing error.
-250e                    Tarea_Teclado:          ;                      SUBRUTINA
+250a                    Tarea_Teclado:          ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Verifica estado de teclas ingresadas
                                                    ;y llama a las otras subrutinas
                                                 ;*******************************************************
                         ;        MOVB #$01,PORTB  ;debugging
                         ;        INC Print+1
-250e f7 10 04                   TST Cont_Reb
-2511 26 45                      BNE Retorno_Tarea_Teclado
-2513 16 25 59                   JSR Mux_Teclado
-2516 1e 10 02 ff 31             BRSET Tecla,$FF,revisar_TCL_LISTA
+250a f7 10 04                   TST Cont_Reb
+250d 26 44                      BNE Retorno_Tarea_Teclado
+250f 16 25 54                   JSR Mux_Teclado
+2512 1e 10 02 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
                         
-251b 1e 10 00 02 12             BRSET Banderas,$02,revisar_teclas
-2520 18 0c 10 02 10 03          MOVB Tecla,Tecla_IN
-2526 1c 10 00 02                BSET Banderas,$02
-252a 18 0b 0a 10 04             MOVB #10,Cont_Reb
+2517 1e 10 00 02 11             BRSET Banderas,$02,revisar_teclas
+251c 18 0c 10 02 10 03          MOVB Tecla,Tecla_IN
+2522 1c 10 00 02                BSET Banderas,$02
+2526 18 0b 0a 10 04             MOVB #10,Cont_Reb
                         
-252f 20 27                      BRA Retorno_Tarea_Teclado
+252b 20 26                      BRA Retorno_Tarea_Teclado
                         
-Michelle_Robin_T5.asm:753: Error - Phasing error.
-2531                    revisar_teclas:
-2531 b6 10 02                   LDAA Tecla
-2534 b1 10 03                   CMPA Tecla_IN
-2537 26 07                      BNE error_al_leer
-2539 1c 10 00 01                BSET Banderas,$01
-253d 20 19                      BRA Retorno_Tarea_Teclado
+252d                    revisar_teclas:
+252d b6 10 02                   LDAA Tecla
+2530 b1 10 03                   CMPA Tecla_IN
+2533 26 06                      BNE error_al_leer
+2535 1c 10 00 01                BSET Banderas,$01
+2539 20 18                      BRA Retorno_Tarea_Teclado
                         
-Michelle_Robin_T5.asm:760: Error - Phasing error.
-253f                    error_al_leer:
-253f 18 03 ff ff 10 02          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
-2545 1d 10 00 03                BCLR Banderas,$03
-2549 20 0d                      BRA Retorno_Tarea_Teclado
+253b                    error_al_leer:
+253b 18 03 ff ff 10 02          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
+2541 1d 10 00 03                BCLR Banderas,$03
+2545 20 0c                      BRA Retorno_Tarea_Teclado
                         
-Michelle_Robin_T5.asm:765: Error - Phasing error.
-254b                    revisar_TCL_LISTA:
-254b 1f 10 00 01 08             BRCLR Banderas,$01,Retorno_Tarea_Teclado
-2550 1d 10 00 03                BCLR Banderas,$03
-2554 16 25 9c                   JSR Formar_Array
+2547                    revisar_TCL_LISTA:
+2547 1f 10 00 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
+254c 1d 10 00 03                BCLR Banderas,$03
+2550 16 25 97                   JSR Formar_Array
                         
-Michelle_Robin_T5.asm:770: Error - Phasing error.
-2557                    Retorno_Tarea_Teclado:
-2557 3d                         RTS
+2553                    Retorno_Tarea_Teclado:
+2553 3d                         RTS
                         
                                                 ;*******************************************************
-Michelle_Robin_T5.asm:774: Error - Phasing error.
-2558                    Mux_Teclado:            ;                      SUBRUTINA
+2554                    Mux_Teclado:            ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Lee teclado matricial
                                                 ;*******************************************************
                         ;        MOVB #$02,PORTB  ;debugging
                         ;        INC Print+2
-2558 ce 10 26                   LDX #Teclas
-255b 87                         CLRA
-255c 18 0b ef 10 06             MOVB #$EF,Patron
-Michelle_Robin_T5.asm:783: Error - Phasing error.
-2561                    loop_mux:
-2561 18 0c 10 06 00 00          MOVB Patron,PORTA
-2567 4f 00 02 2b                BRCLR PORTA,$02,tecla_presionada
-256b 42                         INCA
+2554 ce 10 26                   LDX #Teclas
+2557 87                         CLRA
+2558 18 0b ef 10 06             MOVB #$EF,Patron
+255d                    loop_mux:
+255d 18 0c 10 06 00 00          MOVB Patron,PORTA
+2563 4f 00 02 2a                BRCLR PORTA,$02,tecla_presionada
+2567 42                         INCA
+2568 a7                         NOP
+2569 a7                         NOP
+256a a7                         NOP
+256b a7                         NOP
 256c a7                         NOP
-256d a7                         NOP
-256e a7                         NOP
-256f a7                         NOP
-2570 a7                         NOP
-2571 4f 00 04 21                BRCLR PORTA,$04,tecla_presionada
-2575 42                         INCA
+256d 4f 00 04 20                BRCLR PORTA,$04,tecla_presionada
+2571 42                         INCA
+2572 a7                         NOP
+2573 a7                         NOP
+2574 a7                         NOP
+2575 a7                         NOP
 2576 a7                         NOP
-2577 a7                         NOP
-2578 a7                         NOP
-2579 a7                         NOP
-257a a7                         NOP
-257b 4f 00 08 17                BRCLR PORTA,$08,tecla_presionada
-257f 42                         INCA
+2577 4f 00 08 16                BRCLR PORTA,$08,tecla_presionada
+257b 42                         INCA
+257c a7                         NOP
+257d a7                         NOP
+257e a7                         NOP
+257f a7                         NOP
 2580 a7                         NOP
-2581 a7                         NOP
-2582 a7                         NOP
-2583 a7                         NOP
-2584 a7                         NOP
-2585 78 10 06                   LSL Patron
-2588 1f 10 06 f0 03             BRCLR Patron,$F0,nada_presionado
-258d 20 d3                      BRA loop_mux
+2581 78 10 06                   LSL Patron
+2584 1f 10 06 f0 02             BRCLR Patron,$F0,nada_presionado
+2589 20 d2                      BRA loop_mux
                         
-Michelle_Robin_T5.asm:810: Error - Phasing error.
-258f                    nada_presionado:
+258b                    nada_presionado:
                         ;        Inc Print+6
-258f 18 0b ff 10 02             MOVB #$FF,Tecla
-2594 3d                         RTS
+258b 18 0b ff 10 02             MOVB #$FF,Tecla
+2590 3d                         RTS
                         
-Michelle_Robin_T5.asm:815: Error - Phasing error.
-2595                    tecla_presionada:
-2595 18 0d e4 10 02             MOVB A,X,Tecla
+2591                    tecla_presionada:
+2591 18 0d e4 10 02             MOVB A,X,Tecla
                         ;        Inc Print+7
-259a 3d                         RTS
+2596 3d                         RTS
                         
                                                 ;*******************************************************
-Michelle_Robin_T5.asm:821: Error - Phasing error.
-259b                    Formar_Array:           ;                      SUBRUTINA
+2597                    Formar_Array:           ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
                         ;        MOVB #$04,PORTB  ;debugging
                         ;        INC Print+3
-259b ce 10 07                   Ldx #Num_Array   ; Cargar direcci?n de Num_Array en el ?ndice Y
-259e 86 0b                      Ldaa #$0B
-25a0 f6 10 05                   Ldab Cont_TCL
+2597 ce 10 07                   Ldx #Num_Array   ; Cargar direcci?n de Num_Array en el ?ndice Y
+259a 86 0b                      Ldaa #$0B
+259c f6 10 05                   Ldab Cont_TCL
                                 ;Incb
-25a3 f1 10 01                   Cmpb MAX_TCL
-25a6 27 4b                      Beq full_array
-25a8 c6 0e                      Ldab #$0E
-25aa f7 10 05                   TST Cont_TCL
-25ad 27 2d                      Beq primer_input
-25af b1 10 03                   Cmpa Tecla_IN
-25b2 27 1c                      Beq reducir_contador
-25b4 f1 10 03                   Cmpb Tecla_IN
-25b7 27 0e                      Beq poner_array_ok
-25b9 f6 10 05                   Ldab Cont_TCL
-25bc 18 09 e5 10 03             Movb Tecla_IN,b,x ; No sabemos si est? bien
-25c1 72 10 05                   Inc Cont_TCL
-25c4 20 3b                      Bra Nodo_Final
+259f f1 10 01                   Cmpb MAX_TCL
+25a2 27 4a                      Beq full_array
+25a4 c6 0e                      Ldab #$0E
+25a6 f7 10 05                   TST Cont_TCL
+25a9 27 2c                      Beq primer_input
+25ab b1 10 03                   Cmpa Tecla_IN
+25ae 27 1b                      Beq reducir_contador
+25b0 f1 10 03                   Cmpb Tecla_IN
+25b3 27 0d                      Beq poner_array_ok
+25b5 f6 10 05                   Ldab Cont_TCL
+25b8 18 09 e5 10 03             Movb Tecla_IN,b,x ; No sabemos si est? bien
+25bd 72 10 05                   Inc Cont_TCL
+25c0 20 3a                      Bra Nodo_Final
                         
-Michelle_Robin_T5.asm:845: Error - Phasing error.
-25c6                    poner_array_ok:
-25c6 1c 10 00 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
-25ca 79 10 05                   Clr Cont_TCL
-25cd 20 32                      Bra Nodo_Final
+25c2                    poner_array_ok:
+25c2 1c 10 00 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+25c6 79 10 05                   Clr Cont_TCL
+25c9 20 31                      Bra Nodo_Final
                         
-Michelle_Robin_T5.asm:850: Error - Phasing error.
-25cf                    reducir_contador:
-25cf 73 10 05                   Dec Cont_TCL
-25d2 f6 10 05                   Ldab Cont_TCL
-25d5 18 08 e5 ff                Movb #$FF,b,x
-25d9 20 26                      Bra Nodo_Final
+25cb                    reducir_contador:
+25cb 73 10 05                   Dec Cont_TCL
+25ce f6 10 05                   Ldab Cont_TCL
+25d1 18 08 e5 ff                Movb #$FF,b,x
+25d5 20 25                      Bra Nodo_Final
                         
-Michelle_Robin_T5.asm:856: Error - Phasing error.
-25db                    primer_input:
-25db b1 10 03                   Cmpa Tecla_IN
-25de 27 21                      Beq Nodo_Final
-25e0 f1 10 03                   Cmpb Tecla_IN
-25e3 27 1c                      Beq Nodo_Final
-25e5 f6 10 05                   Ldab Cont_TCL
-25e8 18 09 e5 10 03             Movb Tecla_IN,b,x
-25ed 72 10 05                   Inc Cont_TCL
-25f0 20 0f                      Bra Nodo_Final
+25d7                    primer_input:
+25d7 b1 10 03                   Cmpa Tecla_IN
+25da 27 20                      Beq Nodo_Final
+25dc f1 10 03                   Cmpb Tecla_IN
+25df 27 1b                      Beq Nodo_Final
+25e1 f6 10 05                   Ldab Cont_TCL
+25e4 18 09 e5 10 03             Movb Tecla_IN,b,x
+25e9 72 10 05                   Inc Cont_TCL
+25ec 20 0e                      Bra Nodo_Final
                         
-Michelle_Robin_T5.asm:866: Error - Phasing error.
-25f2                    full_array:
-25f2 c6 0e                      Ldab #$0E
-25f4 b1 10 03                   Cmpa Tecla_IN
-25f7 27 d7                      beq reducir_contador
-25f9 f1 10 03                   Cmpb Tecla_IN
-25fc 27 c9                      Beq poner_array_ok
-25fe 20 01                      Bra Nodo_Final
+25ee                    full_array:
+25ee c6 0e                      Ldab #$0E
+25f0 b1 10 03                   Cmpa Tecla_IN
+25f3 27 d6                      beq reducir_contador
+25f5 f1 10 03                   Cmpb Tecla_IN
+25f8 27 c8                      Beq poner_array_ok
+25fa 20 00                      Bra Nodo_Final
                         
-Michelle_Robin_T5.asm:874: Error - Phasing error.
-2600                    Nodo_Final:
-2600 18 0b ff 10 03             Movb #$FF,Tecla_IN
-2605 3d                         RTS
+25fc                    Nodo_Final:
+25fc 18 0b ff 10 03             Movb #$FF,Tecla_IN
+2601 3d                         RTS
 
-Executed: Sat Feb 13 00:35:36 2021
-Total errors: 37, Total warnings: 0
+Executed: Sat Feb 13 01:15:42 2021
+Total cycles: 1725, Total bytes: 1631
+Total errors: 0, Total warnings: 0
