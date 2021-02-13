@@ -101,12 +101,12 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$FF,Num_Array+3
         MOVB #$FF,Num_Array+4
         MOVB #$FF,Num_Array+5
-        MOVB #0,CUENTA
-        MOVB #0,AcmPQ
+        MOVB #99,CUENTA
+        MOVB #99,AcmPQ
         MOVB #1,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
-        MOVB #15,CONT_DIG
+        MOVB #1,CONT_DIG
         MOVB #0,DT
         MOVB #0,BIN1
         MOVB #0,BIN2
@@ -561,19 +561,78 @@ RTI_ISR:                ;                Subrutina RTI_ISR
 retorno_RTI:
         RTI
 
+
+
+
 PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
                         ;Subrutina que lee botones conectados al puerto H
                         ;*******************************************************
 
 retorno_PTH:
-        BSET PIFH,$0F
+        BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
+        BRCLR PIFH,$01,saltar_pth0
+        BSET PIFH,$01
+        CLR CUENTA
+        BCLR PORTE,$04  ;apagar Relé
+        BSET CRGINT,$80  ;encender RTI
+        BRA retorno_PTH_ISR
+
+saltar_pth0:
+        TST Cont_Reb
+        BNE retorno_PTH_ISR
+        BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
+        MOVB PIFH,Tecla
+        LDAA #$0F
+        ANDA PIFH
+        STAA PIFH
+        MOVB #5,Cont_Reb
+        ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
+        BRA retorno_PTH_ISR
+
+segundo_ingreso:
+        LDAB PIFH
+        CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
+        BEQ lectura_correcta
+        MOVB #$FF,Tecla
+
+retorno_PTH_ISR:
         RTI
+
+lectura_correcta:
+        BSET Tecla,$80
+        LDAA BRILLO
+        BRSET PIFH,$04,disminuir_brillo
+        BRSET PIFH,$08,aumentar_brillo
+        BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
+        BRSET PIFH,$02,AcmCLEAR
+        BRA retorno_PTH_ISR
+
+AcmCLEAR:
+        BSET PIFH,$02
+        CLR AcmPQ
+        BRA retorno_PTH_ISR
+
+aumentar_brillo:
+        BSET PIFH,$08
+        CMPA #95
+        BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
+        ADDA #5
+        STAA BRILLO
+        BRA retorno_PTH_ISR
+
+disminuir_brillo:
+        BSET PIFH,$04
+        CMPA #5
+        BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
+        SUBA #5
+        STAA BRILLO
+        BRA retorno_PTH_ISR
 
 OC4_ISR:
 
 
-; SUBRUTINA OCA VIEJA:
+
 
         BSET TFLG2,$80  ;borrar int
                         ;                Subrutina OC4_ISR
@@ -598,7 +657,7 @@ Manipular_CONT_7SEG:
         Std CONT_7SEG
         Ldd #5000
         Cpd CONT_7SEG
-        Beq Llamar_subrutinas
+        LBeq Llamar_subrutinas
 Antes_de_revisar_CONT_DIG:
         Ldaa #100
         Suba BRILLO
@@ -621,7 +680,7 @@ Antes_de_revisar_CONT_DIG:
         Cmpa CONT_DIG
         Beq CONT_DIG_es_8
         Movb DISP1,PORTB
-        ;PTP.[3:0] <- $E
+        Bset PTP,$0E     ;PTP.[3:0] <- $E
         Bset PTJ,$2
 Antes_de_retornar:
         Ldd TCNT
@@ -631,19 +690,19 @@ Antes_de_retornar:
 
 CONT_DIG_es_8:
         Movb DISP2,PORTB
-        ;PTP.[3:0] <- $D
+        Bset PTP,$0D   ;PTP.[3:0] <- $D
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_4:
         Movb DISP3,PORTB
-        ;PTP.[3:0] <- $B
+        Bset PTP,$0B ;PTP.[3:0] <- $B
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_2:
         Movb DISP4,PORTB
-        ;PTP.[2:0] <- 7
+        Bset PTP,$07 ;PTP.[2:0] <- 7
         Bset PTJ,$2
         Bra Antes_de_retornar
 

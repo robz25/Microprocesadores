@@ -717,7 +717,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 3e70 23 a0                      dw RTI_ISR
                         
 3e66                             org        $3E66       ;debug12
-3e66 23 b1                      dw OC4_ISR
+3e66 24 36                      dw OC4_ISR
                         
                         ;*******************************************************************************
                         ;          Inicializacion de estructuras de datos y config de hardware
@@ -737,12 +737,12 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 202d 18 0b ff 10 0a             MOVB #$FF,Num_Array+3
 2032 18 0b ff 10 0b             MOVB #$FF,Num_Array+4
 2037 18 0b ff 10 0c             MOVB #$FF,Num_Array+5
-203c 18 0b 00 10 09             MOVB #0,CUENTA
-2041 18 0b 00 10 0a             MOVB #0,AcmPQ
+203c 18 0b 63 10 09             MOVB #99,CUENTA
+2041 18 0b 63 10 0a             MOVB #99,AcmPQ
 2046 18 0b 01 10 0b             MOVB #1,CantPQ
 204b 18 0b 00 10 0d             MOVB #0,LEDS
 2050 18 0b 32 10 0e             MOVB #50,BRILLO
-2055 18 0b 0f 10 0f             MOVB #15,CONT_DIG
+2055 18 0b 01 10 0f             MOVB #1,CONT_DIG
 205a 18 0b 00 10 11             MOVB #0,DT
 205f 18 0b 00 10 12             MOVB #0,BIN1
 2064 18 0b 00 10 13             MOVB #0,BIN2
@@ -923,7 +923,7 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 21cb 18 0c 10 0b 10 12        Movb CantPQ,BIN1
 21d1 3d                       Rts
 21d2                    llamar_Tarea_Teclado:
-21d2 16 24 81                 Jsr Tarea_Teclado
+21d2 16 25 18                 Jsr Tarea_Teclado
 21d5 3d                       Rts
                         
                         
@@ -1197,116 +1197,175 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
 23ab                    retorno_RTI:
 23ab 0b                         RTI
                         
+                        
+                        
+                        
 23ac                    PTH_ISR:                ;                Subrutina PTH_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que lee botones conectados al puerto H
                                                 ;*******************************************************
                         
 23ac                    retorno_PTH:
-23ac 1c 02 67 0f                BSET PIFH,$0F
-23b0 0b                         RTI
+23ac 1e 10 00 08 14             BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
+23b1 1f 02 67 01 0f             BRCLR PIFH,$01,saltar_pth0
+23b6 1c 02 67 01                BSET PIFH,$01
+23ba 79 10 09                   CLR CUENTA
+23bd 4d 08 04                   BCLR PORTE,$04  ;apagar Relé
+23c0 4c 38 80                   BSET CRGINT,$80  ;encender RTI
+23c3 20 2c                      BRA retorno_PTH_ISR
                         
-23b1                    OC4_ISR:
+23c5                    saltar_pth0:
+23c5 f7 10 04                   TST Cont_Reb
+23c8 26 27                      BNE retorno_PTH_ISR
+23ca 1f 10 02 80 15             BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
+23cf 18 0c 02 67 10 02          MOVB PIFH,Tecla
+23d5 86 0f                      LDAA #$0F
+23d7 b4 02 67                   ANDA PIFH
+23da 7a 02 67                   STAA PIFH
+23dd 18 0b 05 10 04             MOVB #5,Cont_Reb
+                                ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
+23e2 20 0d                      BRA retorno_PTH_ISR
+                        
+23e4                    segundo_ingreso:
+23e4 f6 02 67                   LDAB PIFH
+23e7 f1 10 02                   CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
+23ea 27 06                      BEQ lectura_correcta
+23ec 18 0b ff 10 02             MOVB #$FF,Tecla
+                        
+23f1                    retorno_PTH_ISR:
+23f1 0b                         RTI
+                        
+23f2                    lectura_correcta:
+23f2 1c 10 02 80                BSET Tecla,$80
+23f6 b6 10 0e                   LDAA BRILLO
+23f9 1e 02 67 04 29             BRSET PIFH,$04,disminuir_brillo
+23fe 1e 02 67 08 15             BRSET PIFH,$08,aumentar_brillo
+2403 1e 10 00 08 e9             BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
+2408 1e 02 67 02 02             BRSET PIFH,$02,AcmCLEAR
+240d 20 e2                      BRA retorno_PTH_ISR
+                        
+240f                    AcmCLEAR:
+240f 1c 02 67 02                BSET PIFH,$02
+2413 79 10 0a                   CLR AcmPQ
+2416 20 d9                      BRA retorno_PTH_ISR
+                        
+2418                    aumentar_brillo:
+2418 1c 02 67 08                BSET PIFH,$08
+241c 81 5f                      CMPA #95
+241e 24 d1                      BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
+2420 8b 05                      ADDA #5
+2422 7a 10 0e                   STAA BRILLO
+2425 20 ca                      BRA retorno_PTH_ISR
+                        
+2427                    disminuir_brillo:
+2427 1c 02 67 04                BSET PIFH,$04
+242b 81 05                      CMPA #5
+242d 23 c2                      BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
+242f 80 05                      SUBA #5
+2431 7a 10 0e                   STAA BRILLO
+2434 20 bb                      BRA retorno_PTH_ISR
+                        
+2436                    OC4_ISR:
                         
                         
-                        ; SUBRUTINA OCA VIEJA:
                         
-23b1 4c 4f 80                   BSET TFLG2,$80  ;borrar int
+                        
+2436 4c 4f 80                   BSET TFLG2,$80  ;borrar int
                                                 ;                Subrutina OC4_ISR
                                                 ;*******************************************************
                                                 ;Subrutina que genera interrupciones cada 50 KHz
                                                 ;*******************************************************
-23b4 f7 10 1f                   Tst Cont_Delay
-23b7 18 26 00 bf                LBne Decrementar_Cont_Delay
-23bb                    aumentar_CONT_TICKS:
-23bb 72 10 10                   Inc CONT_TICKS
-23be 86 64                      Ldaa #100
-23c0 b1 10 10                   Cmpa CONT_TICKS
-23c3 26 0f                      Bne Manipular_CONT_7SEG
-23c5 79 10 10                   Clr CONT_TICKS
-23c8 78 10 0f                   Lsl CONT_DIG
-23cb 86 10                      Ldaa #$10
-23cd b1 10 0f                   Cmpa CONT_DIG
-23d0 18 27 00 9d                LBeq poner_1_CONT_DIG
-23d4                    Manipular_CONT_7SEG:
-23d4 fc 10 1d                   Ldd CONT_7SEG
-23d7 c3 00 01                   Addd #1
-23da 7c 10 1d                   Std CONT_7SEG
-23dd cc 13 88                   Ldd #5000
-23e0 bc 10 1d                   Cpd CONT_7SEG
-23e3 27 7c                      Beq Llamar_subrutinas
-23e5                    Antes_de_revisar_CONT_DIG:
-23e5 86 64                      Ldaa #100
-23e7 b0 10 0e                   Suba BRILLO
-23ea 18 0e                      Tab
-23ec 86 64                      Ldaa #100
-23ee 18 16                      Sba
-23f0 7a 10 11                   Staa DT
-23f3 b1 10 10                   Cmpa CONT_TICKS ; lo que está en a es DT (se acaba de guardar)
-23f6 24 62                      Bhs  Portb_cero
-23f8 86 01                      Ldaa #1
-23fa b1 10 0f                   Cmpa CONT_DIG
-23fd 27 4b                      Beq CONT_DIG_es_1
-23ff 86 02                      Ldaa #2
-2401 b1 10 0f                   Cmpa CONT_DIG
-2404 27 38                      Beq CONT_DIG_es_2
-2406 86 04                      Ldaa #4
-2408 b1 10 0f                   Cmpa CONT_DIG
-240b 27 25                      Beq CONT_DIG_es_4
-240d 86 08                      Ldaa #8
-240f b1 10 0f                   Cmpa CONT_DIG
-2412 27 12                      Beq CONT_DIG_es_8
-2414 18 0c 10 19 00 01          Movb DISP1,PORTB
-                                ;PTP.[3:0] <- $E
-241a 1c 02 68 02                Bset PTJ,$2
-241e                    Antes_de_retornar:
-241e dc 44                      Ldd TCNT
-2420 c3 00 1e                   Addd #30
-2423 5c 58                      Std TC4
-2425 0b                         Rti
+2439 f7 10 1f                   Tst Cont_Delay
+243c 18 26 00 d1                LBne Decrementar_Cont_Delay
+2440                    aumentar_CONT_TICKS:
+2440 72 10 10                   Inc CONT_TICKS
+2443 86 64                      Ldaa #100
+2445 b1 10 10                   Cmpa CONT_TICKS
+2448 26 0f                      Bne Manipular_CONT_7SEG
+244a 79 10 10                   Clr CONT_TICKS
+244d 78 10 0f                   Lsl CONT_DIG
+2450 86 10                      Ldaa #$10
+2452 b1 10 0f                   Cmpa CONT_DIG
+2455 18 27 00 af                LBeq poner_1_CONT_DIG
+2459                    Manipular_CONT_7SEG:
+2459 fc 10 1d                   Ldd CONT_7SEG
+245c c3 00 01                   Addd #1
+245f 7c 10 1d                   Std CONT_7SEG
+2462 cc 13 88                   Ldd #5000
+2465 bc 10 1d                   Cpd CONT_7SEG
+2468 18 27 00 8c                LBeq Llamar_subrutinas
+246c                    Antes_de_revisar_CONT_DIG:
+246c 86 64                      Ldaa #100
+246e b0 10 0e                   Suba BRILLO
+2471 18 0e                      Tab
+2473 86 64                      Ldaa #100
+2475 18 16                      Sba
+2477 7a 10 11                   Staa DT
+247a b1 10 10                   Cmpa CONT_TICKS ; lo que está en a es DT (se acaba de guardar)
+247d 24 72                      Bhs  Portb_cero
+247f 86 01                      Ldaa #1
+2481 b1 10 0f                   Cmpa CONT_DIG
+2484 27 5b                      Beq CONT_DIG_es_1
+2486 86 02                      Ldaa #2
+2488 b1 10 0f                   Cmpa CONT_DIG
+248b 27 44                      Beq CONT_DIG_es_2
+248d 86 04                      Ldaa #4
+248f b1 10 0f                   Cmpa CONT_DIG
+2492 27 2d                      Beq CONT_DIG_es_4
+2494 86 08                      Ldaa #8
+2496 b1 10 0f                   Cmpa CONT_DIG
+2499 27 16                      Beq CONT_DIG_es_8
+249b 18 0c 10 19 00 01          Movb DISP1,PORTB
+24a1 1c 02 58 0e                Bset PTP,$0E     ;PTP.[3:0] <- $E
+24a5 1c 02 68 02                Bset PTJ,$2
+24a9                    Antes_de_retornar:
+24a9 dc 44                      Ldd TCNT
+24ab c3 00 1e                   Addd #30
+24ae 5c 58                      Std TC4
+24b0 0b                         Rti
                         
-2426                    CONT_DIG_es_8:
-2426 18 0c 10 1a 00 01          Movb DISP2,PORTB
-                                ;PTP.[3:0] <- $D
-242c 1c 02 68 02                Bset PTJ,$2
-2430 20 ec                      Bra Antes_de_retornar
+24b1                    CONT_DIG_es_8:
+24b1 18 0c 10 1a 00 01          Movb DISP2,PORTB
+24b7 1c 02 58 0d                Bset PTP,$0D   ;PTP.[3:0] <- $D
+24bb 1c 02 68 02                Bset PTJ,$2
+24bf 20 e8                      Bra Antes_de_retornar
                         
-2432                    CONT_DIG_es_4:
-2432 18 0c 10 1b 00 01          Movb DISP3,PORTB
-                                ;PTP.[3:0] <- $B
-2438 1c 02 68 02                Bset PTJ,$2
-243c 20 e0                      Bra Antes_de_retornar
+24c1                    CONT_DIG_es_4:
+24c1 18 0c 10 1b 00 01          Movb DISP3,PORTB
+24c7 1c 02 58 0b                Bset PTP,$0B ;PTP.[3:0] <- $B
+24cb 1c 02 68 02                Bset PTJ,$2
+24cf 20 d8                      Bra Antes_de_retornar
                         
-243e                    CONT_DIG_es_2:
-243e 18 0c 10 1c 00 01          Movb DISP4,PORTB
-                                ;PTP.[2:0] <- 7
-2444 1c 02 68 02                Bset PTJ,$2
-2448 20 d4                      Bra Antes_de_retornar
+24d1                    CONT_DIG_es_2:
+24d1 18 0c 10 1c 00 01          Movb DISP4,PORTB
+24d7 1c 02 58 07                Bset PTP,$07 ;PTP.[2:0] <- 7
+24db 1c 02 68 02                Bset PTJ,$2
+24df 20 c8                      Bra Antes_de_retornar
                         
-244a                    CONT_DIG_es_1:
-244a 18 0c 10 0d 00 01          Movb LEDS,PORTB
-2450 1c 02 58 0f                Bset PTP,$F
-2454 1d 02 68 02                BClr PTJ,$2
-2458 20 c4                      Bra Antes_de_retornar
+24e1                    CONT_DIG_es_1:
+24e1 18 0c 10 0d 00 01          Movb LEDS,PORTB
+24e7 1c 02 58 0f                Bset PTP,$F
+24eb 1d 02 68 02                BClr PTJ,$2
+24ef 20 b8                      Bra Antes_de_retornar
                         
-245a                    Portb_cero:
-245a 18 0b 00 00 01             Movb #$0,PORTB
-245f 20 bd                      Bra Antes_de_retornar
+24f1                    Portb_cero:
+24f1 18 0b 00 00 01             Movb #$0,PORTB
+24f6 20 b1                      Bra Antes_de_retornar
                         
-2461                    Llamar_subrutinas:
-2461 18 03 00 00 10 1d          Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
-2467 16 23 4f                   Jsr CONV_BIN_BCD
-246a 16 23 1b                   Jsr BCD_7SEG
-246d 18 20 ff 74                LBra Antes_de_revisar_CONT_DIG
+24f8                    Llamar_subrutinas:
+24f8 18 03 00 00 10 1d          Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
+24fe 16 23 4f                   Jsr CONV_BIN_BCD
+2501 16 23 1b                   Jsr BCD_7SEG
+2504 18 20 ff 64                LBra Antes_de_revisar_CONT_DIG
                         
-2471                    poner_1_CONT_DIG:
-2471 86 01                      Ldaa #1
-2473 7a 10 0f                   Staa CONT_DIG
-2476 18 20 ff 5a                LBra Manipular_CONT_7SEG
+2508                    poner_1_CONT_DIG:
+2508 86 01                      Ldaa #1
+250a 7a 10 0f                   Staa CONT_DIG
+250d 18 20 ff 48                LBra Manipular_CONT_7SEG
                         
-247a                    Decrementar_Cont_Delay:
-247a 73 10 1f                   Dec Cont_Delay
-247d 18 20 ff 3a                LBra aumentar_CONT_TICKS
+2511                    Decrementar_Cont_Delay:
+2511 73 10 1f                   Dec Cont_Delay
+2514 18 20 ff 28                LBra aumentar_CONT_TICKS
                         
                         
                         
@@ -1317,150 +1376,150 @@ eeb2                    WriteMem equ    $EEB2   ; FAR call
                         ;*******************************************************************************
                         
                                                 ;*******************************************************
-2481                    Tarea_Teclado:          ;                      SUBRUTINA
+2518                    Tarea_Teclado:          ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Verifica estado de teclas ingresadas
                                                    ;y llama a las otras subrutinas
                                                 ;*******************************************************
                         ;        MOVB #$01,PORTB  ;debugging
                         ;        INC Print+1
-2481 f7 10 04                   TST Cont_Reb
-2484 26 44                      BNE Retorno_Tarea_Teclado
-2486 16 24 cb                   JSR Mux_Teclado
-2489 1e 10 02 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
+2518 f7 10 04                   TST Cont_Reb
+251b 26 44                      BNE Retorno_Tarea_Teclado
+251d 16 25 62                   JSR Mux_Teclado
+2520 1e 10 02 ff 30             BRSET Tecla,$FF,revisar_TCL_LISTA
                         
-248e 1e 10 00 02 11             BRSET Banderas,$02,revisar_teclas
-2493 18 0c 10 02 10 03          MOVB Tecla,Tecla_IN
-2499 1c 10 00 02                BSET Banderas,$02
-249d 18 0b 0a 10 04             MOVB #10,Cont_Reb
+2525 1e 10 00 02 11             BRSET Banderas,$02,revisar_teclas
+252a 18 0c 10 02 10 03          MOVB Tecla,Tecla_IN
+2530 1c 10 00 02                BSET Banderas,$02
+2534 18 0b 0a 10 04             MOVB #10,Cont_Reb
                         
-24a2 20 26                      BRA Retorno_Tarea_Teclado
+2539 20 26                      BRA Retorno_Tarea_Teclado
                         
-24a4                    revisar_teclas:
-24a4 b6 10 02                   LDAA Tecla
-24a7 b1 10 03                   CMPA Tecla_IN
-24aa 26 06                      BNE error_al_leer
-24ac 1c 10 00 01                BSET Banderas,$01
-24b0 20 18                      BRA Retorno_Tarea_Teclado
+253b                    revisar_teclas:
+253b b6 10 02                   LDAA Tecla
+253e b1 10 03                   CMPA Tecla_IN
+2541 26 06                      BNE error_al_leer
+2543 1c 10 00 01                BSET Banderas,$01
+2547 20 18                      BRA Retorno_Tarea_Teclado
                         
-24b2                    error_al_leer:
-24b2 18 03 ff ff 10 02          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
-24b8 1d 10 00 03                BCLR Banderas,$03
-24bc 20 0c                      BRA Retorno_Tarea_Teclado
+2549                    error_al_leer:
+2549 18 03 ff ff 10 02          MOVW #$FFFF,Tecla ;Pone FF en las posiciones Tecla y Tecla_IN;
+254f 1d 10 00 03                BCLR Banderas,$03
+2553 20 0c                      BRA Retorno_Tarea_Teclado
                         
-24be                    revisar_TCL_LISTA:
-24be 1f 10 00 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
-24c3 1d 10 00 03                BCLR Banderas,$03
-24c7 16 25 0e                   JSR Formar_Array
+2555                    revisar_TCL_LISTA:
+2555 1f 10 00 01 07             BRCLR Banderas,$01,Retorno_Tarea_Teclado
+255a 1d 10 00 03                BCLR Banderas,$03
+255e 16 25 a5                   JSR Formar_Array
                         
-24ca                    Retorno_Tarea_Teclado:
-24ca 3d                         RTS
+2561                    Retorno_Tarea_Teclado:
+2561 3d                         RTS
                         
                                                 ;*******************************************************
-24cb                    Mux_Teclado:            ;                      SUBRUTINA
+2562                    Mux_Teclado:            ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Lee teclado matricial
                                                 ;*******************************************************
                         ;        MOVB #$02,PORTB  ;debugging
                         ;        INC Print+2
-24cb ce 10 26                   LDX #Teclas
-24ce 87                         CLRA
-24cf 18 0b ef 10 06             MOVB #$EF,Patron
-24d4                    loop_mux:
-24d4 18 0c 10 06 00 00          MOVB Patron,PORTA
-24da 4f 00 02 2a                BRCLR PORTA,$02,tecla_presionada
-24de 42                         INCA
-24df a7                         NOP
-24e0 a7                         NOP
-24e1 a7                         NOP
-24e2 a7                         NOP
-24e3 a7                         NOP
-24e4 4f 00 04 20                BRCLR PORTA,$04,tecla_presionada
-24e8 42                         INCA
-24e9 a7                         NOP
-24ea a7                         NOP
-24eb a7                         NOP
-24ec a7                         NOP
-24ed a7                         NOP
-24ee 4f 00 08 16                BRCLR PORTA,$08,tecla_presionada
-24f2 42                         INCA
-24f3 a7                         NOP
-24f4 a7                         NOP
-24f5 a7                         NOP
-24f6 a7                         NOP
-24f7 a7                         NOP
-24f8 78 10 06                   LSL Patron
-24fb 1f 10 06 f0 02             BRCLR Patron,$F0,nada_presionado
-2500 20 d2                      BRA loop_mux
+2562 ce 10 26                   LDX #Teclas
+2565 87                         CLRA
+2566 18 0b ef 10 06             MOVB #$EF,Patron
+256b                    loop_mux:
+256b 18 0c 10 06 00 00          MOVB Patron,PORTA
+2571 4f 00 02 2a                BRCLR PORTA,$02,tecla_presionada
+2575 42                         INCA
+2576 a7                         NOP
+2577 a7                         NOP
+2578 a7                         NOP
+2579 a7                         NOP
+257a a7                         NOP
+257b 4f 00 04 20                BRCLR PORTA,$04,tecla_presionada
+257f 42                         INCA
+2580 a7                         NOP
+2581 a7                         NOP
+2582 a7                         NOP
+2583 a7                         NOP
+2584 a7                         NOP
+2585 4f 00 08 16                BRCLR PORTA,$08,tecla_presionada
+2589 42                         INCA
+258a a7                         NOP
+258b a7                         NOP
+258c a7                         NOP
+258d a7                         NOP
+258e a7                         NOP
+258f 78 10 06                   LSL Patron
+2592 1f 10 06 f0 02             BRCLR Patron,$F0,nada_presionado
+2597 20 d2                      BRA loop_mux
                         
-2502                    nada_presionado:
+2599                    nada_presionado:
                         ;        Inc Print+6
-2502 18 0b ff 10 02             MOVB #$FF,Tecla
-2507 3d                         RTS
+2599 18 0b ff 10 02             MOVB #$FF,Tecla
+259e 3d                         RTS
                         
-2508                    tecla_presionada:
-2508 18 0d e4 10 02             MOVB A,X,Tecla
+259f                    tecla_presionada:
+259f 18 0d e4 10 02             MOVB A,X,Tecla
                         ;        Inc Print+7
-250d 3d                         RTS
+25a4 3d                         RTS
                         
                                                 ;*******************************************************
-250e                    Formar_Array:           ;                      SUBRUTINA
+25a5                    Formar_Array:           ;                      SUBRUTINA
                                                 ;*******************************************************
                                                 ;Llena arreglo Num_Array con teclas leidas
                                                 ;*******************************************************
                         ;        MOVB #$04,PORTB  ;debugging
                         ;        INC Print+3
-250e ce 10 07                   Ldx #Num_Array   ; Cargar direcci?n de Num_Array en el ?ndice Y
-2511 86 0b                      Ldaa #$0B
-2513 f6 10 05                   Ldab Cont_TCL
+25a5 ce 10 07                   Ldx #Num_Array   ; Cargar direcci?n de Num_Array en el ?ndice Y
+25a8 86 0b                      Ldaa #$0B
+25aa f6 10 05                   Ldab Cont_TCL
                                 ;Incb
-2516 f1 10 01                   Cmpb MAX_TCL
-2519 27 4a                      Beq full_array
-251b c6 0e                      Ldab #$0E
-251d f7 10 05                   TST Cont_TCL
-2520 27 2c                      Beq primer_input
-2522 b1 10 03                   Cmpa Tecla_IN
-2525 27 1b                      Beq reducir_contador
-2527 f1 10 03                   Cmpb Tecla_IN
-252a 27 0d                      Beq poner_array_ok
-252c f6 10 05                   Ldab Cont_TCL
-252f 18 09 e5 10 03             Movb Tecla_IN,b,x ; No sabemos si est? bien
-2534 72 10 05                   Inc Cont_TCL
-2537 20 3a                      Bra Nodo_Final
+25ad f1 10 01                   Cmpb MAX_TCL
+25b0 27 4a                      Beq full_array
+25b2 c6 0e                      Ldab #$0E
+25b4 f7 10 05                   TST Cont_TCL
+25b7 27 2c                      Beq primer_input
+25b9 b1 10 03                   Cmpa Tecla_IN
+25bc 27 1b                      Beq reducir_contador
+25be f1 10 03                   Cmpb Tecla_IN
+25c1 27 0d                      Beq poner_array_ok
+25c3 f6 10 05                   Ldab Cont_TCL
+25c6 18 09 e5 10 03             Movb Tecla_IN,b,x ; No sabemos si est? bien
+25cb 72 10 05                   Inc Cont_TCL
+25ce 20 3a                      Bra Nodo_Final
                         
-2539                    poner_array_ok:
-2539 1c 10 00 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
-253d 79 10 05                   Clr Cont_TCL
-2540 20 31                      Bra Nodo_Final
+25d0                    poner_array_ok:
+25d0 1c 10 00 04                Bset Banderas,$04 ;Poner en 1 el bit 3 (Array_Ok)
+25d4 79 10 05                   Clr Cont_TCL
+25d7 20 31                      Bra Nodo_Final
                         
-2542                    reducir_contador:
-2542 73 10 05                   Dec Cont_TCL
-2545 f6 10 05                   Ldab Cont_TCL
-2548 18 08 e5 ff                Movb #$FF,b,x
-254c 20 25                      Bra Nodo_Final
+25d9                    reducir_contador:
+25d9 73 10 05                   Dec Cont_TCL
+25dc f6 10 05                   Ldab Cont_TCL
+25df 18 08 e5 ff                Movb #$FF,b,x
+25e3 20 25                      Bra Nodo_Final
                         
-254e                    primer_input:
-254e b1 10 03                   Cmpa Tecla_IN
-2551 27 20                      Beq Nodo_Final
-2553 f1 10 03                   Cmpb Tecla_IN
-2556 27 1b                      Beq Nodo_Final
-2558 f6 10 05                   Ldab Cont_TCL
-255b 18 09 e5 10 03             Movb Tecla_IN,b,x
-2560 72 10 05                   Inc Cont_TCL
-2563 20 0e                      Bra Nodo_Final
+25e5                    primer_input:
+25e5 b1 10 03                   Cmpa Tecla_IN
+25e8 27 20                      Beq Nodo_Final
+25ea f1 10 03                   Cmpb Tecla_IN
+25ed 27 1b                      Beq Nodo_Final
+25ef f6 10 05                   Ldab Cont_TCL
+25f2 18 09 e5 10 03             Movb Tecla_IN,b,x
+25f7 72 10 05                   Inc Cont_TCL
+25fa 20 0e                      Bra Nodo_Final
                         
-2565                    full_array:
-2565 c6 0e                      Ldab #$0E
-2567 b1 10 03                   Cmpa Tecla_IN
-256a 27 d6                      beq reducir_contador
-256c f1 10 03                   Cmpb Tecla_IN
-256f 27 c8                      Beq poner_array_ok
-2571 20 00                      Bra Nodo_Final
+25fc                    full_array:
+25fc c6 0e                      Ldab #$0E
+25fe b1 10 03                   Cmpa Tecla_IN
+2601 27 d6                      beq reducir_contador
+2603 f1 10 03                   Cmpb Tecla_IN
+2606 27 c8                      Beq poner_array_ok
+2608 20 00                      Bra Nodo_Final
                         
-2573                    Nodo_Final:
-2573 18 0b ff 10 03             Movb #$FF,Tecla_IN
-2578 3d                         RTS
+260a                    Nodo_Final:
+260a 18 0b ff 10 03             Movb #$FF,Tecla_IN
+260f 3d                         RTS
 
-Executed: Fri Feb 12 00:18:55 2021
-Total cycles: 1590, Total bytes: 1494
+Executed: Fri Feb 12 19:32:28 2021
+Total cycles: 1745, Total bytes: 1645
 Total errors: 0, Total warnings: 0
