@@ -269,8 +269,8 @@ MODO_CONFIG:
         Bhi no_valido      ;si es mayor a 85 es invalida
         Movb CantPQ,BIN1
 ;        CLR Cont_TCL
-;        MOVB #$FF,Num_Array
-;        MOVB #$FF,Num_Array+1
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
         Rts
         
 no_valido:
@@ -419,16 +419,20 @@ Delay:                  ;                 Subrutina Delay
 
 BCD_BIN:                 ;          Subrutina BCD_BIN
                          ;******************************************************
-                         ;  Se encarga de convertir un n?mero de BCD a Binario
+                         ;  Se encarga de convertir un numero de BCD a Binario
                          ;******************************************************
-         Ldx #Num_Array
-         Ldab #$A
-         Ldaa 1,X+
-         Mul
-         Ldaa 0,X
-         Aba
-         Staa CantPQ
-         Rts
+        BRSET Num_Array+1,$FF,arreglo_invalido
+        Ldx #Num_Array
+        Ldab #$A
+        Ldaa 1,X+
+        Mul
+        Ldaa 0,X
+        Aba
+        Staa CantPQ
+        Rts
+arreglo_invalido:
+        MOVB #0,CantPQ
+        RTS
 
 BIN_BCD:                 ;          Subrutina BIN_BCD
                          ;**********************************************************
