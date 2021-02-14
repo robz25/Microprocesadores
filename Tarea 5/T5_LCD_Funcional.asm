@@ -435,7 +435,7 @@ BCD_BIN:                 ;          Subrutina BCD_BIN
                          ;******************************************************
          Ldx #Num_Array
          Ldab #$A
-         Ldaa 1,+X
+         Ldaa 1,X+
          Mul
          Ldaa 0,X
          Aba
