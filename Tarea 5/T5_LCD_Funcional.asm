@@ -180,9 +180,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;*******************************************************************************
 
 main:
-
         ;BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-        ;JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
         BSET Banderas,$10 ; Bandera 4 (CambMod en 1)
 Loop_main:
         TST CantPQ
@@ -195,31 +193,22 @@ Loop_main:
         LSRA
         LSRA
         LSRA
-;        Staa TEMP
         CBA ; ModSel = ModActual
         Beq Revisar_ModSel
         BSET Banderas,$10    ; Banderas.4 (Camb_Mod) en 1
         TSTA
         BEQ quitar_modo_actual  ;si ModSEL esta en 0
-;        BRCLR TEMP,$08,quitar_modo_actual
         BSET Banderas,$08
 Revisar_ModSel:
         TSTA
         BNE Rama_CONFIG ;si ModSEL no es 0 esta en 1, entonces ir a inicio Config
-;        BRSET TEMP,$08,Rama_CONFIG
         BRCLR Banderas,$10,Ir_a_Modo_RUN
         BCLR Banderas,$10
-        ;MOVB #$08,PORTB ;led 3
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
+        MOVB #1,LEDS
         Ldx #Msg2_L1
         Ldy #Msg2_L2
         Jsr Cargar_LCD
 Ir_a_Modo_RUN:
-        ;MOVB #$04,PORTB   ;led 2
         Jsr MODO_RUN
         Bra Loop_main
 quitar_modo_actual:
@@ -230,17 +219,11 @@ Antes_Rama_CONFIG:
 Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
-        ;MOVB #$80,PORTB ;led 7
         CLR BIN2 ;borrar DISP1 y DISP2
         CLR CUENTA ;borrar cuenta para cuando empiece Run otra vez
         CLR AcmPQ ;borrar para cuando empiece Run de nuevo
         BCLR PORTE,$04 ;apagar relé
         MOVB #2,LEDS ;poner leds de CONFIG
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
         Ldx #Msg1_L1
         Ldy #Msg1_L2
         Jsr Cargar_LCD
@@ -303,7 +286,6 @@ MODO_RUN:               ;                 Subrutina MODO_RUN
                         ;*******************************************************
                         ; Subrutina que lleva la cuenta de tornillos
                         ;*******************************************************
-        MOVB #1,LEDS
         TST TIMER_CUENTA
         BNE retorno_MODO_RUN
         MOVB #VMAX,TIMER_CUENTA
