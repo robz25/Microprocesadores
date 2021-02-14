@@ -561,6 +561,7 @@ RTI_ISR:                ;                Subrutina RTI_ISR
         BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
 seguir_RTI:
+        BRSET Banderas,$08,retorno_RTI  ;estamos en config y por lo tanto no hay que descontar TIMER_CUENTA
         BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC TIMER_CUENTA
 retorno_RTI:
