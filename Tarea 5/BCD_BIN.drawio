@@ -1,1 +1,25 @@
-<mxfile host="app.diagrams.net" modified="2021-02-09T23:29:20.025Z" agent="5.0 (Windows)" etag="pnFhKFnII_fbvvEDGuev" version="14.3.0" type="github"><diagram id="eLppIlWBFLA2jwFu6Uu6" name="Page-1">3ZbbbptAEIafBimpFAkWH5LLQNxDmlptfNFLa2umQLowdD3YJk/fxSwGClg4kduqN9by7czszM/sYMN2o907yZPgE3ogDGZ6O8O+MxgbTUbqNwdZAaY30wL4MvQKZFVgET6DhqamaejBumFIiILCpAlXGMewogbjUuK2afYdRfPUhPvQAosVF236NfQoKOj12Kz4ewj9oDzZMvVOxEtjDdYB93BbQ/bMsF2JSMUq2rkgcu1KXQq/tz27h8QkxDTE4eMye5it+Q+aT8fxz/RpET3Pr/Tb2XCR6oJ1spSVCoCnBNGPKClAH2MuZhV1JKaxB/kxpnqqbB4QEwUtBZ+AKNNvl6eECgUUCb1bnJkf1FubRmtM5QqOFFT2CJc+0BE7dngDqnMBIyCZKT8JglO4aebBdQ/5B7tKZrXQSp+gutVS3XHvls6HeUv8Stpcp20QEiwSvldgq+5bl4wbkAS740K2C9cON7pZ9W0t23xbtb5V3syg1vYj80xKjf+3/mQD+9P+m/3JOlSfCJWu44UbtfTz5b2RD5wJj/Iu3G9eKTJPo+WtlDwrPVQCNaeOOI+sM5DBRrfDY1idMS6U4/3l5eAw3SUVVNmbVunzTf4e5aVl7jN/ky/Yq6u9OKXWniAaO6dl5PKYPn/pDThUtN7hZ/6R4Xc9bgy/w6SrTz/WMf0s+1zjz25dxEcglDH+ax8KNjnfl0I9Vv+S9nu1v5r27Bc=</diagram></mxfile>
+<mxfile host="app.diagrams.net" modified="2021-02-14T01:37:32.822Z" agent="5.0 (Windows)" etag="X1x5gXed0Mn0zIf53kCa" version="14.3.1" type="github">
+  <diagram id="eLppIlWBFLA2jwFu6Uu6" name="Page-1">
+    <mxGraphModel dx="1182" dy="772" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="K_yLEsaktN75nqujSmzN-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="K_yLEsaktN75nqujSmzN-1" target="K_yLEsaktN75nqujSmzN-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="K_yLEsaktN75nqujSmzN-1" value="BCD_BIN" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="90" y="50" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="K_yLEsaktN75nqujSmzN-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="K_yLEsaktN75nqujSmzN-2" target="K_yLEsaktN75nqujSmzN-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="K_yLEsaktN75nqujSmzN-2" value="&lt;div&gt;J &amp;lt;- Num_Array&lt;/div&gt;&lt;div&gt;R2 &amp;lt;- $A&lt;/div&gt;&lt;div&gt;R1 &amp;lt;- ((J))&lt;/div&gt;&lt;div&gt;J &amp;lt;- J + 1&lt;br&gt;&lt;/div&gt;&lt;div&gt;R2 &amp;lt;- R1 * R2&lt;/div&gt;&lt;div&gt;R1 &amp;lt;- ((J))&lt;/div&gt;&lt;div&gt;R1 &amp;lt;- R1 + R2&lt;/div&gt;&lt;div&gt;CantPQ &amp;lt;- R1&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="85" y="110" width="120" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="K_yLEsaktN75nqujSmzN-3" value="Retorno" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="90" y="260" width="110" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
