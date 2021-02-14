@@ -195,14 +195,18 @@ Loop_main:
         LSRA
         LSRA
         LSRA
-        Staa TEMP
+;        Staa TEMP
         CBA ; ModSel = ModActual
         Beq Revisar_ModSel
         BSET Banderas,$10    ; Banderas.4 (Camb_Mod) en 1
-        BRCLR TEMP,$08,quitar_modo_actual
+        TSTA
+        BEQ quitar_modo_actual  ;si ModSEL esta en 0
+;        BRCLR TEMP,$08,quitar_modo_actual
         BSET Banderas,$08
 Revisar_ModSel:
-        BRSET TEMP,$08,Rama_CONFIG
+        TSTA
+        BNE Rama_CONFIG ;si ModSEL no es 0 esta en 1, entonces ir a inicio Config
+;        BRSET TEMP,$08,Rama_CONFIG
         BRCLR Banderas,$10,Ir_a_Modo_RUN
         BCLR Banderas,$10
         ;MOVB #$08,PORTB ;led 3
@@ -582,31 +586,33 @@ retorno_PTH:
         CLR CUENTA
         BCLR PORTE,$04  ;apagar Rel?
         BSET CRGINT,$80  ;encender RTI
+        CLR Temp
         BRA retorno_PTH_ISR
 
 saltar_pth0:
         TST Cont_Reb
         BNE retorno_PTH_ISR
-        BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
-        MOVB PIFH,Tecla
+        BRSET Temp,$80,segundo_ingreso ; Si Temp.7 = 1 es el segundo ingreso
+        MOVB PIFH,Temp
         LDAA #$0F
         ANDA PIFH
         STAA PIFH
-        MOVB #5,Cont_Reb
+        MOVB #7,Cont_Reb
+        BSET Temp,$80   ;indicar que ya fue primer ingreso
         ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
         BRA retorno_PTH_ISR
 
 segundo_ingreso:
+        BCLR TEMP,$80
         LDAB PIFH
-        CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
+        CMPB Temp      ;revisar si valores anteriores de PIFH son iguales ahora
         BEQ lectura_correcta
-        MOVB #$FF,Tecla
+        MOVB #0,Temp
 
 retorno_PTH_ISR:
         RTI
 
 lectura_correcta:
-        BSET Tecla,$80
         LDAA BRILLO
         BRSET PIFH,$04,disminuir_brillo
         BRSET PIFH,$08,aumentar_brillo
@@ -634,6 +640,7 @@ disminuir_brillo:
         SUBA #5
         STAA BRILLO
         BRA retorno_PTH_ISR
+
 
 OC4_ISR:
 ;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
