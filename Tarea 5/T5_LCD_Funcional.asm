@@ -101,7 +101,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$FF,Num_Array+3
         MOVB #$FF,Num_Array+4
         MOVB #$FF,Num_Array+5
-        MOVB #99,CUENTA
+        MOVB #0,CUENTA
         MOVB #0,AcmPQ
         MOVB #0,CantPQ
         MOVB #0,LEDS
@@ -120,7 +120,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,DISP3
         MOVB #0,DISP4
         MOVB #0,CONT_7SEG
-        MOVB #50,CONT_7SEG + 1     ; estaba en 50
+        MOVB #0,CONT_7SEG + 1     ; estaba en 50
         MOVB #0,Cont_Delay
         MOVB #VMAX,TIMER_CUENTA
 
@@ -267,28 +267,30 @@ loopIniDsp:
         RTS
 
 MODO_CONFIG:
-      ;MOVB #2,LEDS
-      ;INC CantPQ
-      MOVB #2,LEDS
-      BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
-      Jsr BCD_BIN
-      Ldaa #25
-      Cmpa CantPQ
-      Blo no_valido
-      Ldaa #85
-      Cmpa CantPQ
-      Blo valido
+        CLR BIN2 ;borrar DISP1 y DISP2
+        CLR CUENTA ;borrar cuenta para cuando empiece Run otra vez
+        CLR AcmPQ ;borrar para cuando empiece Run de nuevo
+        BCLR PORTE,$04 ;apagar relé
+        MOVB #2,LEDS ;poner leds de CONFIG
+        BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        Jsr BCD_BIN
+        Ldaa CantPQ
+        Cmpa #25
+        Blo no_valido
+        Cmpa #85
+        Blo valido
 no_valido:
-      BClr Banderas,$04
-      Clr CantPQ
-      Rts
+        Clr CantPQ
 valido:
-      BClr Banderas,$04
-      Movb CantPQ,BIN1
-      Rts
+        BClr Banderas,$04
+        Movb CantPQ,BIN1
+        CLR Cont_TCL
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
+        Rts
 llamar_Tarea_Teclado:
-      Jsr Tarea_Teclado
-      Rts
+        Jsr Tarea_Teclado
+        Rts
 
 
 MODO_RUN:               ;                 Subrutina MODO_RUN
