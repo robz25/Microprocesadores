@@ -227,6 +227,7 @@ Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
         MOVB #$80,PORTB ;led 7
+        MOVB #$FF,Tecla
         ;Ldaa Clear_LCD
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
