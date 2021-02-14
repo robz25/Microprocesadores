@@ -231,7 +231,11 @@ Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
         ;MOVB #$80,PORTB ;led 7
-        MOVB #$FF,Tecla
+        CLR BIN2 ;borrar DISP1 y DISP2
+        CLR CUENTA ;borrar cuenta para cuando empiece Run otra vez
+        CLR AcmPQ ;borrar para cuando empiece Run de nuevo
+        BCLR PORTE,$04 ;apagar relé
+        MOVB #2,LEDS ;poner leds de CONFIG
         ;Ldaa Clear_LCD
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
@@ -272,27 +276,24 @@ loopIniDsp:
         RTS
 
 MODO_CONFIG:
-        CLR BIN2 ;borrar DISP1 y DISP2
-        CLR CUENTA ;borrar cuenta para cuando empiece Run otra vez
-        CLR AcmPQ ;borrar para cuando empiece Run de nuevo
-        BCLR PORTE,$04 ;apagar relé
-        MOVB #2,LEDS ;poner leds de CONFIG
-        BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        BRCLR Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        BCLR Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
         Jsr BCD_BIN
         Ldaa CantPQ
         Cmpa #25
         Blo no_valido
         Cmpa #85
-        Blo valido
+        Bhi no_valido      ;si es mayor a 85 es invalida
+        Movb CantPQ,BIN1
+;        CLR Cont_TCL
+;        MOVB #$FF,Num_Array
+;        MOVB #$FF,Num_Array+1
+        Rts
+        
 no_valido:
         Clr CantPQ
-valido:
-        BClr Banderas,$04
-        Movb CantPQ,BIN1
-        CLR Cont_TCL
-        MOVB #$FF,Num_Array
-        MOVB #$FF,Num_Array+1
-        Rts
+        RTS
+
 llamar_Tarea_Teclado:
         Jsr Tarea_Teclado
         Rts
