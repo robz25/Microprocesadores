@@ -205,7 +205,7 @@ Revisar_ModSel:
         BRSET TEMP,$08,Rama_CONFIG
         BRCLR Banderas,$10,Ir_a_Modo_RUN
         BCLR Banderas,$10
-        MOVB #$08,PORTB ;led 3
+        ;MOVB #$08,PORTB ;led 3
         ;Ldaa Clear_LCD
         ;Jsr SendCommand
         ;MOVB D2mS,Cont_Delay
@@ -215,7 +215,7 @@ Revisar_ModSel:
         Ldy #Msg2_L2
         Jsr Cargar_LCD
 Ir_a_Modo_RUN:
-        MOVB #$04,PORTB   ;led 2
+        ;MOVB #$04,PORTB   ;led 2
         Jsr MODO_RUN
         Bra Loop_main
 quitar_modo_actual:
@@ -226,7 +226,7 @@ Antes_Rama_CONFIG:
 Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
-        MOVB #$80,PORTB ;led 7
+        ;MOVB #$80,PORTB ;led 7
         MOVB #$FF,Tecla
         ;Ldaa Clear_LCD
         ;Jsr SendCommand
@@ -237,7 +237,7 @@ Rama_CONFIG:
         Ldy #Msg1_L2
         Jsr Cargar_LCD
 Ir_a_Modo_CONFIG:
-        MOVB #$40,PORTB ;led 6
+        ;MOVB #$40,PORTB ;led 6
         Jsr MODO_CONFIG
         LBra Loop_main
         ; Cambiar CamMod se usa $10
