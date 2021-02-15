@@ -163,9 +163,6 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         ADDD TCNT
         STD TC4
 
-
-
-
         LDS #$3BFF
         CLI
 
@@ -216,7 +213,7 @@ quitar_modo_actual:
         BCLR Banderas,$08
         Bra Revisar_ModSel
 Antes_Rama_CONFIG:
-        BSET  ,$08
+        BSET Banderas,$08
 Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
