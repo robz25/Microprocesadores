@@ -669,30 +669,22 @@ Antes_de_revisar_CONT_DIG:
         Ldaa #100
         Sba
         Staa DT
-        Cmpa CONT_TICKS ; lo que est? en a es DT (se acaba de guardar)
-        Bhs  Portb_cero
-        Ldaa #1
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_1
-        Ldaa #2
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_2
-        Ldaa #4
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_4
-        Ldaa #8
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_8
-        Movb DISP1,PORTB
+        Cmpa CONT_TICKS ;lo que est? en a es DT (se acaba de guardar)
+        Bhs  apagar_LEDS
+        BRSET CONT_DIG,$01,CONT_DIG_es_1
+        BRSET CONT_DIG,$02,CONT_DIG_es_2
+        BRSET CONT_DIG,$04,CONT_DIG_es_4
+        BRSET CONT_DIG,$08,CONT_DIG_es_8
+        Movb DISP1,PORTB ;CONT_DIG = $16
         LDAA #$0E
         MOVB #$0E,PTP   ;que hay en el nibble superior de P?
-;        Bset PTP,$0E     ;PTP.[3:0] <- $E
         Bset PTJ,$2
+        
 Antes_de_retornar:
         Ldd TCNT
         Addd #30
         Std TC4
-        Rti
+        RTI
 
 CONT_DIG_es_8:
         Movb DISP2,PORTB
@@ -722,8 +714,9 @@ CONT_DIG_es_1:
         BClr PTJ,$2
         Bra Antes_de_retornar
 
-Portb_cero:
-        Movb #$0,PORTB
+apagar_LEDS:
+        Movb #$0F,PTP
+        BSET PTJ,$02
         Bra Antes_de_retornar
 
 
