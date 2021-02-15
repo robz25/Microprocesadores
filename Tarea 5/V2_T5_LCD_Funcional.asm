@@ -567,8 +567,40 @@ PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
                         ;Subrutina que lee botones conectados al puerto H
                         ;*******************************************************
-
-retorno_PTH:
+        brset PIFH,$01,reiniciar_CUENTA
+        brset PIFH,$02,reiniciar_AcmPQ
+        brset PIFH,$04,aumentar_brillo_2
+        brset PIFH,$08,disminuir_brillo_2
+retorno_PTH_ISR_2:
+        Rti
+reiniciar_CUENTA:
+        bset PIFH,$01 ; Borramos la bandera de solicitud de interrupcion
+        clr CUENTA
+        bclr PORTE,$04 ; Desactivamos el rele
+        bset CRGINT,$80 ; Activamos la INterrupcion RTI
+        bra retorno_PTH_ISR_2
+reiniciar_AcmPQ:
+        bset PIFH,$02 ; Borramos la bandera de solicitud de interrupcion
+        clr AcmPQ
+        bra retorno_PTH_ISR_2
+aumentar_brillo_2:
+        bset PIFH,$04
+        ldaa BRILLO
+        cmpa #5
+        beq retorno_PTH_ISR_2
+        suba #5 ;
+        staa BRILLO
+        bra retorno_PTH_ISR_2
+disminuir_brillo_2:
+        bset PIFH,$08
+        ldaa BRILLO
+        cmpa #95
+        beq retorno_PTH_ISR_2
+        adda #5 ;
+        staa BRILLO
+        bra retorno_PTH_ISR_2
+        
+;Vieja_____________________________________________________________________
         BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
         BRCLR PIFH,$01,saltar_pth0
         BSET PIFH,$01
@@ -629,6 +661,7 @@ disminuir_brillo:
         SUBA #5
         STAA BRILLO
         BRA retorno_PTH_ISR
+
 
 
 OC4_ISR:
