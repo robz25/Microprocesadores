@@ -215,6 +215,7 @@ quitar_modo_actual:
 Antes_Rama_CONFIG:
         BSET Banderas,$08
 Rama_CONFIG:
+        BSET CRGINT,$80 ; Habilitar RTI
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
         CLR BIN2 ;borrar DISP1 y DISP2
