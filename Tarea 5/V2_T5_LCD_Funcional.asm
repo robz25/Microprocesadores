@@ -216,7 +216,7 @@ quitar_modo_actual:
         BCLR Banderas,$08
         Bra Revisar_ModSel
 Antes_Rama_CONFIG:
-        BSET Banderas,$08
+        BSET  ,$08
 Rama_CONFIG:
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
@@ -560,109 +560,42 @@ seguir_RTI:
 retorno_RTI:
         RTI
 
-
-
-
 PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
                         ;Subrutina que lee botones conectados al puerto H
                         ;*******************************************************
         brset PIFH,$01,reiniciar_CUENTA
         brset PIFH,$02,reiniciar_AcmPQ
-        brset PIFH,$04,aumentar_brillo_2
-        brset PIFH,$08,disminuir_brillo_2
-retorno_PTH_ISR_2:
+        brset PIFH,$04,aumentar_brillo
+        brset PIFH,$08,disminuir_brillo
+retorno_PTH_ISR:
         Rti
 reiniciar_CUENTA:
         bset PIFH,$01 ; Borramos la bandera de solicitud de interrupcion
         clr CUENTA
         bclr PORTE,$04 ; Desactivamos el rele
         bset CRGINT,$80 ; Activamos la INterrupcion RTI
-        bra retorno_PTH_ISR_2
+        bra retorno_PTH_ISR
 reiniciar_AcmPQ:
         bset PIFH,$02 ; Borramos la bandera de solicitud de interrupcion
         clr AcmPQ
-        bra retorno_PTH_ISR_2
-aumentar_brillo_2:
+        bra retorno_PTH_ISR
+aumentar_brillo:
         bset PIFH,$04
         ldaa BRILLO
         cmpa #5
-        beq retorno_PTH_ISR_2
+        beq retorno_PTH_ISR
         suba #5 ;
         staa BRILLO
-        bra retorno_PTH_ISR_2
-disminuir_brillo_2:
+        bra retorno_PTH_ISR
+disminuir_brillo:
         bset PIFH,$08
         ldaa BRILLO
         cmpa #95
-        beq retorno_PTH_ISR_2
+        beq retorno_PTH_ISR
         adda #5 ;
         staa BRILLO
-        bra retorno_PTH_ISR_2
-        
-;Vieja_____________________________________________________________________
-        BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
-        BRCLR PIFH,$01,saltar_pth0
-        BSET PIFH,$01
-        CLR CUENTA
-        BCLR PORTE,$04  ;apagar Rel?
-        BSET CRGINT,$80  ;encender RTI
-        CLR Temp
-        BRA retorno_PTH_ISR
-
-saltar_pth0:
-        TST Cont_Reb
-        BNE retorno_PTH_ISR
-        BRSET Temp,$80,segundo_ingreso ; Si Temp.7 = 1 es el segundo ingreso
-        MOVB PIFH,Temp
-        LDAA #$0F
-        ANDA PIFH
-        STAA PIFH
-        MOVB #7,Cont_Reb
-        BSET Temp,$80   ;indicar que ya fue primer ingreso
-        ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
-        BRA retorno_PTH_ISR
-
-segundo_ingreso:
-        BCLR TEMP,$80
-        LDAB PIFH
-        CMPB Temp      ;revisar si valores anteriores de PIFH son iguales ahora
-        BEQ lectura_correcta
-        MOVB #0,Temp
-
-retorno_PTH_ISR:
-        RTI
-
-lectura_correcta:
-        LDAA BRILLO
-        BRSET PIFH,$04,disminuir_brillo
-        BRSET PIFH,$08,aumentar_brillo
-        BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
-        BRSET PIFH,$02,AcmCLEAR
-        BRA retorno_PTH_ISR
-
-AcmCLEAR:
-        BSET PIFH,$02
-        CLR AcmPQ
-        BRA retorno_PTH_ISR
-
-aumentar_brillo:
-        BSET PIFH,$08
-        CMPA #95
-        BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
-        ADDA #5
-        STAA BRILLO
-        BRA retorno_PTH_ISR
-
-disminuir_brillo:
-        BSET PIFH,$04
-        CMPA #5
-        BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
-        SUBA #5
-        STAA BRILLO
-        BRA retorno_PTH_ISR
-
-
+        bra retorno_PTH_ISR
 
 OC4_ISR:
 ;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
