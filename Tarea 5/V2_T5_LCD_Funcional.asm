@@ -138,8 +138,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 
         ;LEDS
         MOVB #$FF,DDRB
-        BSET DDRJ,$02   ;bit 2 como salida
-        BCLR PTJ,$02    ;bit 2 en 0, catodo comun
+        BSET DDRJ,$02   ;bit 1 como salida
+        BCLR PTJ,$02    ;bit 1 en 0, catodo comun
 
         ;Teclado matricial
         MOVB #$F0,DDRA
