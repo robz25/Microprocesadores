@@ -647,7 +647,7 @@ aumentar_CONT_TICKS:
         Bne aumentar_CONT_7SEG
         Clr CONT_TICKS
         Lsl CONT_DIG
-        Ldaa #$10
+        Ldaa #$20
         Cmpa CONT_DIG
         BNE aumentar_CONT_7SEG
         MOVB #1,CONT_DIG
