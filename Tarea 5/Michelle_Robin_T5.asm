@@ -6,11 +6,11 @@
 ;*******************************************************************************
 ;                                 TAREA 5
 ;*******************************************************************************
-;       V1
+;       V15
 ;       AUTORES: ROBIN GONZALEZ   B43011
 ;                MICHELLE GUTIERREZ     B43195
 ;
-;       DESCRIPCION:    Contador de tornillos
+;       DESCRIPCION:    Controlador de maquina empacadora de tornillos
 ;
 ;*******************************************************************************
 ;                             Estructuras de datos
@@ -57,7 +57,7 @@ Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         ds      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
+SEGMENT:         db      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
 iniDsp:          db      $28,$28,$06,$0F
                 org $1060
 Msg1_L1:                 fcc     "  MODO CONFIG"
@@ -101,9 +101,9 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #$FF,Num_Array+3
         MOVB #$FF,Num_Array+4
         MOVB #$FF,Num_Array+5
-        MOVB #99,CUENTA
-        MOVB #99,AcmPQ
-        MOVB #1,CantPQ
+        MOVB #0,CUENTA
+        MOVB #0,AcmPQ
+        MOVB #0,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
         MOVB #1,CONT_DIG        ;para que funcione bien OC4
@@ -120,7 +120,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,DISP3
         MOVB #0,DISP4
         MOVB #0,CONT_7SEG
-        MOVB #50,CONT_7SEG + 1
+        MOVB #0,CONT_7SEG + 1     ; estaba en 50
         MOVB #0,Cont_Delay
         MOVB #VMAX,TIMER_CUENTA
 
@@ -138,8 +138,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 
         ;LEDS
         MOVB #$FF,DDRB
-        BSET DDRJ,$02   ;bit 2 como salida
-        BCLR PTJ,$02    ;bit 2 en 0, catodo comun
+        BSET DDRJ,$02   ;bit 1 como salida
+        BCLR PTJ,$02    ;bit 1 en 0, catodo comun
 
         ;Teclado matricial
         MOVB #$F0,DDRA
@@ -163,9 +163,6 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         ADDD TCNT
         STD TC4
 
-
-
-
         LDS #$3BFF
         CLI
 
@@ -180,9 +177,7 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
 ;*******************************************************************************
 
 main:
-
         ;BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-        ;JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
         BSET Banderas,$10 ; Bandera 4 (CambMod en 1)
 Loop_main:
         TST CantPQ
@@ -195,27 +190,23 @@ Loop_main:
         LSRA
         LSRA
         LSRA
-        Staa TEMP
         CBA ; ModSel = ModActual
         Beq Revisar_ModSel
         BSET Banderas,$10    ; Banderas.4 (Camb_Mod) en 1
-        BRCLR TEMP,$08,quitar_modo_actual
+        TSTA
+        BEQ quitar_modo_actual  ;si ModSEL esta en 0
         BSET Banderas,$08
 Revisar_ModSel:
-        BRSET TEMP,$08,Rama_CONFIG
+        TSTA
+        BNE Rama_CONFIG ;si ModSEL no es 0 esta en 1, entonces ir a inicio Config
         BRCLR Banderas,$10,Ir_a_Modo_RUN
         BCLR Banderas,$10
-        MOVB #$08,PORTB ;led 3
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
+        MOVB #1,LEDS
+        MOVB #$0F,PIEH
         Ldx #Msg2_L1
         Ldy #Msg2_L2
         Jsr Cargar_LCD
 Ir_a_Modo_RUN:
-        MOVB #$04,PORTB   ;led 2
         Jsr MODO_RUN
         Bra Loop_main
 quitar_modo_actual:
@@ -224,19 +215,20 @@ quitar_modo_actual:
 Antes_Rama_CONFIG:
         BSET Banderas,$08
 Rama_CONFIG:
+        BSET CRGINT,$80 ; Habilitar RTI
         BRCLR Banderas,$10,Ir_a_Modo_CONFIG
         BCLR Banderas,$10
-        MOVB #$80,PORTB ;led 7
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
+        CLR BIN2 ;borrar DISP1 y DISP2
+        CLR CUENTA ;borrar cuenta para cuando empiece Run otra vez
+        CLR AcmPQ ;borrar para cuando empiece Run de nuevo
+        BCLR PORTE,$04 ;apagar relé
+        MOVB #2,LEDS ;poner leds de CONFIG
+        MOVB #$0C,PIEH
         Ldx #Msg1_L1
         Ldy #Msg1_L2
         Jsr Cargar_LCD
 Ir_a_Modo_CONFIG:
-        MOVB #$40,PORTB ;led 6
+        ;MOVB #$40,PORTB ;led 6
         Jsr MODO_CONFIG
         LBra Loop_main
         ; Cambiar CamMod se usa $10
@@ -267,35 +259,33 @@ loopIniDsp:
         RTS
 
 MODO_CONFIG:
-      ;MOVB #2,LEDS
-      ;INC CantPQ
-      MOVB #2,LEDS
-      BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con máscara $04
-      Jsr BCD_BIN
-      Ldaa #25
-      Cmpa CantPQ
-      Blo no_valido
-      Ldaa #85
-      Cmpa CantPQ
-      Blo valido
+        BRCLR Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        BCLR Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
+        Jsr BCD_BIN
+        Ldaa CantPQ
+        Cmpa #25
+        Blo no_valido
+        Cmpa #85
+        Bhi no_valido      ;si es mayor a 85 es invalida
+        Movb CantPQ,BIN1
+;        CLR Cont_TCL
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
+        Rts
+        
 no_valido:
-      BClr Banderas,$04
-      Clr CantPQ
-      Rts
-valido:
-      BClr Banderas,$04
-      Movb CantPQ,BIN1
-      Rts
+        Clr CantPQ
+        RTS
+
 llamar_Tarea_Teclado:
-      Jsr Tarea_Teclado
-      Rts
+        Jsr Tarea_Teclado
+        Rts
 
 
 MODO_RUN:               ;                 Subrutina MODO_RUN
                         ;*******************************************************
                         ; Subrutina que lleva la cuenta de tornillos
                         ;*******************************************************
-        MOVB #1,LEDS
         TST TIMER_CUENTA
         BNE retorno_MODO_RUN
         MOVB #VMAX,TIMER_CUENTA
@@ -418,7 +408,7 @@ SendData:               ;                 Subrutina SendData
                         ;*******************************************************
 Delay:                  ;                 Subrutina Delay
                         ;*******************************************************
-                        ;Genera retardo para enviar información a la pantalla
+                        ;Genera retardo para enviar informaci?n a la pantalla
                         ;LCD, se queda en un loop hasta que la variable ha sido
                         ;DECrementada a 0 por OC4
                         ;*******************************************************
@@ -429,22 +419,26 @@ Delay:                  ;                 Subrutina Delay
 
 BCD_BIN:                 ;          Subrutina BCD_BIN
                          ;******************************************************
-                         ;  Se encarga de convertir un número de BCD a Binario
+                         ;  Se encarga de convertir un numero de BCD a Binario
                          ;******************************************************
-         Ldx #Num_Array
-         Ldab #$A
-         Ldaa 1,+X
-         Mul
-         Ldaa 0,X
-         Aba
-         Staa CantPQ
-         Rts
+        BRSET Num_Array+1,$FF,arreglo_invalido
+        Ldx #Num_Array
+        Ldab #$A
+        Ldaa 1,X+
+        Mul
+        Ldaa 0,X
+        Aba
+        Staa CantPQ
+        Rts
+arreglo_invalido:
+        MOVB #0,CantPQ
+        RTS
 
 BIN_BCD:                 ;          Subrutina BIN_BCD
                          ;**********************************************************
-                         ;Subrutina que pasa un número de binario (BIN) a BCD (BCD_l)
+                         ;Subrutina que pasa un n?mero de binario (BIN) a BCD (BCD_l)
                          ;**********************************************************
-         ;Ldaa BIN1   ;  Tengo que meter el número binario en el acumulador A antes
+         ;Ldaa BIN1   ;  Tengo que meter el n?mero binario en el acumulador A antes
          Ldab #7
          Movb #0,BCD_L
 Loop1:   Lsla
@@ -466,10 +460,10 @@ no_mayor_a_50:
          Adda LOW
          Staa BCD_L
          Ldaa TEMP
-;         Decb
-;         Tstb
-         DBne B,Loop1
-         Lsla  ; No quitar, entender later xD
+         Decb
+         Tstb
+         Bne Loop1
+         Lsla
          Rol BCD_L
          Rts
 
@@ -501,11 +495,12 @@ BCD_7SEG:                ;          Subrutina BCD_7SEG
          Movb A,X,DISP3
          Rts
 
+
 CONV_BIN_BCD:            ;          Subrutina CONV_BIN_BCD
                          ;******************************************************
                          ;  Se encarga de poner BIN1 y BIN2 en el acumulador dos
                          ;  para llamar a BIN_BCD y guardar los resultados
-                         ; según corresponda, además devuelve $B si un LED
+                         ; seg?n corresponda, adem?s devuelve $B si un LED
                          ; debe estar apagado
                          ;******************************************************
          Ldaa BIN1
@@ -544,6 +539,7 @@ BCD2_es_cero:
          Rts
 
 
+
 ;*******************************************************************************
 ;                        SUBRUTINAS DE INTERRUPCION
 ;*******************************************************************************
@@ -556,78 +552,49 @@ RTI_ISR:                ;                Subrutina RTI_ISR
         BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
         DEC Cont_Reb    ;decrementar Cont_Reb
 seguir_RTI:
+        BRSET Banderas,$08,retorno_RTI  ;estamos en config y por lo tanto no hay que descontar TIMER_CUENTA
         BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
         DEC TIMER_CUENTA
 retorno_RTI:
         RTI
 
-
-
-
 PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
                         ;Subrutina que lee botones conectados al puerto H
                         ;*******************************************************
-
-retorno_PTH:
-        BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
-        BRCLR PIFH,$01,saltar_pth0
-        BSET PIFH,$01
-        CLR CUENTA
-        BCLR PORTE,$04  ;apagar Relé
-        BSET CRGINT,$80  ;encender RTI
-        BRA retorno_PTH_ISR
-
-saltar_pth0:
-        TST Cont_Reb
-        BNE retorno_PTH_ISR
-        BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
-        MOVB PIFH,Tecla
-        LDAA #$0F
-        ANDA PIFH
-        STAA PIFH
-        MOVB #5,Cont_Reb
-        ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
-        BRA retorno_PTH_ISR
-
-segundo_ingreso:
-        LDAB PIFH
-        CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
-        BEQ lectura_correcta
-        MOVB #$FF,Tecla
-
+        brset PIFH,$01,reiniciar_CUENTA
+        brset PIFH,$02,reiniciar_AcmPQ
+        brset PIFH,$04,disminuir_brillo
+        brset PIFH,$08,aumentar_brillo
 retorno_PTH_ISR:
-        RTI
-
-lectura_correcta:
-        BSET Tecla,$80
-        LDAA BRILLO
-        BRSET PIFH,$04,disminuir_brillo
-        BRSET PIFH,$08,aumentar_brillo
-        BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
-        BRSET PIFH,$02,AcmCLEAR
-        BRA retorno_PTH_ISR
-
-AcmCLEAR:
-        BSET PIFH,$02
-        CLR AcmPQ
-        BRA retorno_PTH_ISR
-
+        Rti
+reiniciar_CUENTA:
+        bset PIFH,$01 ; Borramos la bandera de solicitud de interrupcion
+        clr CUENTA
+        bclr PORTE,$04 ; Desactivamos el rele
+        bset CRGINT,$80 ; Activamos la INterrupcion RTI
+        bra retorno_PTH_ISR
+reiniciar_AcmPQ:
+        bset PIFH,$02 ; Borramos la bandera de solicitud de interrupcion
+        clr AcmPQ
+        bra retorno_PTH_ISR
 aumentar_brillo:
-        BSET PIFH,$08
-        CMPA #95
-        BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
-        ADDA #5
-        STAA BRILLO
-        BRA retorno_PTH_ISR
-
+        bset PIFH,$08
+        ldaa BRILLO
+        cmpa #5
+        beq retorno_PTH_ISR
+        suba #5 ;
+        staa BRILLO
+        bra retorno_PTH_ISR
 disminuir_brillo:
-        BSET PIFH,$04
-        CMPA #5
-        BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
-        SUBA #5
-        STAA BRILLO
-        BRA retorno_PTH_ISR
+        bset PIFH,$04
+        ldaa BRILLO
+        cmpa #95
+        beq retorno_PTH_ISR
+        adda #5 ;
+        staa BRILLO
+        bra retorno_PTH_ISR
+
 
 OC4_ISR:
 ;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
@@ -645,7 +612,7 @@ aumentar_CONT_TICKS:
         Bne aumentar_CONT_7SEG
         Clr CONT_TICKS
         Lsl CONT_DIG
-        Ldaa #$10
+        Ldaa #$20
         Cmpa CONT_DIG
         BNE aumentar_CONT_7SEG
         MOVB #1,CONT_DIG
@@ -667,30 +634,22 @@ Antes_de_revisar_CONT_DIG:
         Ldaa #100
         Sba
         Staa DT
-        Cmpa CONT_TICKS ; lo que está en a es DT (se acaba de guardar)
-        Bhs  Portb_cero
-        Ldaa #1
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_1
-        Ldaa #2
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_2
-        Ldaa #4
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_4
-        Ldaa #8
-        Cmpa CONT_DIG
-        Beq CONT_DIG_es_8
-        Movb DISP1,PORTB
+        Cmpa CONT_TICKS ;lo que est? en a es DT (se acaba de guardar)
+        Bhs  apagar_LEDS
+        BRSET CONT_DIG,$01,CONT_DIG_es_1
+        BRSET CONT_DIG,$02,CONT_DIG_es_2
+        BRSET CONT_DIG,$04,CONT_DIG_es_4
+        BRSET CONT_DIG,$08,CONT_DIG_es_8
+        Movb DISP1,PORTB ;CONT_DIG = $16
         LDAA #$0E
         MOVB #$0E,PTP   ;que hay en el nibble superior de P?
-;        Bset PTP,$0E     ;PTP.[3:0] <- $E
         Bset PTJ,$2
+        
 Antes_de_retornar:
         Ldd TCNT
         Addd #30
         Std TC4
-        Rti
+        RTI
 
 CONT_DIG_es_8:
         Movb DISP2,PORTB
@@ -720,8 +679,9 @@ CONT_DIG_es_1:
         BClr PTJ,$2
         Bra Antes_de_retornar
 
-Portb_cero:
-        Movb #$0,PORTB
+apagar_LEDS:
+        Movb #$0F,PTP
+        BSET PTJ,$02
         Bra Antes_de_retornar
 
 
