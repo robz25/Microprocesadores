@@ -566,8 +566,8 @@ PTH_ISR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
         brset PIFH,$01,reiniciar_CUENTA
         brset PIFH,$02,reiniciar_AcmPQ
-        brset PIFH,$04,aumentar_brillo
-        brset PIFH,$08,disminuir_brillo
+        brset PIFH,$04,disminuir_brillo
+        brset PIFH,$08,aumentar_brillo
 retorno_PTH_ISR:
         Rti
 reiniciar_CUENTA:
@@ -581,7 +581,7 @@ reiniciar_AcmPQ:
         clr AcmPQ
         bra retorno_PTH_ISR
 aumentar_brillo:
-        bset PIFH,$04
+        bset PIFH,$08
         ldaa BRILLO
         cmpa #5
         beq retorno_PTH_ISR
@@ -589,13 +589,14 @@ aumentar_brillo:
         staa BRILLO
         bra retorno_PTH_ISR
 disminuir_brillo:
-        bset PIFH,$08
+        bset PIFH,$04
         ldaa BRILLO
         cmpa #95
         beq retorno_PTH_ISR
         adda #5 ;
         staa BRILLO
         bra retorno_PTH_ISR
+
 
 OC4_ISR:
 ;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
