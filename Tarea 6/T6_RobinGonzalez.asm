@@ -124,8 +124,6 @@ esperar_10ms:
 
         WAI  ; no avanzar hasta que suceda alguna interrupcion (ADT o RTI) ADT deber�a suceder primero
 main:
-        JSR CALCULO
-        JSR CONV_ASCII
         LDX #encabezado
         STX Puntero
         MOVB #$88,SC1CR2;encender SCI, con TCIE y TIE
@@ -145,15 +143,12 @@ l1:
         bra l1
 
 e_vaciado:
-;        JSR CALCULO
-;        JSR CONV_ASCII
         LDAA #P15
         CMPA VOLUMEN
         BLO seguir_vaciado
         MOVB #$2,estado ;pasar a estado alarma
         BRA e_alarma
 seguir_vaciado:
-        ;CLR PORTB
         LDX #Vaciado
         STX Puntero
         MOVB #$88,SC1CR2;encender SCI
@@ -161,7 +156,6 @@ esperar_m3:
         TST COMPLETADO ;mientras sea 0 no se ha enviado msg completo
         BEQ esperar_m3
         MOVB #0,COMPLETADO
-
         BRA continuar_main
 
 e_alarma:
@@ -171,7 +165,6 @@ e_alarma:
         MOVB #$8,estado
         BRA e_llenado
 seguir_alarma:
-;        BSET PORTB,$01
         LDX #Alarma
         STX Puntero
         MOVB #$C8,SC1CR2 ;encender SCI
@@ -179,7 +172,6 @@ esperar_m2:
         TST COMPLETADO ;mientras sea 0 no se ha enviado msg completo
         BEQ esperar_m2
         MOVB #0,COMPLETADO
-        
         BRA continuar_main
         
 e_llenado:
@@ -189,7 +181,6 @@ e_llenado:
         MOVB #$1,estado
         BRA e_vaciado
 seguir_llenado:
-        ;BSET PORTB,$01
         BRA continuar_main
 
 ;*******************************************************************************
