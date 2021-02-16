@@ -2,14 +2,15 @@
 
 ;*******************************************************************************
 ;       UNIVERSIDAD DE COSTA RICA       ESCUELA DE INGENIERIA ELECTRICA
-;               MICROPROCESADORES IE 623  II SEMESTRE 2020
+;               MICROPROCESADORES IE 623  III CICLO 2020
 ;*******************************************************************************
-;                                 TArea 6
+;                                 Tarea 6
 ;*******************************************************************************
-;       V321
-;       AUTOR: ROBIN GONZALEZ   B43011
+;       V2
+;       AUTORES: ROBIN GONZALEZ   B43011
+;                MICHELLE GUTIERREZ B43195
 ;
-;       DESCRIPCION:    Imprimir nivel de tanque de 15 m leido con ADT0 FS=20
+;       DESCRIPCION:    Imprimir nivel de tanque de 15 m leido con ADT0
 ;
 ;*******************************************************************************
 ;                             Estructuras de datos
@@ -20,10 +21,10 @@ EOM     EQU        $FF ;no se  puede usar 0 porque en primera interrupcion progr
 CR:     EQU     $0A
 LF:     EQU     $0D
 SUB:    EQU     $1A     ;Borrado pantalla
-P15:        EQU     14
-P30:        EQU     31
-P90:        EQU     98
-P100:       EQU     106
+P15:    EQU     14
+P30:    EQU     31
+P90:    EQU     98
+P100:   EQU     106
 
                 ORG $1000
 estado  ds 1
@@ -204,7 +205,7 @@ CALCULO:
 cambiar_estado_bomba:
         CMPB #P90
         BLO verificar_si_bajo
-        BCLR PORTB,$01
+        BCLR PORTB,$01     ;apagar leds
 verificar_si_bajo:
         CMPB #P15
         BHI retorno_calculo
