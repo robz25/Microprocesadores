@@ -2,7 +2,7 @@
 
 ;*******************************************************************************
 ;       UNIVERSIDAD DE COSTA RICA       ESCUELA DE INGENIERIA ELECTRICA
-;               MICROPROCESADORES IE 623  II SEMESTRE 2020
+;               MICROPROCESADORES IE 623  III CICLO 2020
 ;*******************************************************************************
 ;                                  RUN METER623
 ;*******************************************************************************
@@ -25,7 +25,7 @@
 ;*******************************************************************************
 ;                             Estructuras de datos
 ;*******************************************************************************
-EOM:	EQU	$FF      ;End Of Message byte para indicar EOM de fcc
+EOM:        EQU        $FF      ;End Of Message byte para indicar EOM de fcc
 
             org         $1000
 
@@ -236,8 +236,8 @@ esperar_10ms:
         MOVB #$17, RTICTL  ;carga valores para contar 1.024 ms segun formula
 
 
-	LDS         #$3BFF
-	CLI	;Permitir interrup enmascaradas
+        LDS         #$3BFF
+        CLI        ;Permitir interrup enmascaradas
 
         ;configuracion inical de la LCD
         CLRB
@@ -304,13 +304,13 @@ ATD_ISR:                ;                   Subrutina ATD_ISR
 ver_si_es_mayor_95:
         CMPB #95
         BLO seguir_atd
-	LDAB #95
+        LDAB #95
 seguir_atd:
         STAB BRILLO ;obtenemos el BRILLO como un valor entre 5 y 95
         RTI
 
                         ;*******************************************************
-CALCULAR:               ;                   Subrutina PTH_ISR
+CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;*******************************************************
                         ;Subrutina que atiende interrupciones al presionar los
                         ;pulsadores SW5 en PH0 y SW2 en PH3
@@ -356,7 +356,7 @@ OC4_ISR:                ;                   Subrutina OC4_ISR
                         ;LCD y de 7 segmentos
                         ;borrado de banderas manual para que no se borre TOI
                         ;*******************************************************
-	BSET TFLG1,$10 ;borra interrupciones
+        BSET TFLG1,$10 ;borra interrupciones
         Tst Cont_Delay
         BEQ aumentar_CONT_TICKS
         Dec Cont_Delay
@@ -438,7 +438,7 @@ apagar_LEDS:
         Movb #$0F,PTP
         BSET PTJ,$02
         Bra Antes_de_retornar
-	
+        
                         ;*******************************************************
 TCNT_ISR:               ;                   Subrutina TCNT_ISR
                         ;*******************************************************
@@ -566,7 +566,7 @@ CONV_BIN_BCD:           ;                Subrutina CONV_BIN_BCD
         MOVW #$AAAA,BCD1  ;poner ambos valores de BCD en AA para poner rayas
         RTS
 revisar_bb:
-	CMPA #$BB
+        CMPA #$BB
         BNE seguir_conv_bin_bcd
         MOVW #$BBBB,BCD1  ;poner ambos valores de BCD en AA para poner rayas
         RTS
@@ -605,7 +605,7 @@ es_cero:
         Bra revisar_BCD2
 BCD2_es_cero:
         Movb #$B0,BCD2  ;poner 0
-	Rts
+        Rts
 
 
                         ;*******************************************************
@@ -617,7 +617,7 @@ BCD_7SEG:               ;                 Subrutina BCD_7SEG
                         ;Salidas:
                         ;DISIP1, DIPS2, DISP3, DISP4 valores en 7 segmentos
                         ;*******************************************************
-	Ldx #SEGMENT
+        Ldx #SEGMENT
         Ldaa #$0F
         Anda BCD2
         Movb A,X,DISP2
