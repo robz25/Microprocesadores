@@ -488,7 +488,7 @@ retorno_tcnt:
 MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
                         ;*******************************************************
                         ;Subrutina que lee valor de vueltas y desplega en panta-
-                        ;lla siempre y cuando este en el rango [5 , 25]
+                        ;lla siempre y cuando este en el rango [3 , 23]
                         ;Variables de entrada:
                         ;ValorVueltas : numero de vueltas ingresadas
                         ;Variables de salida:
@@ -497,6 +497,29 @@ MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
                         ;BIN1 displays 1 y 2
                         ;BIN2 displays 3 y 4
                         ;*******************************************************
+        Brclr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        Bclr Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
+        Jsr BCD_BIN
+        Ldaa ValorVueltas
+        Cmpa #3
+        Blo no_valido
+        Cmpa #23
+        Bhi no_valido      ;si es mayor a 85 es invalida
+        Movb ValorVueltas,NumVueltas
+        Movb NumVueltas,BIN1
+;        CLR Cont_TCL
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
+        Rts
+
+no_valido:
+        Clr NumVueltas
+        RTS
+
+llamar_Tarea_Teclado:
+        Jsr Tarea_Teclado
+        Rts
+
                         
                         ;*******************************************************
 MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
