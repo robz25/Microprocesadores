@@ -258,7 +258,7 @@ conf:
             BRSET BANDERAS,$40,ir_a_config
             BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
 	        BSET CRGINT,$80 ; Habilitar RTI
-        Movb NumVueltas,BIN1
+;        Movb NumVueltas,BIN1
             BCLR BANDERAS,$10
             LDX #MSGLIBRE_L1
             LDY #MSGLIBRE_L2
