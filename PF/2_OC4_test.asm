@@ -125,7 +125,6 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         MOVB #$FF,Num_Array+5
         MOVB #99,CUENTA
         MOVB #99,AcmPQ
-        MOVB #1,CantPQ
         MOVB #0,LEDS
         MOVB #50,BRILLO
         MOVB #1,CONT_DIG        ;para que funcione bien OC4
@@ -690,10 +689,10 @@ BCD_BIN:                 ;          Subrutina BCD_BIN
         Mul
         Ldaa 0,X
         Aba
-        Staa CantPQ
+        Staa ValorVueltas
         Rts
 arreglo_invalido:
-        MOVB #0,CantPQ
+        MOVB #0,ValorVueltas
         RTS
 
 BIN_BCD:                 ;          Subrutina BIN_BCD
