@@ -4,65 +4,83 @@
 ;       UNIVERSIDAD DE COSTA RICA       ESCUELA DE INGENIERIA ELECTRICA
 ;               MICROPROCESADORES IE 623  III CICLO 2020
 ;*******************************************************************************
-;                                 TAREA 5
+;                                 RUN METER623
 ;*******************************************************************************
 ;       V1
 ;       AUTORES: ROBIN GONZALEZ   B43011
 ;                MICHELLE GUTIERREZ     B43195
 ;
-;       DESCRIPCION:    Contador de tornillos
+;       DESCRIPCION:    Proyecto Final
+;       Contador de vueltas y velocidad para un velodromo
+;       con los swithces 7 y 6 se cambia de modo
+;       mensajes se desplegan en las pantallas
+;       sw5 y sw2 simulan sensores que detectan al ciclista
+;       se ingresa el valor de vueltas en el modo configuracion
+;       mediante el teclado matricial
 ;
 ;*******************************************************************************
 ;                             Estructuras de datos
 ;*******************************************************************************
 
 EOM:     EQU     $FF
-VMAX:    EQU     $FF
+
 
                 ORG $1000
-Banderas:        ds      1 ;x:x:x:CambMod:ModActual:ARRAY_OK:TCL_LEIDA:TCL_LISTA
-MAX_TCL:         db      2      ;segun enunciado
-Tecla:           ds      1
-Tecla_IN:        ds      1
-Cont_Reb:        ds      1
-Cont_TCL:        ds      1
-Patron:          ds      1
-Num_Array:       ds      2
-CUENTA:          ds      1
-NumVueltas:          ds      1
-ValorVueltas:   ds      1
-AcmPQ:           ds      1
-CantPQ:          ds      1
-TIMER_CUENTA:    ds      1
-LEDS:            ds      1
-BRILLO:          ds      1
-CONT_DIG:        ds      1
-CONT_TICKS:      ds      1
-DT:              ds      1
-BIN1:            ds      1
-BIN2:            ds      1
-BCD_L:           ds      1
-LOW:             ds      1
-TEMP:            ds      1
-BCD1:            ds      1
-BCD2:            ds      1
-DISP1:           ds      1
-DISP2:           ds      1
-DISP3:           ds      1
-DISP4:           ds      1
-CONT_7SEG:       dw      1
-Cont_Delay:      ds      1
-D2mS:            db      100
-D260uS:          db      13
-D40uS:           db      2
-Clear_LCD:       db      $01 ;comando borrar pantalla
-ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
-ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
-Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         db      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,$40,0,0,0,0,0
-iniDsp:          db      $28,$28,$06,$0F
-D5mS:            db      250
-                org $1060
+BANDERAS:      ds 1 ;7=modo1, 6=modo0, 5=Calc_ticks, 4= CambModo,3=Pant_FLG,2=Array_OK,1=TCL_LEIDA,0=TCL_LISTA
+NumVueltas:    ds 1 ;
+ValorVueltas:  ds 1 ;???comentar que hace cada variable
+MAX_TCL:       db $02 ; Se define el valor maximo del arreglo de teclas
+Tecla:         ds 1 ; Se define la variable de tipo tecla.
+Tecla_IN:      ds 1 ;
+Cont_Reb:      ds 1 ;
+Cont_TCL:      ds 1 ;
+Patron:        ds 1 ;
+Num_Array:     ds 2 ;
+BRILLO:        ds 1 ;
+POT:           ds 1 ;
+TICK_EN:       ds 2 ;
+TICK_DIS:      ds 2 ;
+Veloc:         ds 1 ;
+Vueltas:       ds 1 ;
+VelProm:       ds 1 ;
+TICK_MED:      ds 2 ;
+BIN1:          ds 1 ;
+BIN2:          ds 1 ;
+BCD1:          ds 1 ;
+BCD2:          ds 1 ;
+BCD_L:         ds 1 ;
+BCD_H:         ds 1 ;
+TEMP:          ds 1 ;
+LOW:           ds 1 ;
+DISP1:         ds 1 ;
+DISP2:         ds 1 ;
+DISP3:         ds 1 ;
+DISP4:         ds 1 ;
+LEDS:          ds 1 ;
+CONT_DIG:      ds 1 ;
+CONT_TICKS:    ds 1 ;
+DT:            ds 1 ;
+CONT_7SEG:     ds 2 ;
+CONT_200:      db 200 ;
+Cont_Delay:    ds 1 ;
+D2mS:          dB 100 ;
+D260uS:        dB 13 ; 14?rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+D40uS:         dB 2 ;
+Clear_LCD:     dB $01 ;
+ADD_L1:        dB $80 ;
+ADD_L2:        dB $C0 ;
+TEMP1:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: LCD_configurada ,1: Calc_flag
+TEMP2:         ds  1    ;usado para contador de  200 para ATD
+TEMP3:         ds  1    ;variable temeporal 3
+TEMP4:         ds  1    ;variable temeporal 4
+                        org $1040
+Teclas:        dB $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$00,$0E ; Tabla con los valores de Tecla
+                        org $1050
+SEGMENT:       dB $3F,$06,$5B,$4F,$66,$6D,$7D,$07,$7F,$6F,$40,$00 ; Valores en 7 seg para cada numero, ordenado por indice, pos 10 = - , pos 11 = apagado
+                        org $1060
+initDisp:      dB $28,$28,$06,$0C ; Comandos para inicializacion de la LCD
+
+            org     $1070
 
 MSGConfig_L1:                 fcc     "  MODO CONFIG"
                 db EOM
@@ -97,55 +115,63 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
 ;*******************************************************************************
 
          org        $3E4C       ;debug12
-        dw PTH_ISR
+        dw CALCULAR ;PTH
 
          org        $3E70       ;debug12
         dw RTI_ISR
 
          org        $3E66       ;debug12
         dw OC4_ISR
+        
+         org        $3E52
+        dw ATD_ISR
 
+         org        $3E5E
+        dw TCNT_ISR
 ;*******************************************************************************
 ;          Inicializacion de estructuras de datos y config de hardware
 ;*******************************************************************************
 
                 ORG     $2000
 
-        MOVB #0,Banderas
         MOVB #$FF,Tecla
         MOVB #$FF,Tecla_IN
-        MOVB #0,Cont_Reb
-        MOVB #0,Cont_TCL
-        MOVB #0,Patron
-        MOVB #$FF,Num_Array
-        MOVB #$FF,Num_Array+1
-        MOVB #$FF,Num_Array+2
-        MOVB #$FF,Num_Array+3
-        MOVB #$FF,Num_Array+4
-        MOVB #$FF,Num_Array+5
-        MOVB #99,CUENTA
-        MOVB #99,AcmPQ
-        MOVB #0,LEDS
+        MOVB #$00,NumVueltas
+        MOVB #$00,Vueltas
+        MOVB #$00,ValorVueltas
+        MOVB $FF,Num_Array
+        MOVB $FF,Num_Array+1
+        MOVB #$40,Banderas      ;iniciar en modo config
+        MOVB #$00,Patron
+        MOVB #$00,Cont_TCL
+        MOVB #$00,Cont_Reb
+        MOVB #$00,LEDS
+        MOVB #$00,BIN1
+        MOVB #$BB,BIN2
         MOVB #50,BRILLO
-        MOVB #1,CONT_DIG        ;para que funcione bien OC4
-        MOVB #0,DT
-        MOVB #0,BIN1
-        MOVB #0,BIN2
-        MOVB #0,NumVueltas
-        MOVB #0,ValorVueltas
-        MOVB #0,BCD_L
-        MOVB #0,LOW
-        MOVB #0,TEMP
-        MOVB #0,BCD1
-        MOVB #0,BCD2
-        MOVB #0,DISP1
-        MOVB #0,DISP2
-        MOVB #0,DISP3
-        MOVB #0,DISP4
-        MOVB #0,CONT_7SEG
-        MOVB #50,CONT_7SEG + 1
-        MOVB #0,Cont_Delay
-        MOVB #VMAX,TIMER_CUENTA
+        MOVB #1,CONT_DIG
+        MOVB #$00,CONT_TICKS
+        MOVW #0,TICK_EN
+        MOVW #0,TICK_DIS
+        MOVW #0,TICK_MED
+        MOVB #$00,BCD1
+        MOVB #$00,BCD2
+        MOVB #$00,DISP1
+        MOVB #$00,DISP2
+        MOVB #$00,DISP3
+        MOVB #$00,DISP4
+        MOVB #$00, Vueltas
+        MOVB #$00, NumVueltas
+        MOVB #$00, Veloc
+        MOVB #$00, VelProm
+        MOVB #$10, TEMP1        ;iniciar con estado final de vueltas
+        MOVB #$00, TEMP2
+        MOVB #$00, TEMP3
+        MOVB #$00, TEMP4
+        movw #$0000,CONT_7SEG
+        MOVB #$00,Cont_Delay ;
+        MOVB #200,CONT_200  ;Para contador de RTI que activa ATD para leer pot
+
 
         ;Inicializacion de  hardware
 
@@ -256,7 +282,7 @@ comp:
 conf:
             BRSET BANDERAS,$40,ir_a_config
             BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
-	        BSET CRGINT,$80 ; Habilitar RTI
+                BSET CRGINT,$80 ; Habilitar RTI
 ;        Movb NumVueltas,BIN1
             BCLR BANDERAS,$10
             LDX #MSGLIBRE_L1
@@ -298,7 +324,7 @@ ir_a_config:
             MOVB #$02,LEDS
             MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
             MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
-	    BSET CRGINT,$80 ; Habilitar RTI
+            BSET CRGINT,$80 ; Habilitar RTI
             ;MOVW 0,TICK_DIS
             ;MOVW 0,TICK_EN
             ;MOVB #0,ValorVueltas    ;vueltas ingresadas son 0
@@ -309,146 +335,6 @@ seguir_config:
             JSR MODO_CONFIGURACION
             LBRA loop_main
 
-
-
-; main viejo
-        MOVB #0,LEDS
-        MOVB #74,BIN1
-        MOVB #74,BIN2
-;        MOVB #$3F,DISP1
-;        MOVB #$3F,DISP2
-;        MOVB #$06,DISP3
-;        MOVB #$5B,DISP4
-
-        LDAA #255
-main:        MOVB D5mS,Cont_Delay
-          JSR Delay
-        DBNE A,main
-
-        MOVB #$1,LEDS
-        MOVB #77,BIN1
-        MOVB #77,BIN2
-;        MOVB #$06,DISP1
-;        MOVB #$5B,DISP2
-;        MOVB #$4F,DISP3
-;        MOVB #$66,DISP4
-
-        LDAA #255
-main_1:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_1
-
-        MOVB #$2,LEDS
-        MOVB #66,BIN1
-        MOVB #66,BIN2
-;;        MOVB #$5B,DISP1
-;;        MOVB #$66,DISP2
-;        MOVB #$6D,DISP3
-;        MOVB #$7D,DISP4
-
-        LDAA #255
-main_2:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_2
-
-        MOVB #$4,LEDS
-        MOVB #82,BIN1
-        MOVB #82,BIN2
-;        MOVB #$4F,DISP1
-;        MOVB #$7D,DISP2
-;        MOVB #$07,DISP3
-;        MOVB #$7F,DISP4
-
-        LDAA #255
-main_3:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_3
-
-        MOVB #$8,LEDS
-        MOVB #83,BIN1
-        MOVB #83,BIN2
- ;       MOVB #$66,DISP1
- ;       MOVB #$6F,DISP2
- ;       MOVB #$3F,DISP3
- ;       MOVB #$06,DISP4
-
-        LDAA #255
-main_4:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_4
-
-        MOVB #$10,LEDS
-        MOVB #84,BIN1
-        MOVB #84,BIN2
-    ;    MOVB #$6D,DISP1
-  ;      MOVB #$3F,DISP2
-   ;     MOVB #$6D,DISP3
-   ;     MOVB #$6D,DISP4
-
-        LDAA #255
-main_5:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_5
-
-        MOVB #$20,LEDS
-        MOVB #85,BIN1
-        MOVB #85,BIN2
-     ;   MOVB #$7D,DISP1
-      ;  MOVB #$7D,DISP2
-       ; MOVB #$3F,DISP3
-       ; MOVB #$7D,DISP4
-
-        LDAA #255
-main_6:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_6
-
-        MOVB #$40,LEDS
-        MOVB #86,BIN1
-        MOVB #86,BIN2
-;        MOVB #$7F,DISP1
-;        MOVB #$7F,DISP2
-;        MOVB #$7F,DISP3
-;        MOVB #$3F,DISP4
-
-        LDAA #255
-main_7:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_7
-
-        MOVB #$80,LEDS
-        MOVB #87,BIN1
-        MOVB #87,BIN2
-;        MOVB #$6F,DISP1
-;        MOVB #$3F,DISP2
-;        MOVB #$6F,DISP3
-;        MOVB #$6F,DISP4
-
-        LDAA #255
-main_8:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_8
-
-        MOVB #0,LEDS
-        MOVB #88,BIN1
-        MOVB #88,BIN2
-;        MOVB #$40,DISP1
-;        MOVB #$40,DISP2
-;        MOVB #$3F,DISP3
-;        MOVB #$40,DISP4
-
-        LDAA #255
-main_9:        MOVB D5mS,Cont_Delay
-        JSR Delay
-        DBNE A,main_9
-
-        BRA *
-
-
-
-
-
-
 ;*******************************************************************************
 ;                                     SUBRUTINAS
 ;*******************************************************************************
@@ -456,7 +342,7 @@ main_9:        MOVB D5mS,Cont_Delay
 LCD_INIT:
         ;configuracion inical de la LCD
         CLRB
-        LDX #iniDsp
+        LDX #initDisp
 loopIniDsp:
         LDAA B,X
         JSR SendCommand
@@ -522,7 +408,7 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;*******************************************************
         MOVB #25,BIN1
         MOVB #16,BIN2
-	rts
+        rts
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
@@ -532,7 +418,7 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
         MOVB #36,BIN1
         MOVB #27,BIN2
-	rts
+        rts
 
                         ;*******************************************************
 MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
@@ -543,7 +429,7 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;*******************************************************
         MOVB #58 BIN1
         MOVB #49,BIN2
-	rts
+        rts
 
 
                         ;*******************************************************
@@ -805,86 +691,35 @@ BCD2_es_cero:
 ;                        SUBRUTINAS DE INTERRUPCION
 ;*******************************************************************************
 
-RTI_ISR:                ;                Subrutina RTI_ISR
                         ;*******************************************************
-                        ;Subrutina que cuenta 1 ms
+RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;*******************************************************
-        BSET CRGFLG,$80         ;borrar bandera de interrupcion
-        BRCLR Cont_Reb,$FF,seguir_RTI  ;salta si la pos Cont_reb es 0
-        DEC Cont_Reb    ;decrementar Cont_Reb
-seguir_RTI:
-        BRCLR TIMER_CUENTA,$FF,retorno_RTI  ;salta si la pos Cont_reb es 0
-        DEC TIMER_CUENTA
+                        ;Subrutina que cuenta 1 ms y cuanta 200 ms para llamar a
+                        ;ATD07
+                        ;*******************************************************
+        BSET CRGFLG,$80 ;borrar solicitud de interrupcion
+        INC TEMP2
+        LDAA #200
+        CMPA TEMP2
+        BNE continuar_retorno_RTI
+        MOVB #0,TEMP2
+        MOVB #$87,ATD0CTL5      ;just a derecha, sin signo, controlada por software, sin MUX, inicia lectura en canal 7
+continuar_retorno_RTI:
+        TST Cont_Reb
+        BEQ retorno_RTI ;si el contador es cero salta
+        DEC Cont_Reb
 retorno_RTI:
         RTI
 
 
 
 
-PTH_ISR:                ;                Subrutina PTH_ISR
+CALCULAR:                ;                Subrutina PTH_ISR
                         ;*******************************************************
                         ;Subrutina que lee botones conectados al puerto H
                         ;*******************************************************
 
-retorno_PTH:
-        BRSET Banderas,$08,saltar_pth0  ;revisa Mod_Actual   config si es 1
-        BRCLR PIFH,$01,saltar_pth0
-        BSET PIFH,$01
-        CLR CUENTA
-        BCLR PORTE,$04  ;apagar Rel?
-        BSET CRGINT,$80  ;encender RTI
-        BRA retorno_PTH_ISR
-
-saltar_pth0:
-        TST Cont_Reb
-        BNE retorno_PTH_ISR
-        BRClr Tecla,$80,segundo_ingreso ; Si Tecla.7 = 1 es el primer ingreso
-        MOVB PIFH,Tecla
-        LDAA #$0F
-        ANDA PIFH
-        STAA PIFH
-        MOVB #5,Cont_Reb
-        ;BCLR Tecla,$80  ;indicar que ya entro por primera vez
-        BRA retorno_PTH_ISR
-
-segundo_ingreso:
-        LDAB PIFH
-        CMPB Tecla      ;revisar si valores anteriores de PIFH son iguales ahora
-        BEQ lectura_correcta
-        MOVB #$FF,Tecla
-
-retorno_PTH_ISR:
         RTI
-
-lectura_correcta:
-        BSET Tecla,$80
-        LDAA BRILLO
-        BRSET PIFH,$04,disminuir_brillo
-        BRSET PIFH,$08,aumentar_brillo
-        BRSET Banderas,$08,retorno_PTH_ISR      ;Mod_actual es 1 : config
-        BRSET PIFH,$02,AcmCLEAR
-        BRA retorno_PTH_ISR
-
-AcmCLEAR:
-        BSET PIFH,$02
-        CLR AcmPQ
-        BRA retorno_PTH_ISR
-
-aumentar_brillo:
-        BSET PIFH,$08
-        CMPA #95
-        BHS retorno_PTH_ISR     ;salta si A mayor o igual a 95
-        ADDA #5
-        STAA BRILLO
-        BRA retorno_PTH_ISR
-
-disminuir_brillo:
-        BSET PIFH,$04
-        CMPA #5
-        BLS retorno_PTH_ISR     ;salta si A es menor o igual a 5
-        SUBA #5
-        STAA BRILLO
-        BRA retorno_PTH_ISR
 
 OC4_ISR:
 ;        BSET TFLG2,$80  ;borrar int estamos usando TFFCA
@@ -982,7 +817,81 @@ Portb_cero:
         Movb #$0,PORTB
         Bra Antes_de_retornar
 
+ATD_ISR:                ;                   Subrutina ATD_ISR
+                        ;*******************************************************
+                        ;Subrutina que promedia 6 lecturas del canal 7
+                        ;aunque son valores de 8 bits los guardo en D, pues los
+                        ;justifique a la derecha porque sumados podrian sobrepasar
+                        ;los 8 bits
+                        ;*******************************************************
+        LDD ADR00H      ;leer regs de datos borra bandera de int pues active AFFC
+        ADDD ADR01H     ;lee las 6 lecturas y las suma en el acumulador D
+        ADDD ADR02H
+        ADDD ADR03H
+        ADDD ADR04H
+        ADDD ADR05H
+        lDX #6
+        IDIV            ;obtenemos el promedio de 6 lecturas
+        XGDX
+        STAB POT        ;guarda el promedio en POT
+        LDAA #20
+        MUL
+        LDX #255
+        IDIV            ;divide valor en D entre valor en X guarda cociente en X
+        XGDX            ;ponemos el cociente en D, quedara en B pues es de 8 bits
+        LDAA #5         ;En B tenemos un valor entre 1 y 20 y lo multiplicamos
+        MUL     ;A*B y guarda en D un numero entre 0 y 100
+        CMPB #5
+        BHI ver_si_es_mayor_95
+        LDAB #5
+ver_si_es_mayor_95:
+        CMPB #95
+        BLO seguir_atd
+        LDAB #95
+seguir_atd:
+        ;STAB BRILLO ;obtenemos el BRILLO como un valor entre 5 y 95
 
+        RTI
+                        ;*******************************************************
+TCNT_ISR:               ;                   Subrutina TCNT_ISR
+                        ;*******************************************************
+                        ;Timer Overflow Interrrupt
+                        ;Subrutina que cuenta el tiempo para calcular velocidad
+                        ;del ciclista y ademas para desplegar info en la
+                        ;pantalla LCD
+                        ;Timer Overflow Interrupt cada 0.021845 s
+                        ;*******************************************************
+        BSET TFLG2,$FF ;borrar solicitud de interrupcion  se borra con un 1 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+        ;BSET TFLG2,$80 ;borrar solicitud de interrupcion  se borra con un 1
+        LDX TICK_MED
+        INX
+        STX TICK_MED
+        LDX TICK_EN
+        LDY TICK_DIS
+        TBNE X,tick_en_no_0       ;salta si no es 0
+        ;PANT_FLAG=1
+        BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
+        BRA continuar_tick_dis
+tick_en_no_0:
+        DEX
+        STX TICK_EN
+continuar_tick_dis:
+        TBNE Y,tick_dis_no_0    ;salta si no es 0
+        BCLR BANDERAS,$08 ;borra bit 3
+        BRA retorno_tcnt
+tick_dis_no_0:
+        DEY
+        STY TICK_DIS
+retorno_tcnt:
+        RTI
+
+
+
+
+
+
+        
+        
 ;*******************************************************************************
 ;                           SUBRUTINAS DE TAREA 4
 ;*******************************************************************************

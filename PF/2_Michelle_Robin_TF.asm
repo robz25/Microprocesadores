@@ -152,7 +152,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         MOVB #$00,BIN1
         MOVB #$BB,BIN2
         MOVB #$00,BRILLO
-        MOVB #$00,CONT_DIG
+        MOVB #1,CONT_DIG
         MOVB #$00,CONT_TICKS
         MOVW #0,TICK_EN
         MOVW #0,TICK_DIS
