@@ -305,6 +305,8 @@ comp:
 conf:
             BRSET BANDERAS,$40,ir_a_config
             BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
+            BCLR $0F,PIEH   ;apago interrupciones PTH
+            BCLR $0F,PIFH
             BCLR BANDERAS,$10
             LDX #MSGLIBRE_L1
             LDY #MSGLIBRE_L2
@@ -317,8 +319,8 @@ seguir_libre:
 ir_a_resumen:
             BRCLR BANDERAS,$10,seguir_resumen
             BCLR BANDERAS,$10
-            ;BCLR $0F,PIEH   ;apago interrupciones PTH
-            ;BCLR $0F,PIFH
+            BCLR $0F,PIEH   ;apago interrupciones PTH
+            BCLR $0F,PIFH
             MOVB #$08,LEDS
             LDX #MSGRESUMEN_L1
             LDY #MSGRESUMEN_L2
@@ -342,6 +344,8 @@ seguir_comp:
 ir_a_config:
             BRCLR BANDERAS,$10,seguir_config    ;ssalta si no ha cambiado el modo
             BCLR BANDERAS,$10
+            BCLR $0F,PIEH   ;apago interrupciones PTH
+            BCLR $0F,PIFH
             MOVB #$02,LEDS
             MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
             MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
@@ -351,6 +355,7 @@ ir_a_config:
             LDX #MSGConfig_L1
             LDY #MSGConfig_L2
             JSR CARGAR_LCD
+            Bset CRGINT,$80
 seguir_config:
             JSR MODO_CONFIGURACION
             LBRA loop_main
@@ -636,7 +641,9 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
-
+          Movb VelProm,BIN1
+          Movb Vueltas,BIN2
+          Rts
                         ;*******************************************************
 PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
@@ -662,7 +669,8 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;Variables de entrada: TEMP1.6 bandera de cambio de modo
                         ;Variables de salida: TEMP1.6
                         ;*******************************************************
-                        
+        Movb #$AA,BIN1
+        Movb #$AA,BIN2
 ;*******************************************************************************
 ;               Subrutinas de binario y BCD y display de 7 segmentos
 ;*******************************************************************************
