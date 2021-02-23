@@ -147,7 +147,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         MOVB #0,Cont_Delay
         MOVB #VMAX,TIMER_CUENTA
 
-        ;Inicializacion de hardware
+        ;Inicializacion de  hardware
 
         ;Rele:
         BSET DDRE,$04   ;activar pin 2 de puerto E Rele como salida
