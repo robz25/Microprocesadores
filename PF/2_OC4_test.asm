@@ -258,6 +258,7 @@ conf:
             BRSET BANDERAS,$40,ir_a_config
             BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
 	        BSET CRGINT,$80 ; Habilitar RTI
+        Movb NumVueltas,BIN1
             BCLR BANDERAS,$10
             LDX #MSGLIBRE_L1
             LDY #MSGLIBRE_L2
@@ -677,18 +678,23 @@ Delay:                  ;                 Subrutina Delay
         RTS
 
 
+                         ;******************************************************
 BCD_BIN:                 ;          Subrutina BCD_BIN
                          ;******************************************************
-                         ;  Se encarga de convertir un n?mero de BCD a Binario
+                         ;  Se encarga de convertir un numero de BCD a Binario
                          ;******************************************************
-         Ldx #Num_Array
-         Ldab #$A
-         Ldaa 1,+X
-         Mul
-         Ldaa 0,X
-         Aba
-         Staa ValorVueltas
-         Rts
+        BRSET Num_Array+1,$FF,arreglo_invalido
+        Ldx #Num_Array
+        Ldab #$A
+        Ldaa 1,X+
+        Mul
+        Ldaa 0,X
+        Aba
+        Staa CantPQ
+        Rts
+arreglo_invalido:
+        MOVB #0,CantPQ
+        RTS
 
 BIN_BCD:                 ;          Subrutina BIN_BCD
                          ;**********************************************************
