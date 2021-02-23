@@ -212,7 +212,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
 ;*******************************************************************************
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
-
+            movB #0,bin2
             LDX #MSGConfig_L1
             LDY #MSGConfig_L2
             JSR CARGAR_LCD
@@ -257,6 +257,7 @@ comp:
 conf:
             BRSET BANDERAS,$40,ir_a_config
             BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
+	        BSET CRGINT,$80 ; Habilitar RTI
             BCLR BANDERAS,$10
             LDX #MSGLIBRE_L1
             LDY #MSGLIBRE_L2
@@ -297,6 +298,7 @@ ir_a_config:
             MOVB #$02,LEDS
             MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
             MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
+	    BSET CRGINT,$80 ; Habilitar RTI
             ;MOVW 0,TICK_DIS
             ;MOVW 0,TICK_EN
             ;MOVB #0,ValorVueltas    ;vueltas ingresadas son 0
@@ -518,7 +520,9 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;Veloc
                         ;TEMP1
                         ;*******************************************************
-        rts
+        MOVB #25,BIN1
+        MOVB #16,BIN2
+	rts
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
@@ -526,7 +530,22 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
-        rts
+        MOVB #36,BIN1
+        MOVB #27,BIN2
+	rts
+
+                        ;*******************************************************
+MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
+                        ;*******************************************************
+                        ;Subrutina que espera al cambio de otro modo
+                        ;Variables de entrada: TEMP1.6 bandera de cambio de modo
+                        ;Variables de salida: TEMP1.6
+                        ;*******************************************************
+        MOVB #58 BIN1
+        MOVB #49,BIN2
+	rts
+
+
                         ;*******************************************************
 PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
@@ -544,16 +563,9 @@ PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;Variables de salida:
                         ;BIN1 y BIN2: mensajes para pantalla
                         ;*******************************************************
+
         rts
         
-                        ;*******************************************************
-MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
-                        ;*******************************************************
-                        ;Subrutina que espera al cambio de otro modo
-                        ;Variables de entrada: TEMP1.6 bandera de cambio de modo
-                        ;Variables de salida: TEMP1.6
-                        ;*******************************************************
-        rts
 
 
 
