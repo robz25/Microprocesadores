@@ -29,6 +29,8 @@ Cont_TCL:        ds      1
 Patron:          ds      1
 Num_Array:       ds      2
 CUENTA:          ds      1
+NumVueltas:          ds      1
+ValorVueltas:   ds      1
 AcmPQ:           ds      1
 CantPQ:          ds      1
 TIMER_CUENTA:    ds      1
@@ -57,20 +59,39 @@ Clear_LCD:       db      $01 ;comando borrar pantalla
 ADD_L1:          db      $80 ;dir de inicio de linea 1 en DDRAM de pantalla
 ADD_L2:          db      $C0 ;dir de inicio de linea 2 en DDRAM de pantalla
 Teclas:          db      $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$0,$0E,0,0,0,0
-SEGMENT:         db      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,0,0,0,0,0,0
+SEGMENT:         db      $3F,$06,$5b,$4f,$66,$6D,$7D,$07,$7F,$6F,$40,0,0,0,0,0
 iniDsp:          db      $28,$28,$06,$0F
 D5mS:            db      250
                 org $1060
-Msg1_L1:                 fcc     " MODO PRUEBA "
-                db EOM
-Msg1_L2:                 fcc     " PRUEBA OC4 :P "
-                db EOM
-Msg2_L1:                 fcc     "    MODO RUN"
-                db EOM
-Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
-                db EOM
 
-
+MSGConfig_L1:                 fcc     "  MODO CONFIG"
+                db EOM
+MSGConfig_L2:                 fcc     "  NUM VUELTAS"
+                db EOM
+MSGINICIAL_L1:                fcc     "  RunMeter 623"
+                db EOM
+MSGINICIAL_L2:                fcc     "  ESPERANDO..."
+                db EOM
+MSGCOMPETENCIA_L1:            fcc     " M. COMPETENCIA"
+                db EOM
+MSGCOMPETENCIA_L2:            fcc     " VUELTA   VELOC"
+                db EOM
+MSGCALCULANDO_L1:             fcc     "  RunMeter 623"
+                db EOM
+MSGCALCULANDO_L2:             fcc     "  CALCULANDO..."
+                db EOM
+MSGALERTA_L1:                 fcc     "**  VELOCIDAD **"
+                db EOM
+MSGALERTA_L2:                 fcc     "*FUERA DE RANGO*"
+                db EOM
+MSGRESUMEN_L1:                fcc     "  MODO RESUMEN"
+                db EOM
+MSGRESUMEN_L2:                fcc     "VUELTAS    VELOC"
+                db EOM
+MSGLIBRE_L1:                  fcc     "  RunMeter 623"
+                db EOM
+MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
+                db EOM
 ;*******************************************************************************
 ;                             Relocalizar vectores
 ;*******************************************************************************
@@ -111,6 +132,8 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         MOVB #0,DT
         MOVB #0,BIN1
         MOVB #0,BIN2
+        MOVB #0,NumVueltas
+        MOVB #0,ValorVueltas
         MOVB #0,BCD_L
         MOVB #0,LOW
         MOVB #0,TEMP
@@ -183,15 +206,110 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         CLI
 
         JSR LCD_INIT
-        LDX #Msg1_L1
-        LDY #Msg1_L2
-        JSR Cargar_LCD
+
 
 
 ;*******************************************************************************
 ;                             PROGRAMA PRINCIPAL
 ;*******************************************************************************
 
+            LDX #MSGConfig_L1
+            LDY #MSGConfig_L2
+            JSR CARGAR_LCD
+;            Movb #$00,DISP1
+;            Movb #$5B,DISP2
+;            Movb #$4F,DISP3
+;            Movb #$66,DISP4
+config_loop:
+            JSR MODO_CONFIGURACION
+            TST NumVueltas
+            BEQ config_loop
+loop_main:
+            ;Movb #$00,DISP1
+            ;Movb #$5B,DISP2
+            ;Movb #$4F,DISP3
+            ;Movb #$66,DISP4
+            LDAA PTIH
+            anda #$C0
+            LDAB BANDERAS
+            ANDB #$C0
+            CBA
+            BEQ sin_cambios
+            BCLR BANDERAS,$C0
+            Oraa BANDERAS
+            STAA BANDERAS
+            BSET BANDERAS,$10
+            BRA comp
+sin_cambios:
+            BCLR BANDERAS,$10
+comp:
+            BRSET BANDERAS,$C0,ir_a_comp
+            BRSET BANDERAS,$80,ir_a_resumen
+;            CLR Veloc           ;no es cmop ni resumen
+;            BCLR TEMP1,$80         ;borramos bandera para que active PTH
+;            CLR Vueltas
+;            MOVB #0,VelProm ;???porque sino indefine division Necesario para PROMEDIO '' cambio 1 a 0???
+            ;BRCLR BANDERAS,$40,conf
+            ;MOVB #$03,TSCR2
+            ;BCLR $0F,PIEH
+            ;BCLR $0F,PIFH
+
+conf:
+            BRSET BANDERAS,$40,ir_a_config
+            BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
+            BCLR BANDERAS,$10
+            LDX #MSGLIBRE_L1
+            LDY #MSGLIBRE_L2
+            MOVB #$01,LEDS
+            JSR CARGAR_LCD
+seguir_libre:
+            JSR MODO_LIBRE
+            LBRA loop_main
+
+ir_a_resumen:
+            BRCLR BANDERAS,$10,seguir_resumen
+            BCLR BANDERAS,$10
+            ;BCLR $0F,PIEH   ;apago interrupciones PTH
+            ;BCLR $0F,PIFH
+            MOVB #$08,LEDS
+            LDX #MSGRESUMEN_L1
+            LDY #MSGRESUMEN_L2
+            JSR CARGAR_LCD
+seguir_resumen:
+            JSR MODO_RESUMEN
+            LBRA loop_main
+ir_a_comp:
+        ;activate TOI
+            ;MOVB #$83,TSCR2
+            BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
+            BCLR BANDERAS,$10
+            MOVB #$04,LEDS
+            LDX #MSGINICIAL_L1
+            LDY #MSGINICIAL_L2
+            JSR CARGAR_LCD
+seguir_comp:
+            JSR MODO_COMPETENCIA
+            LBRA loop_main
+
+ir_a_config:
+            BRCLR BANDERAS,$10,seguir_config    ;ssalta si no ha cambiado el modo
+            BCLR BANDERAS,$10
+            MOVB #$02,LEDS
+            MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
+            MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
+            ;MOVW 0,TICK_DIS
+            ;MOVW 0,TICK_EN
+            ;MOVB #0,ValorVueltas    ;vueltas ingresadas son 0
+            LDX #MSGConfig_L1
+            LDY #MSGConfig_L2
+            JSR CARGAR_LCD
+seguir_config:
+            JSR MODO_CONFIGURACION
+            LBRA loop_main
+
+
+
+; main viejo
         MOVB #0,LEDS
         MOVB #74,BIN1
         MOVB #74,BIN2
@@ -327,68 +445,7 @@ main_9:        MOVB D5mS,Cont_Delay
 
 
 
-        ;BRSET Banderas,$04,main ;salta a main si el bits 2 (%0000 0100) es 1 en Banderas
-        ;JSR Tarea_Teclado       ;ir a subrutina Tarea_Teclado
-        BSET Banderas,$10 ; Bandera 4 (CambMod en 1)
-Loop_main:
-        TST CantPQ
-        Beq Antes_Rama_CONFIG
-        Ldaa #$80
-        Anda PTH
-        Ldab #08
-        Andb Banderas
-        LSRA    ;corre a derecha un bit sin meter carry
-        LSRA
-        LSRA
-        LSRA
-        Staa TEMP
-        CBA ; ModSel = ModActual
-        Beq Revisar_ModSel
-        BSET Banderas,$10    ; Banderas.4 (Camb_Mod) en 1
-        BRCLR TEMP,$08,quitar_modo_actual
-        BSET Banderas,$08
-Revisar_ModSel:
-        BRSET TEMP,$08,Rama_CONFIG
-        BRCLR Banderas,$10,Ir_a_Modo_RUN
-        BCLR Banderas,$10
-        MOVB #$08,PORTB ;led 3
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
-        Ldx #Msg2_L1
-        Ldy #Msg2_L2
-        Jsr Cargar_LCD
-Ir_a_Modo_RUN:
-        MOVB #$04,PORTB   ;led 2
-        Jsr MODO_RUN
-        Bra Loop_main
-quitar_modo_actual:
-        BCLR Banderas,$08
-        Bra Revisar_ModSel
-Antes_Rama_CONFIG:
-        BSET Banderas,$08
-Rama_CONFIG:
-        BRCLR Banderas,$10,Ir_a_Modo_CONFIG
-        BCLR Banderas,$10
-        MOVB #$80,PORTB ;led 7
-        ;Ldaa Clear_LCD
-        ;Jsr SendCommand
-        ;MOVB D2mS,Cont_Delay
-        ;Jsr Delay
-        ;JSR LCD_INIT
-        Ldx #Msg1_L1
-        Ldy #Msg1_L2
-        Jsr Cargar_LCD
-Ir_a_Modo_CONFIG:
-        MOVB #$40,PORTB ;led 6
-        Jsr MODO_CONFIG
-        LBra Loop_main
-        ; Cambiar CamMod se usa $10
-        ; Cambiar ModActual se usa $08
 
-       ;BRA *
 
 ;*******************************************************************************
 ;                                     SUBRUTINAS
@@ -412,56 +469,91 @@ loopIniDsp:
         JSR Delay
         RTS
 
-MODO_CONFIG:
-      MOVB #2,LEDS
-      ;INC CantPQ
-      MOVB #2,LEDS
-      BrClr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
-      Jsr BCD_BIN
-      Ldaa #25
-      Cmpa CantPQ
-      Blo no_valido
-      Ldaa #85
-      Cmpa CantPQ
-      Blo valido
+                        ;*******************************************************
+MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
+                        ;*******************************************************
+                        ;Subrutina que lee valor de vueltas y desplega en panta-
+                        ;lla siempre y cuando este en el rango [3 , 23]
+                        ;Variables de entrada:
+                        ;ValorVueltas : numero de vueltas ingresadas
+                        ;Variables de salida:
+                        ;NumVueltas: vueltas validas ingresdas
+                        ;BIN1 y BIN2: valores a poner en pantalla 7 segmentos
+                        ;BIN1 displays 1 y 2
+                        ;BIN2 displays 3 y 4
+                        ;*******************************************************
+        Brclr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        Bclr Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
+        Jsr BCD_BIN
+        Ldaa ValorVueltas
+        Cmpa #3
+        Blo no_valido
+        Cmpa #23
+        Bhi no_valido      ;si es mayor a 85 es invalida
+        Movb ValorVueltas,NumVueltas
+        Movb NumVueltas,BIN1
+;        CLR Cont_TCL
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
+        Rts
+
 no_valido:
-      BClr Banderas,$04
-      Clr CantPQ
-      Rts
-valido:
-      BClr Banderas,$04
-      Movb CantPQ,BIN1
-      Rts
-llamar_Tarea_Teclado:
-      Jsr Tarea_Teclado
-      Rts
-
-
-MODO_RUN:               ;                 Subrutina MODO_RUN
-                        ;*******************************************************
-                        ; Subrutina que lleva la cuenta de tornillos
-                        ;*******************************************************
-        MOVB #1,LEDS
-        TST TIMER_CUENTA
-        BNE retorno_MODO_RUN
-        MOVB #VMAX,TIMER_CUENTA
-        INC CUENTA
-        LDAA CUENTA
-        CMPA CantPQ
-        BNE retorno_MODO_RUN
-        BCLR CRGINT,$80 ;apagar RTI
-        INC AcmPQ
-        BSET PORTE,$04
-        LDAA #100
-        CMPA AcmPQ
-        BNE retorno_MODO_RUN
-        CLR AcmPQ
-
-retorno_MODO_RUN:
-        MOVB CUENTA,BIN1
-        MOVB AcmPQ,BIN2
+        Clr NumVueltas
         RTS
 
+llamar_Tarea_Teclado:
+        Jsr Tarea_Teclado
+        Rts
+
+
+                        ;*******************************************************
+MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
+                        ;*******************************************************
+                        ;Subrutina que envia msg inical a LCD
+                        ;y se queda esperando a detectar ciclista en S1
+                        ;Variables de entrada:
+                        ;TEMP1
+                        ;Variables de salida: Vueltas
+                        ;VelProm
+                        ;Veloc
+                        ;TEMP1
+                        ;*******************************************************
+        rts
+                        ;*******************************************************
+MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
+                        ;*******************************************************
+                        ;Subrutina que desplega en pantallas vueltas y velocidad
+                        ;Variables de entrada: TEMP2.5
+                        ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
+                        ;*******************************************************
+        rts
+                        ;*******************************************************
+PANT_CTRL:              ;                  Subrutina PANT_CTRL
+                        ;*******************************************************
+                        ;Subrutina que modifica el valor de las pantallas
+                        ;segun el modo seleccionado y la activacionde de los
+                        ;sensores y la velocidad determinada
+                        ;velocidad fuera de rango: alerta
+                        ;velocidad en rango: muestra valor y vueltas
+                        ;ecuaciones:
+                        ;   TICKS_EN = 32959/VelProm
+                        ;   TICKS_DIS = 49438/VelProm
+                        ;Variables de entrada:
+                        ;Veloc: velocidad de ciclistas
+                        ;Vueltas: vueltas completas
+                        ;Variables de salida:
+                        ;BIN1 y BIN2: mensajes para pantalla
+                        ;*******************************************************
+        rts
+        
+                        ;*******************************************************
+MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
+                        ;*******************************************************
+                        ;Subrutina que espera al cambio de otro modo
+                        ;Variables de entrada: TEMP1.6 bandera de cambio de modo
+                        ;Variables de salida: TEMP1.6
+                        ;*******************************************************
+        rts
 
 
 
@@ -583,7 +675,7 @@ BCD_BIN:                 ;          Subrutina BCD_BIN
          Mul
          Ldaa 0,X
          Aba
-         Staa CantPQ
+         Staa ValorVueltas
          Rts
 
 BIN_BCD:                 ;          Subrutina BIN_BCD
