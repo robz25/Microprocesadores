@@ -156,13 +156,25 @@ Msg2_L2:                 fcc     "  AcmPQ  CUENTA"
         BCLR PPSH,$0F   ;interrupcion en flanco decreciente
 
         ;OC4
-        BSET TSCR1,$90  ;encendemos Timer, TFFCLA
-        BSET TSCR2,$04  ;poner prescalador en 16
-        BSET TIOS,$10
-        BSET TIE,$10  ;habilitar interrupcion por canal 4
-        LDD #30
-        ADDD TCNT
-        STD TC4
+        MOVB #$80,TSCR1        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1, sin ffca
+        MOVB #$03,TSCR2
+        ;BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
+                              ;y 2 en Prescalador = 8 de Timer Status Control Reg 2
+        ;Configurar interrupcion Output Compare en canal 4
+        MOVB #$10,TIOS         ;Vamos a usar canal 4
+        MOVB #$10,TIE          ;habilitamos interrupcion de canal 4
+        LDD #60      ;60 en D, para que cuente 20 mS
+        ADDD TCNT       ;60 + contador en D
+        STD TC4         ;60 + contador en TC4
+        
+        
+        ;BSET TSCR1,$90  ;encendemos Timer, TFFCLA
+       ; BSET TSCR2,$04  ;poner prescalador en 16
+       ; BSET TIOS,$10
+       ; BSET TIE,$10  ;habilitar interrupcion por canal 4
+       ; LDD #30
+       ; ADDD TCNT
+       ; STD TC4
 
 
 
@@ -771,6 +783,7 @@ OC4_ISR:
                         ;*******************************************************
                         ;Subrutina que genera interrupciones cada 50 KHz
                         ;*******************************************************
+        BSET TFLG1,$10 ;borra interrupciones
         Tst Cont_Delay
         BEQ aumentar_CONT_TICKS
         Dec Cont_Delay
@@ -781,7 +794,7 @@ aumentar_CONT_TICKS:
         Bne aumentar_CONT_7SEG
         Clr CONT_TICKS
         Lsl CONT_DIG
-        Ldaa #$10
+        Ldaa #$20
         Cmpa CONT_DIG
         BNE aumentar_CONT_7SEG
         MOVB #1,CONT_DIG
@@ -824,7 +837,7 @@ Antes_de_revisar_CONT_DIG:
         Bset PTJ,$2
 Antes_de_retornar:
         Ldd TCNT
-        Addd #30
+        Addd #60
         Std TC4
         Rti
 
