@@ -72,10 +72,10 @@ D40uS:         dB 2 ;
 Clear_LCD:     dB $01 ;
 ADD_L1:        dB $80 ;
 ADD_L2:        dB $C0 ;
-TEMP1:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: LCD_configurada ,1: Calc_flag
-TEMP2:         ds  1    ;usado para contador de  200 para ATD
-TEMP3:         ds  1    ;variable temeporal 3
-TEMP4:         ds  1    ;variable temeporal 4
+YULS:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: LCD_configurada ,1: Calc_flag
+CURIE:         ds  1
+CURIE2:         ds  1    ;variable temeporal 3
+HZD:         ds  1    ;usado para contador de  200 para ATD
                         org $1040
 Teclas:        dB $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$00,$0E ; Tabla con los valores de Tecla
                         org $1050
@@ -167,10 +167,10 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         MOVB #$00, NumVueltas
         MOVB #$00, Veloc
         MOVB #$00, VelProm
-        MOVB #$10, TEMP1        ;iniciar con estado final de vueltas
-        MOVB #$00, TEMP2
-        MOVB #$00, TEMP3
-        MOVB #$00, TEMP4
+        MOVB #$00, YULS        ;iniciar con estado final de vueltas
+        MOVB #$00, CURIE
+        MOVB #$00, CURIE2
+        MOVB #$00, HZD
         movw #$0000,CONT_7SEG
         MOVB #$00,Cont_Delay ;
         MOVB #200,CONT_200  ;Para contador de RTI que activa ATD para leer pot
@@ -294,7 +294,7 @@ comp:
             BRSET BANDERAS,$C0,ir_a_comp
             BRSET BANDERAS,$80,ir_a_resumen
             CLR Veloc           ;no es cmop ni resumen
-            BCLR TEMP1,$80         ;borramos bandera para que active PTH
+            ;BCLR TEMP1,$80         ;borramos bandera para que active PTH
             CLR Vueltas
             MOVB #0,VelProm ;???porque sino indefine division Necesario para PROMEDIO '' cambio 1 a 0???
             ;BRCLR BANDERAS,$40,conf
@@ -331,6 +331,12 @@ seguir_resumen:
 ir_a_comp:
         ;activate TOI
             ;MOVB #$83,TSCR2
+            Bset PIEH,$09 ; Habilitar de nuevo las interrupciones
+            Movb #$BB,BIN2
+            Movb #$BB,BIN1
+            Clr Vueltas
+            Clr VelProm
+            Clr Veloc
             BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
             BCLR BANDERAS,$10
             MOVB #$04,LEDS
@@ -436,11 +442,11 @@ RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;ATD07
                         ;*******************************************************
         BSET CRGFLG,$80 ;borrar solicitud de interrupcion
-        INC TEMP2
+        INC HZD
         LDAA #200
-        CMPA TEMP2
+        CMPA HZD
         BNE continuar_retorno_RTI
-        MOVB #0,TEMP2
+        MOVB #0,HZD
         MOVB #$87,ATD0CTL5      ;just a derecha, sin signo, controlada por software, sin MUX, inicia lectura en canal 7
 continuar_retorno_RTI:
         TST Cont_Reb
@@ -558,6 +564,7 @@ TCNT_ISR:               ;                   Subrutina TCNT_ISR
         TBNE X,tick_en_no_0       ;salta si no es 0
         ;PANT_FLAG=1
         BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
+        Bset YULS,$40
         BRA continuar_tick_dis
 tick_en_no_0:
         DEX
@@ -565,6 +572,7 @@ tick_en_no_0:
 continuar_tick_dis:
         TBNE Y,tick_dis_no_0    ;salta si no es 0
         BCLR BANDERAS,$08 ;borra bit 3
+        Bset YULS,$40
         BRA retorno_tcnt
 tick_dis_no_0:
         DEY
@@ -633,7 +641,7 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;Veloc
                         ;TEMP1
                         ;*******************************************************
-
+          Rts
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
