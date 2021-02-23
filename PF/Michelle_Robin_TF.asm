@@ -29,7 +29,7 @@ EOM:        EQU        $FF      ;End Of Message byte para indicar EOM de fcc
 
             org         $1000
 
-BANDERAS:      ds 1 ;7=modo1, 6=modo0, 5=Calc_ticks,3=Pant_FLG,2=Array_OK,1=TCL_LEIDA,0=TCL_LISTA
+BANDERAS:      ds 1 ;7=modo1, 6=modo0, 5=Calc_ticks, 4= CambModo,3=Pant_FLG,2=Array_OK,1=TCL_LEIDA,0=TCL_LISTA
 NumVueltas:    ds 1 ;
 ValorVueltas:  ds 1 ;???comentar que hace cada variable
 MAX_TCL:       db $02 ; Se define el valor maximo del arreglo de teclas
@@ -151,7 +151,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         MOVB #$00,LEDS
         MOVB #$00,BIN1
         MOVB #$BB,BIN2
-        MOVB #$00,BRILLO
+        MOVB #50,BRILLO
         MOVB #$00,CONT_DIG
         MOVB #$00,CONT_TICKS
         MOVW #0,TICK_EN
@@ -185,8 +185,8 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
 
         ;Configurar interrupcion Timer Overflow Interrupt
         ;BSET TSCR1,$80        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1
-        MOVB #$80,TSCR1        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1, sin ffca
-        MOVB #$03,TSCR2
+        Bset TSCR1,$90        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1, sin ffca
+        Bset TSCR2,$04
         ;BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
                               ;y 2 en Prescalador = 8 de Timer Status Control Reg 2
                               
@@ -195,13 +195,13 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
  ;       BSET TSCR2,$04  ;poner prescalador en 16
         BSET TIOS,$10
         BSET TIE,$10  ;habilitar interrupcion por canal 4
-;        LDD #30       ;30 para que cuente 20 msS
+        LDD #30       ;30 para que cuente 20 msS
 ;        ADDD TCNT     ;30 + contador en D
 ;        STD TC4       ;30 + contadora en TC4
 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 ;        MOVB #$10,TIOS         ;Vamos a usar canal 4
 ;        MOVB #$10,TIE          ;habilitamos interrupcion de canal 4
-        LDD #60      ;60 en D, para que cuente 20 mS
+ ;       LDD #60      ;60 en D, para que cuente 20 mS
         ADDD TCNT       ;60 + contador en D
         STD TC4         ;60 + contador en TC4
 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
@@ -215,7 +215,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
 
         ;Comunicacion LCD
         MOVB #$FF,DDRK
-;        BClR PORTK,$01 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+        BClR PORTK,$01 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         
         ;Teclado matricial, puerto A
         MOVB #$F0,DDRA ; Seteamos 7-4 como salidas y 3-0 como entradas
@@ -260,6 +260,101 @@ loopIniDsp:
 ;                            Programa principal
 ;*******************************************************************************
 ;_______________________________________________________________________________
+
+            ;LDX #MSGConfig_L1
+            ;LDY #MSGConfig_L2
+            ;JSR CARGAR_LCD
+            Movb #$00,DISP1
+            Movb #$5B,DISP2
+            Movb #$4F,DISP3
+            Movb #$66,DISP4
+config_loop:
+            JSR MODO_CONFIGURACION
+            TST NumVueltas
+            BEQ config_loop
+loop_main:
+            Movb #$00,DISP1
+            Movb #$5B,DISP2
+            Movb #$4F,DISP3
+            Movb #$66,DISP4
+            LDAA PTIH
+            anda #$C0
+            LDAB BANDERAS
+            ANDB #$C0
+            CBA
+            BEQ sin_cambios
+            BCLR BANDERAS,$C0
+            Oraa BANDERAS
+            STAA BANDERAS
+            BSET BANDERAS,$10
+            BRA comp
+sin_cambios:
+            BCLR BANDERAS,$10
+comp:
+            BRSET BANDERAS,$C0,ir_a_comp
+            BRSET BANDERAS,$80,ir_a_resumen
+            CLR Veloc           ;no es cmop ni resumen
+            BCLR TEMP1,$80         ;borramos bandera para que active PTH
+            CLR Vueltas
+            MOVB #0,VelProm ;???porque sino indefine division Necesario para PROMEDIO '' cambio 1 a 0???
+            ;BRCLR BANDERAS,$40,conf
+            ;MOVB #$03,TSCR2
+            ;BCLR $0F,PIEH
+            ;BCLR $0F,PIFH
+
+conf:
+            BRSET BANDERAS,$40,ir_a_config
+            BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
+            BCLR BANDERAS,$10
+            LDX #MSGLIBRE_L1
+            LDY #MSGLIBRE_L2
+            MOVB #$01,LEDS
+            JSR CARGAR_LCD
+seguir_libre:
+            JSR MODO_LIBRE
+            LBRA loop_main
+            
+ir_a_resumen:
+            BRCLR BANDERAS,$10,seguir_resumen
+            BCLR BANDERAS,$10
+            ;BCLR $0F,PIEH   ;apago interrupciones PTH
+            ;BCLR $0F,PIFH
+            MOVB #$08,LEDS
+            LDX #MSGRESUMEN_L1
+            LDY #MSGRESUMEN_L2
+            JSR CARGAR_LCD
+seguir_resumen:
+            JSR MODO_RESUMEN
+            LBRA loop_main
+ir_a_comp:
+        ;activate TOI
+            ;MOVB #$83,TSCR2
+            BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
+            BCLR BANDERAS,$10
+            MOVB #$04,LEDS
+            LDX #MSGINICIAL_L1
+            LDY #MSGINICIAL_L2
+            JSR CARGAR_LCD
+seguir_comp:
+            JSR MODO_COMPETENCIA
+            LBRA loop_main
+
+ir_a_config:
+            BRCLR BANDERAS,$10,seguir_config    ;ssalta si no ha cambiado el modo
+            BCLR BANDERAS,$10
+            MOVB #$02,LEDS
+            MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
+            MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
+            ;MOVW 0,TICK_DIS
+            ;MOVW 0,TICK_EN
+            ;MOVB #0,ValorVueltas    ;vueltas ingresadas son 0
+            LDX #MSGConfig_L1
+            LDY #MSGConfig_L2
+            JSR CARGAR_LCD
+seguir_config:
+            JSR MODO_CONFIGURACION
+            LBRA loop_main
+
 
 
 
@@ -306,7 +401,8 @@ ver_si_es_mayor_95:
         BLO seguir_atd
         LDAB #95
 seguir_atd:
-        STAB BRILLO ;obtenemos el BRILLO como un valor entre 5 y 95
+        ;STAB BRILLO ;obtenemos el BRILLO como un valor entre 5 y 95
+        
         RTI
 
                         ;*******************************************************
@@ -327,7 +423,8 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;       _____________________________
                         ;                   Vueltas
                         ;*******************************************************
-
+        ;Bclr PIFH,$09
+        ;RTI
                         
                         ;*******************************************************
 RTI_ISR:                ;                   Subrutina RTI_ISR
@@ -356,7 +453,7 @@ OC4_ISR:                ;                   Subrutina OC4_ISR
                         ;LCD y de 7 segmentos
                         ;borrado de banderas manual para que no se borre TOI
                         ;*******************************************************
-        BSET TFLG1,$10 ;borra interrupciones
+        ;BSET TFLG1,$10 ;borra interrupciones
         Tst Cont_Delay
         BEQ aumentar_CONT_TICKS
         Dec Cont_Delay
@@ -402,7 +499,7 @@ Antes_de_revisar_CONT_DIG:
 
 Antes_de_retornar:
         Ldd TCNT
-        Addd #60        ;para que cuenta 20 ms
+        Addd #30
         Std TC4
         RTI
 
@@ -438,6 +535,7 @@ apagar_LEDS:
         Movb #$0F,PTP
         BSET PTJ,$02
         Bra Antes_de_retornar
+
         
                         ;*******************************************************
 TCNT_ISR:               ;                   Subrutina TCNT_ISR
@@ -533,7 +631,7 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;Veloc
                         ;TEMP1
                         ;*******************************************************
-
+        Rts
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
@@ -541,7 +639,7 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
-
+        Rts
                         ;*******************************************************
 PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
@@ -567,7 +665,9 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;Variables de entrada: TEMP1.6 bandera de cambio de modo
                         ;Variables de salida: TEMP1.6
                         ;*******************************************************
-                        
+        Movb #$BB,BIN1
+        Movb #$BB,BIN2
+        Rts
 ;*******************************************************************************
 ;               Subrutinas de binario y BCD y display de 7 segmentos
 ;*******************************************************************************
