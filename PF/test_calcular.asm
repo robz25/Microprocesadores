@@ -76,6 +76,7 @@ YULS:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: 
 CURIE:         ds  1
 CURIE2:         ds  1    ;variable temeporal 3
 HZD:         ds  1    ;usado para contador de  200 para ATD
+TSTT:   ds 1
                         org $1040
 Teclas:        dB $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$00,$0E ; Tabla con los valores de Tecla
                         org $1050
@@ -266,6 +267,7 @@ loopIniDsp:
             JSR CARGAR_LCD
 
 loop:
+        MOVB #0,TSTT
 	MOVB YULS,LEDS
 	BRA loop
             
@@ -438,7 +440,8 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;       _____________________________
                         ;                   Vueltas
                         ;*******************************************************
-        TST Cont_Reb
+        MOVB #$FF,TSTT
+	TST Cont_Reb
         LBNE retorno_calcular
         BRSET YULS,$02,segundo_ingreso
         BRSET PIFH,$08,poner_bit_3
