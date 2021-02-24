@@ -186,8 +186,8 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         ;Configurar interrupcion Timer Overflow Interrupt
         ;BSET TSCR1,$80        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1
         MOVB #$80,TSCR1        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1, sin ffca
-        MOVB #$03,TSCR2
-        ;BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
+       ; MOVB #$03,TSCR2
+        BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
                               ;y 2 en Prescalador = 8 de Timer Status Control Reg 2
                               
         ;Configurar interrupcion OC4 Output Compare en canal 4
@@ -434,25 +434,33 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;                   Vueltas
                         ;*******************************************************
         TST Cont_Reb
-        LBNE retorno_calcular
+        BNE retorno_calcular_cont_reb_no_0
         BRSET YULS,$02,segundo_ingreso
         BRSET PIFH,$08,poner_bit_3
         BSET YULS,$01
-        BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        ;BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         BRA retorno_primer_ingreso
 poner_bit_3:
         BSET YULS,$08
-        BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        ;BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
 retorno_primer_ingreso:
-        MOVB #10,Cont_Reb
+        MOVB #2,Cont_Reb
         BSET YULS,$02
         BRA retorno_calcular
-        
+
+retorno_calcular_cont_reb_no_0:
+        BRSET PIFH,$08,quitar_b_3
+        ;BSET PIFH,$01
+        BRA retorno_calcular
+quitar_b_3:
+        ;BSET PIFH,$08
+        BRA retorno_calcular
+
 segundo_ingreso:
         BCLR YULS,$02
         BRSET PIFH,$08,PH3
 ;ph0
-        BSET PIFH,$01
+        ;BSET PIFH,$01
         BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
         BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
         BCLR YULS,$10 ;borrar bandera de direccion
@@ -467,7 +475,7 @@ segundo_ingreso:
         BLO veloc_fuera_de_rango
         CMPB #95
         BHI veloc_fuera_de_rango
-        
+
         BSET YULS,$20 ;poner bandera de velocidad valida
         CLRA
         LDAB Vueltas
@@ -478,7 +486,7 @@ segundo_ingreso:
         MUL
         IDIV
         STX CURIE
-        
+
         CLRA
         LDAB Vueltas
         XGDX
@@ -489,18 +497,22 @@ segundo_ingreso:
         ADDD CURIE
         STAB VelProm
         BCLR Banderas,$20
-        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
+;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
-        RTS
-        
+        Bset PIFH,$09
+;        LDAA #$FF
+;        ANDA PIFH
+;        STAA PIFH
+        RTI
+
 veloc_fuera_de_rango:
         BCLR YULS,$20 ;quitar bit de velocidad valida
         DEC Vueltas
         BRA retorno_calcular
 
 PH3:
-        BSET PIFH,$08
+        ;BSET PIFH,$08
         BRCLR YULS,$08,retorno_calcular
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
@@ -509,7 +521,8 @@ PH3:
         BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
         BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
         BSET YULS,$40 ;poner bandera cambio de pantalla
-        
+        Bra retorno_calcular
+
                         
                         ;*******************************************************
 RTI_ISR:                ;                   Subrutina RTI_ISR
@@ -729,9 +742,9 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
-	Movb VelProm,BIN1
-	Movb Vueltas,BIN2
-	Rts
+        Movb VelProm,BIN1
+        Movb Vueltas,BIN2
+        Rts
                         ;*******************************************************
 PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
