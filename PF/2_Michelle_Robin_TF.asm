@@ -76,6 +76,7 @@ YULS:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: 
 CURIE:         ds  1
 CURIE2:         ds  1    ;variable temeporal 3
 HZD:         ds  1    ;usado para contador de  200 para ATD
+TEST:        ds 2
                         org $1040
 Teclas:        dB $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$00,$0E ; Tabla con los valores de Tecla
                         org $1050
@@ -165,7 +166,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         MOVB #$00,DISP4
         MOVB #$00, Vueltas
         MOVB #$00, NumVueltas
-        MOVB #$00, Veloc
+        MOVB #$01, Veloc
         MOVB #$00, VelProm
         MOVB #$00, YULS        ;iniciar con estado final de vueltas
         MOVB #$00, CURIE
@@ -174,6 +175,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         movw #$0000,CONT_7SEG
         MOVB #$00,Cont_Delay ;
         MOVB #200,CONT_200  ;Para contador de RTI que activa ATD para leer pot
+        MOVW #0,TEST
 
 ;*******************************************************************************
 ;                          Configuracion de hardware
@@ -336,7 +338,7 @@ ir_a_comp:
             Movb #$BB,BIN1
             Clr Vueltas
             Clr VelProm
-            Clr Veloc
+            ;Clr Veloc
             BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
             BCLR BANDERAS,$10
             MOVB #$04,LEDS
@@ -350,8 +352,8 @@ seguir_comp:
 ir_a_config:
             BRCLR BANDERAS,$10,seguir_config    ;ssalta si no ha cambiado el modo
             BCLR BANDERAS,$10
-            BCLR $0F,PIEH   ;apago interrupciones PTH
-            BCLR $0F,PIFH
+            BCLR $09,PIEH   ;apago interrupciones PTH
+            ;BCLR $0F,PIFH
             MOVB #$02,LEDS
             MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
             MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
@@ -433,6 +435,9 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;       _____________________________
                         ;                   Vueltas
                         ;*******************************************************
+        Ldx TEST ; debug
+        Inx
+        Stx TEST
         TST Cont_Reb
         BNE retorno_calcular_cont_reb_no_0
         BRSET YULS,$02,segundo_ingreso
@@ -500,10 +505,10 @@ segundo_ingreso:
 ;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
-        Bset PIFH,$09
-;        LDAA #$FF
-;        ANDA PIFH
-;        STAA PIFH
+      ;  Bset PIFH,$09
+        LDAA #$FF
+        ANDA PIFH
+        STAA PIFH
         RTI
 
 veloc_fuera_de_rango:
@@ -802,7 +807,7 @@ Veloc_No_Valida:
         Bra Retorno_PANT_CRTL
 
 Activar_Alerta:
-        Bclr YULS,$40,Retorno_PANT_CRTL
+        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGALERTA_L1
         Ldy #MSGALERTA_L2
         Bclr YULS,$40
@@ -812,8 +817,8 @@ Activar_Alerta:
         Bra Retorno_PANT_CRTL
         
 Pant_Flag_es_0:
-        Bclr YULS,$04,Mensaje_esperando
-        Bclr YULS,$40,Retorno_PANT_CRTL
+        Brclr YULS,$04,Mensaje_esperando
+        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGCALCULANDO_L1
         Ldy #MSGCALCULANDO_L2
         Bclr YULS,$40
@@ -824,7 +829,7 @@ Pant_Flag_es_0:
         
         
 Mensaje_esperando:
-        Bclr YULS,$40,Retorno_PANT_CRTL
+        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGINICIAL_L1
         Ldy #MSGINICIAL_L2
         Bclr YULS,$40
@@ -835,7 +840,7 @@ Mensaje_esperando:
         Cmpa Vueltas
         LBeq Retorno_PANT_CRTL
         Bset PIEH,$09
-        Bclr Banderas,$20
+        ;Bclr Banderas,$20
         LBra Retorno_PANT_CRTL
         
 
@@ -855,6 +860,7 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;*******************************************************
         Movb #$AA,BIN1
         Movb #$AA,BIN2
+        Rts
 ;*******************************************************************************
 ;               Subrutinas de binario y BCD y display de 7 segmentos
 ;*******************************************************************************
