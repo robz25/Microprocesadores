@@ -732,7 +732,7 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;*******************************************************
         TST Veloc
         BEQ retorno_competencia
-        JSR PANT_CTRL
+        JSR PANT_CRTL
 retorno_competencia:
         Rts
                         ;*******************************************************
@@ -746,7 +746,7 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
         Movb Vueltas,BIN2
         Rts
                         ;*******************************************************
-PANT_CTRL:              ;                  Subrutina PANT_CTRL
+PANT_CRTL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
                         ;Subrutina que modifica el valor de las pantallas
                         ;segun el modo seleccionado y la activacionde de los
@@ -762,7 +762,90 @@ PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;Variables de salida:
                         ;BIN1 y BIN2: mensajes para pantalla
                         ;*******************************************************
+        Brclr Banderas,$20,Calcular_Ticks
+        Brclr Banderas,$10,Pant_Flag_es_0
+        Brclr YULS,$20,Activar_Alerta
+        Brclr YULS,$40,Retorno_PANT_CRTL
+        Ldx #MSGCOMPETENCIA_L1
+        Ldy #MSGCOMPETENCIA_L2
+        Bclr YULS,$40
+        Movb Vueltas,BIN1
+        Movb Veloc,BIN2
+        Jsr CARGAR_LCD
+        Bra Retorno_PANT_CRTL
 
+Retorno_PANT_CRTL:
+        Rts
+
+Calcular_Ticks:
+        Brclr YULS,$20,Veloc_No_Valida
+        Clra
+        Ldab VelProm
+        XGDX
+        Ldd #49438
+        Idiv
+        Stx TICK_DIS
+
+        Clra
+        Ldab VelProm
+        XGDX
+        Ldd #32959
+        Idiv
+        Stx TICK_EN
+        Bset Banderas,$20
+        Bra Retorno_PANT_CRTL
+
+Veloc_No_Valida:
+        Movw #1,TICK_EN
+        Movw #138,TICK_DIS
+        Bset Banderas,$20
+        Bra Retorno_PANT_CRTL
+
+Activar_Alerta:
+        Bclr YULS,$40,Retorno_PANT_CRTL
+        Ldx #MSGALERTA_L1
+        Ldy #MSGALERTA_L2
+        Bclr YULS,$40
+        Movb #$AA,BIN1
+        Movb #$AA,BIN2
+        Jsr CARGAR_LCD
+        Bra Retorno_PANT_CRTL
+        
+Pant_Flag_es_0:
+        Bclr YULS,$04,Mensaje_esperando
+        Bclr YULS,$40,Retorno_PANT_CRTL
+        Ldx #MSGCALCULANDO_L1
+        Ldy #MSGCALCULANDO_L2
+        Bclr YULS,$40
+        Movb #$BB,BIN1
+        Movb #$BB,BIN2
+        Jsr CARGAR_LCD
+        Bra Retorno_PANT_CRTL
+        
+        
+Mensaje_esperando:
+        Bclr YULS,$40,Retorno_PANT_CRTL
+        Ldx #MSGINICIAL_L1
+        Ldy #MSGINICIAL_L2
+        Bclr YULS,$40
+        Movb #$BB,BIN1
+        Movb #$BB,BIN2
+        Ldaa NumVueltas
+        Jsr CARGAR_LCD
+        Cmpa Vueltas
+        LBeq Retorno_PANT_CRTL
+        Bset PIEH,$09
+        Bclr Banderas,$20
+        LBra Retorno_PANT_CRTL
+        
+
+
+
+
+        
+
+        
+        
                         ;*******************************************************
 MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;*******************************************************
