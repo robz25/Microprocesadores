@@ -268,8 +268,8 @@ loopIniDsp:
 
 loop:
         MOVB #0,TSTT
-	MOVB YULS,LEDS
-	BRA loop
+        MOVB YULS,LEDS
+        BRA loop
             
 ;            Movb #$00,DISP1
 ;            Movb #$5B,DISP2
@@ -441,34 +441,34 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;                   Vueltas
                         ;*******************************************************
         MOVB #$FF,TSTT
-	TST Cont_Reb
+        TST Cont_Reb
         BNE retorno_calcular_cont_reb_no_0
         BRSET YULS,$02,segundo_ingreso
         BRSET PIFH,$08,poner_bit_3
         BSET YULS,$01
-        BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        ;BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         BRA retorno_primer_ingreso
 poner_bit_3:
         BSET YULS,$08
-        BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        ;BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
 retorno_primer_ingreso:
-        MOVB #10,Cont_Reb
+        MOVB #2,Cont_Reb
         BSET YULS,$02
         BRA retorno_calcular
         
 retorno_calcular_cont_reb_no_0:
         BRSET PIFH,$08,quitar_b_3
-        BSET PIFH,$01
+        ;BSET PIFH,$01
         BRA retorno_calcular
 quitar_b_3:
-        BSET PIFH,$08
+        ;BSET PIFH,$08
         BRA retorno_calcular
         
 segundo_ingreso:
         BCLR YULS,$02
         BRSET PIFH,$08,PH3
 ;ph0
-        BSET PIFH,$01
+        ;BSET PIFH,$01
         BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
         BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
         BCLR YULS,$10 ;borrar bandera de direccion
@@ -508,10 +508,11 @@ segundo_ingreso:
 ;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
-        LDAA #$09
-        ANDA PIFH
-        STAA PIFH
-        RTS
+        Bset PIFH,$09
+        ;LDAA #$09
+        ;ANDA PIFH
+        ;STAA PIFH
+        RTI
 
 veloc_fuera_de_rango:
         BCLR YULS,$20 ;quitar bit de velocidad valida
@@ -519,7 +520,7 @@ veloc_fuera_de_rango:
         BRA retorno_calcular
 
 PH3:
-        BSET PIFH,$08
+        ;BSET PIFH,$08
         BRCLR YULS,$08,retorno_calcular
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
@@ -528,7 +529,7 @@ PH3:
         BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
         BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
         BSET YULS,$40 ;poner bandera cambio de pantalla
-
+        Bra retorno_calcular
 
                         ;*******************************************************
 RTI_ISR:                ;                   Subrutina RTI_ISR
