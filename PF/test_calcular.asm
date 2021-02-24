@@ -186,10 +186,10 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         ;Configurar interrupcion Timer Overflow Interrupt
         ;BSET TSCR1,$80        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1
         MOVB #$80,TSCR1        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1, sin ffca
-        MOVB #$03,TSCR2
-        ;BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
+        ;MOVB #$03,TSCR2
+        BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
                               ;y 2 en Prescalador = 8 de Timer Status Control Reg 2
-                              
+
         ;Configurar interrupcion OC4 Output Compare en canal 4
 ;        BSET TSCR1,$90  ;encendemos Timer, TFFCLA
  ;       BSET TSCR2,$04  ;poner prescalador en 16
@@ -216,7 +216,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         ;Comunicacion LCD
         MOVB #$FF,DDRK
 ;        BClR PORTK,$01 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        
+
         ;Teclado matricial, puerto A
         MOVB #$F0,DDRA ; Seteamos 7-4 como salidas y 3-0 como entradas
         BSET PUCR,$01 ; Se habilitan las resistencias de pullup para el puerto A
@@ -264,6 +264,11 @@ loopIniDsp:
             LDX #MSGConfig_L1
             LDY #MSGConfig_L2
             JSR CARGAR_LCD
+
+loop:
+	MOVB YULS,LEDS
+	BRA loop
+            
 ;            Movb #$00,DISP1
 ;            Movb #$5B,DISP2
 ;            Movb #$4F,DISP3
@@ -369,8 +374,8 @@ seguir_config:
 
 
 
-        
-        
+
+
 
 ;_______________________________________________________________________________
 ;
@@ -447,7 +452,7 @@ retorno_primer_ingreso:
         MOVB #10,Cont_Reb
         BSET YULS,$02
         BRA retorno_calcular
-        
+
 segundo_ingreso:
         BCLR YULS,$02
         BRSET PIFH,$08,PH3
@@ -467,7 +472,7 @@ segundo_ingreso:
         BLO veloc_fuera_de_rango
         CMPB #95
         BHI veloc_fuera_de_rango
-        
+
         BSET YULS,$20 ;poner bandera de velocidad valida
         CLRA
         LDAB Vueltas
@@ -478,7 +483,7 @@ segundo_ingreso:
         MUL
         IDIV
         STX CURIE
-        
+
         CLRA
         LDAB Vueltas
         XGDX
@@ -489,11 +494,11 @@ segundo_ingreso:
         ADDD CURIE
         STAB VelProm
         BCLR Banderas,$20
-        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
+;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
         RTS
-        
+
 veloc_fuera_de_rango:
         BCLR YULS,$20 ;quitar bit de velocidad valida
         DEC Vueltas
@@ -509,8 +514,8 @@ PH3:
         BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
         BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
         BSET YULS,$40 ;poner bandera cambio de pantalla
-        
-                        
+
+
                         ;*******************************************************
 RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;*******************************************************
@@ -530,7 +535,7 @@ continuar_retorno_RTI:
         DEC Cont_Reb
 retorno_RTI:
         RTI
-        
+
                         ;*******************************************************
 OC4_ISR:                ;                   Subrutina OC4_ISR
                         ;*******************************************************
@@ -620,7 +625,7 @@ apagar_LEDS:
         Movb #$0F,PTP
         BSET PTJ,$02
         Bra Antes_de_retornar
-        
+
                         ;*******************************************************
 TCNT_ISR:               ;                   Subrutina TCNT_ISR
                         ;*******************************************************
@@ -655,7 +660,7 @@ tick_dis_no_0:
         STY TICK_DIS
 retorno_tcnt:
         RTI
-         
+
 ;_______________________________________________________________________________
 ;
 ;*******************************************************************************
@@ -704,7 +709,7 @@ llamar_Tarea_Teclado:
         Jsr Tarea_Teclado
         Rts
 
-                        
+
                         ;*******************************************************
 MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;*******************************************************
@@ -729,9 +734,9 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
-	Movb VelProm,BIN1
-	Movb Vueltas,BIN2
-	Rts
+        Movb VelProm,BIN1
+        Movb Vueltas,BIN2
+        Rts
                         ;*******************************************************
 PANT_CTRL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
@@ -784,7 +789,7 @@ revisar_bb:
         BNE seguir_conv_bin_bcd
         MOVW #$BBBB,BCD1  ;poner ambos valores de BCD en AA para poner rayas
         RTS
-        
+
 seguir_conv_bin_bcd:
         Ldaa BIN1
         Jsr BIN_BCD
@@ -853,7 +858,7 @@ BCD_7SEG:               ;                 Subrutina BCD_7SEG
         Lsra
         Movb A,X,DISP3
         Rts
-         
+
                         ;*******************************************************
 BCD_BIN:                ;                Subrutina BCD_BIN
                         ;*******************************************************
@@ -862,7 +867,7 @@ BCD_BIN:                ;                Subrutina BCD_BIN
                         ;*******************************************************
 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;si quiero poner 3 tengro que ingresar 03 o puedo poner solo 3 ?
-        
+
 ;       BRSET Num_Array+1,$FF,arreglo_invalido
         Ldx #Num_Array
         Ldab #$A
@@ -875,7 +880,7 @@ BCD_BIN:                ;                Subrutina BCD_BIN
 arreglo_invalido:               ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         MOVB #0,ValorVueltas
         RTS
-        
+
                         ;*******************************************************
 BIN_BCD:                ;                Subrutina BIN_BCD
                         ;*******************************************************
@@ -1019,7 +1024,7 @@ Delay:                  ;                 Subrutina Delay
         TST Cont_Delay
         BNE Delay
         RTS
-                        
+
 
 ;*******************************************************************************
 ;                         Subrutinas de manejo del teclado
@@ -1061,7 +1066,7 @@ revisar_TCL_LISTA:
 
 Retorno_Tarea_Teclado:
         RTS
-                        
+
                         ;*******************************************************
 MUX_TECLADO:            ;                  Subrutina MUX_TECLADO
                         ;*******************************************************
@@ -1167,4 +1172,3 @@ full_array:
 Nodo_Final:
         Movb #$FF,Tecla_IN
         RTS
-                        
