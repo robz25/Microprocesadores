@@ -442,7 +442,7 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;*******************************************************
         MOVB #$FF,TSTT
 	TST Cont_Reb
-        LBNE retorno_calcular
+        BNE retorno_calcular_cont_reb_no_0
         BRSET YULS,$02,segundo_ingreso
         BRSET PIFH,$08,poner_bit_3
         BSET YULS,$01
@@ -454,6 +454,10 @@ poner_bit_3:
 retorno_primer_ingreso:
         MOVB #10,Cont_Reb
         BSET YULS,$02
+        BRA retorno_calcular
+        
+retorno_calcular_cont_reb_no_0:
+        BSET PIFH,$09
         BRA retorno_calcular
 
 segundo_ingreso:
