@@ -457,9 +457,13 @@ retorno_primer_ingreso:
         BRA retorno_calcular
         
 retorno_calcular_cont_reb_no_0:
-        BSET PIFH,$09
+        BRSET PIFH,$08,quitar_b_3
+        BSET PIFH,$01
         BRA retorno_calcular
-
+quitar_b_3:
+        BSET PIFH,$08
+        BRA retorno_calcular
+        
 segundo_ingreso:
         BCLR YULS,$02
         BRSET PIFH,$08,PH3
@@ -504,6 +508,9 @@ segundo_ingreso:
 ;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
+        LDAA #$09
+        ANDA PIFH
+        STAA PIFH
         RTS
 
 veloc_fuera_de_rango:
