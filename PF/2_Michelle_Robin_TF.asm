@@ -9,7 +9,7 @@
 ;       V1
 ;       AUTORES:
 ;                ROBIN GONZALEZ RICZ  B43011
-;               MICHELLE GUTIERREZ MU�OZ B43195
+;               MICHELLE GUTIERREZ MU?OZ B43195
 ;
 ;       DESCRIPCION:    Proyecto Final
 ;       Contador de vueltas y velocidad para un velodromo
@@ -113,7 +113,7 @@ MSGLIBRE_L1:                  fcc     "  RunMeter 623"
                 db EOM
 MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
                 db EOM
-                
+
                 org $1150
 Compe:           ds 2
 Config:           ds 2
@@ -209,7 +209,7 @@ RTII:           ds 2
        ; MOVB #$03,TSCR2
         BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
                               ;y 2 en Prescalador = 8 de Timer Status Control Reg 2
-                              
+
         ;Configurar interrupcion OC4 Output Compare en canal 4
 ;        BSET TSCR1,$90  ;encendemos Timer, TFFCLA
  ;       BSET TSCR2,$04  ;poner prescalador en 16
@@ -236,7 +236,7 @@ RTII:           ds 2
         ;Comunicacion LCD
         MOVB #$FF,DDRK
 ;        BClR PORTK,$01 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        
+
         ;Teclado matricial, puerto A
         MOVB #$F0,DDRA ; Seteamos 7-4 como salidas y 3-0 como entradas
         BSET PUCR,$01 ; Se habilitan las resistencias de pullup para el puerto A
@@ -348,17 +348,18 @@ ir_a_resumen:
 seguir_resumen:
             JSR MODO_RESUMEN
             LBRA loop_main
+
 ir_a_comp:
         ;activate TOI
             ;MOVB #$83,TSCR2
             BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
-            BCLR BANDERAS,$10
             Bset PIEH,$09 ; Habilitar de nuevo las interrupciones
             Movb #$BB,BIN2
             Movb #$BB,BIN1
-            Clr Vueltas
+            Movw #0,Veloc ; Borrar Veloc y Vueltas
             Clr VelProm
-            Clr Veloc
+            Bclr YULS,$3C ; Borrar Veloc V?lida, Direcci?n, PantFlag y Habr? c?lculo
+            Bclr Banderas,$38 ;Borrar CalcTicks, CambModo y PantFlag
             MOVB #$04,LEDS
             LDX #MSGINICIAL_L1
             LDY #MSGINICIAL_L2
@@ -389,8 +390,8 @@ seguir_config:
 
 
 
-        
-        
+
+
 
 ;_______________________________________________________________________________
 ;
@@ -437,7 +438,7 @@ seguir_atd:
 
 
 
-                        
+
                         ;*******************************************************
 RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;*******************************************************
@@ -460,7 +461,7 @@ continuar_retorno_RTI:
         DEC Cont_Reb
 retorno_RTI:
         RTI
-        
+
                         ;*******************************************************
 OC4_ISR:                ;                   Subrutina OC4_ISR
                         ;*******************************************************
@@ -550,7 +551,7 @@ apagar_LEDS:
         Movb #$0F,PTP
         BSET PTJ,$02
         Bra Antes_de_retornar
-        
+
                         ;*******************************************************
 TCNT_ISR:               ;                   Subrutina TCNT_ISR
                         ;*******************************************************
@@ -608,7 +609,7 @@ tick_dis_es_0:
 ;        BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
 ;        Bset YULS,$40
 ;        BRA continuar
-        
+
 ;tick_en_no_0:
 ;        DEX
 ;        STX TICK_EN
@@ -839,7 +840,7 @@ Activar_Alerta:
         Movb #$AA,BIN2
         Jsr CARGAR_LCD
         Bra Retorno_PANT_CRTL
-        
+
 Pant_Flag_es_0:
  ;       Brclr YULS,$04,Mensaje_esperando
  ;       Brclr YULS,$40,Retorno_PANT_CRTL
@@ -850,8 +851,8 @@ Pant_Flag_es_0:
  ;       Movb #$BB,BIN2
  ;       Jsr CARGAR_LCD
  ;       Bra Retorno_PANT_CRTL
-        
-        
+
+
 Mensaje_esperando:
         ;Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGINICIAL_L1
@@ -862,14 +863,14 @@ Mensaje_esperando:
         Movb #$BB,BIN2
         Ldaa NumVueltas
         Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-        Cmpa Vueltas       
+        Cmpa Vueltas
         LBeq Retorno_PANT_CRTL ;final de todas las vueltas
 
         Bset PIEH,$09
         Bclr Banderas,$20
         LBra Retorno_PANT_CRTL ;retorno usual
-        
-                       
+
+
                         ;*******************************************************
 MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;*******************************************************
@@ -941,8 +942,8 @@ llamar_Tarea_Teclado:
         Jsr Tarea_Teclado
         Rts
 
-        
-        
+
+
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
@@ -956,7 +957,7 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
         Movb VelProm,BIN1
         Movb Vueltas,BIN2
         Rts
-             
+
                         ;*******************************************************
 MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;*******************************************************
@@ -983,7 +984,7 @@ CONV_BIN_BCD:           ;                Subrutina CONV_BIN_BCD
                         ;*******************************************************
         ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;si no se apaga un numero revisar logica para apgar numeros de forma independiente
-        LDAB BIN2
+   LDAB BIN2
         CMPB #$BB
         BEQ poner_bcd2_apagado
         BCLR YULS,$80   ;quitar bandera de bcd2 apagado
@@ -1037,7 +1038,7 @@ es_cero:
 BCD2_es_cero:
         Movb #$B0,BCD2  ;poner 0
         bra retorno_conv_bin_bcd
-        
+
 retorno_conv_bin_bcd:
         BRCLR YULS,$80,mantener_bcd2_igual
         MOVB #$BB,BCD2
@@ -1076,7 +1077,7 @@ BCD_7SEG:               ;                 Subrutina BCD_7SEG
         Lsra
         Movb A,X,DISP3
         Rts
-         
+
                         ;*******************************************************
 BCD_BIN:                ;                Subrutina BCD_BIN
                         ;*******************************************************
@@ -1085,7 +1086,7 @@ BCD_BIN:                ;                Subrutina BCD_BIN
                         ;*******************************************************
 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;si quiero poner 3 tengro que ingresar 03 o puedo poner solo 3 ?
-        
+
 ;       BRSET Num_Array+1,$FF,arreglo_invalido
         Ldx #Num_Array
         Ldab #$A
@@ -1098,7 +1099,7 @@ BCD_BIN:                ;                Subrutina BCD_BIN
 arreglo_invalido:               ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         MOVB #0,ValorVueltas
         RTS
-        
+
                         ;*******************************************************
 BIN_BCD:                ;                Subrutina BIN_BCD
                         ;*******************************************************
@@ -1242,7 +1243,7 @@ Delay:                  ;                 Subrutina Delay
         TST Cont_Delay
         BNE Delay
         RTS
-                        
+
 
 ;*******************************************************************************
 ;                         Subrutinas de manejo del teclado
@@ -1284,7 +1285,7 @@ revisar_TCL_LISTA:
 
 Retorno_Tarea_Teclado:
         RTS
-                        
+
                         ;*******************************************************
 MUX_TECLADO:            ;                  Subrutina MUX_TECLADO
                         ;*******************************************************
@@ -1340,7 +1341,7 @@ FORMAR_ARRAY:           ;            Subrutina FORMAR_ARRAY
                         ;NumArray: arreglo de 2 teclas
                         ;COnt_TCL: cantidad de teclas ingresadas
                         ;*******************************************************
-        Ldx #Num_Array   ; Cargar direcci�n de Num_Array en el �ndice Y
+        Ldx #Num_Array   ; Cargar direcci?n de Num_Array en el ?ndice Y
         Ldaa #$0B
         Ldab Cont_TCL
         ;Incb
@@ -1354,7 +1355,7 @@ FORMAR_ARRAY:           ;            Subrutina FORMAR_ARRAY
         Cmpb Tecla_IN
         Beq poner_array_ok
         Ldab Cont_TCL
-        Movb Tecla_IN,b,x ; No sabemos si est� bien
+        Movb Tecla_IN,b,x ; No sabemos si est? bien
         Inc Cont_TCL
         Bra Nodo_Final
 
@@ -1390,4 +1391,3 @@ full_array:
 Nodo_Final:
         Movb #$FF,Tecla_IN
         RTS
-                        
