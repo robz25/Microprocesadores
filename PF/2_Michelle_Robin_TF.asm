@@ -351,7 +351,6 @@ seguir_resumen:
 ir_a_comp:
         ;activate TOI
             ;MOVB #$83,TSCR2
-            ;Clr Veloc
             BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
             BCLR BANDERAS,$10
             Bset PIEH,$09 ; Habilitar de nuevo las interrupciones
@@ -359,6 +358,7 @@ ir_a_comp:
             Movb #$BB,BIN1
             Clr Vueltas
             Clr VelProm
+            Clr Veloc
             MOVB #$04,LEDS
             LDX #MSGINICIAL_L1
             LDY #MSGINICIAL_L2
@@ -685,7 +685,7 @@ PHO:
         Ldx RTII ; debug
         Inx
         Stx RTII
-	BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
+        BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
         ;BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
         BCLR YULS,$10 ;borrar bandera de direccion
         BCLR YULS,$04 ;borrar bandera de calculo
@@ -739,7 +739,7 @@ PH3:
         Ldx PTHI ; debug
         Inx
         Stx PTHI
-	;BSET PIFH,$08
+        ;BSET PIFH,$08
         ;BRCLR YULS,$08,retorno_calcular
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
@@ -798,8 +798,8 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
         Ldx #MSGCOMPETENCIA_L1
         Ldy #MSGCOMPETENCIA_L2
 ;        Bclr YULS,$40
-        Movb Vueltas,BIN1
         Movb Veloc,BIN2
+        Movb Vueltas,BIN1
         Jsr CARGAR_LCD
         Bra Retorno_PANT_CRTL
 
@@ -861,7 +861,7 @@ Mensaje_esperando:
         Movb #$BB,BIN1
         Movb #$BB,BIN2
         Ldaa NumVueltas
-;        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         Cmpa Vueltas       
         LBeq Retorno_PANT_CRTL ;final de todas las vueltas
 
