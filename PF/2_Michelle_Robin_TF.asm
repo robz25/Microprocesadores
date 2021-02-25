@@ -325,8 +325,8 @@ comp:
 conf:
             BRSET BANDERAS,$40,ir_a_config
             BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
-            BCLR $0F,PIEH   ;apago interrupciones PTH
-            BCLR $0F,PIFH
+            BCLR PIEH,$09   ;apago interrupciones PTH
+            ;BCLR $0F,PIFH
             BCLR BANDERAS,$10
             LDX #MSGLIBRE_L1
             LDY #MSGLIBRE_L2
@@ -339,8 +339,8 @@ seguir_libre:
 ir_a_resumen:
             BRCLR BANDERAS,$10,seguir_resumen
             BCLR BANDERAS,$10
-            BCLR $0F,PIEH   ;apago interrupciones PTH
-            BCLR $0F,PIFH
+            BCLR PIEH,$09   ;apago interrupciones PTH
+            ;BCLR $0F,PIFH
             MOVB #$08,LEDS
             LDX #MSGRESUMEN_L1
             LDY #MSGRESUMEN_L2
@@ -543,7 +543,7 @@ PH3:
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
         INC Vueltas
-        BCLR YULS,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        ;BCLR YULS,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
         BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
         ;BSET YULS,$40 ;poner bandera cambio de pantalla
@@ -834,7 +834,16 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
         Inx
         Stx PANT
         Brclr Banderas,$20,Calcular_Ticks
-        Brclr Banderas,$08,Pant_Flag_es_0
+        Ldaa #$08
+        Ldab #$08
+        Anda Banderas
+        Andb YULS
+        Cba
+        Beq Retorno_PANT_CRTL
+        Ldaa #$08
+        Eora YULS
+        Staa YULS
+        Brclr YULS,$08,Pant_Flag_es_0
         Brclr YULS,$20,Activar_Alerta
         Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGCOMPETENCIA_L1
@@ -895,7 +904,7 @@ Pant_Flag_es_0:
         
         
 Mensaje_esperando:
-        Brclr YULS,$40,Retorno_PANT_CRTL
+        ;Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGINICIAL_L1
         Ldy #MSGINICIAL_L2
         Bclr YULS,$40
@@ -906,7 +915,8 @@ Mensaje_esperando:
         Cmpa Vueltas
         LBeq Retorno_PANT_CRTL
         Bset PIEH,$09
-        Bset Banderas,$20
+        Bclr Banderas,$20
+        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRR
         LBra Retorno_PANT_CRTL
         
 
