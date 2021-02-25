@@ -1088,7 +1088,7 @@ BCD_BIN:                ;                Subrutina BCD_BIN
 ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;si quiero poner 3 tengro que ingresar 03 o puedo poner solo 3 ?
 
-;       BRSET Num_Array+1,$FF,arreglo_invalido
+       BRSET Num_Array+1,$FF,un_solo_digito
         Ldx #Num_Array
         Ldab #$A
         Ldaa 1,X+
@@ -1097,8 +1097,8 @@ BCD_BIN:                ;                Subrutina BCD_BIN
         Aba
         Staa ValorVueltas
         Rts
-arreglo_invalido:               ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        MOVB #0,ValorVueltas
+un_solo_digito:               ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+        MOVB Num_Array,ValorVueltas        ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         RTS
 
                         ;*******************************************************
