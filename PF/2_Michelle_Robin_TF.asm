@@ -721,7 +721,7 @@ PHO:
         ADDD CURIE
         STAB VelProm
         BCLR Banderas,$20
-;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
+        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
       ;  Bset PIFH,$09
