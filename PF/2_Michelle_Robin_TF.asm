@@ -177,7 +177,7 @@ RTII:           ds 2
         MOVB #$00,DISP4
         MOVB #$00, Vueltas
         MOVB #$00, NumVueltas
-        MOVB #$01, Veloc
+        MOVB #$00, Veloc
         MOVB #$00, VelProm
         MOVB #$00, YULS        ;iniciar con estado final de vueltas
         MOVB #$00, CURIE
@@ -351,14 +351,14 @@ seguir_resumen:
 ir_a_comp:
         ;activate TOI
             ;MOVB #$83,TSCR2
+            ;Clr Veloc
+            BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
+            BCLR BANDERAS,$10
             Bset PIEH,$09 ; Habilitar de nuevo las interrupciones
             Movb #$BB,BIN2
             Movb #$BB,BIN1
             Clr Vueltas
             Clr VelProm
-            ;Clr Veloc
-            BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
-            BCLR BANDERAS,$10
             MOVB #$04,LEDS
             LDX #MSGINICIAL_L1
             LDY #MSGINICIAL_L2
@@ -444,9 +444,9 @@ RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;Subrutina que cuenta 1 ms y cuanta 200 ms para llamar a
                         ;ATD07
                         ;*******************************************************
-        Ldx RTII ; debug
-        Inx
-        Stx RTII
+        ;Ldx RTII ; debug
+        ;Inx
+        ;Stx RTII
         BSET CRGFLG,$80 ;borrar solicitud de interrupcion
         INC HZD
         LDAA #200
@@ -587,7 +587,7 @@ revisar_tick_dis:
         BRA retorno_tcnt
 
 ;        BRA revisar_tick_dis
-tick_en_es_0:
+tick_dis_es_0:
         BCLR BANDERAS,$08 ;borra bit 3 Pant_FLAG
 
 
@@ -650,9 +650,7 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;       _____________________________
                         ;                   Vueltas
                         ;*******************************************************
-        Ldx PTHI ; debug
-        Inx
-        Stx PTHI
+
         TST Cont_Reb
         BNE retorno_calcular
         Movb #80,Cont_Reb
@@ -684,7 +682,10 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
         Bra retorno_calcular
 ;ph0    ;BSET PIFH,$01
 PHO:
-        BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
+        Ldx RTII ; debug
+        Inx
+        Stx RTII
+	BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
         ;BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
         BCLR YULS,$10 ;borrar bandera de direccion
         BCLR YULS,$04 ;borrar bandera de calculo
@@ -735,7 +736,10 @@ veloc_fuera_de_rango:
         BRA retorno_calcular
 
 PH3:
-        ;BSET PIFH,$08
+        Ldx PTHI ; debug
+        Inx
+        Stx PTHI
+	;BSET PIFH,$08
         ;BRCLR YULS,$08,retorno_calcular
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
