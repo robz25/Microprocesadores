@@ -348,18 +348,17 @@ ir_a_resumen:
 seguir_resumen:
             JSR MODO_RESUMEN
             LBRA loop_main
-            
 ir_a_comp:
         ;activate TOI
             ;MOVB #$83,TSCR2
             BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
+            BCLR BANDERAS,$10
             Bset PIEH,$09 ; Habilitar de nuevo las interrupciones
             Movb #$BB,BIN2
             Movb #$BB,BIN1
-            Movw #0,Veloc ; Borrar Veloc y Vueltas
+            Clr Vueltas
             Clr VelProm
-            Bclr YULS,$3C ; Borrar Veloc Válida, Dirección, PantFlag y Habrá cálculo
-            Bclr Banderas,$38 ;Borrar CalcTicks, CambModo y PantFlag
+            Clr Veloc
             MOVB #$04,LEDS
             LDX #MSGINICIAL_L1
             LDY #MSGINICIAL_L2
@@ -984,18 +983,25 @@ CONV_BIN_BCD:           ;                Subrutina CONV_BIN_BCD
                         ;*******************************************************
         ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;si no se apaga un numero revisar logica para apgar numeros de forma independiente
-
+        LDAB BIN2
+        CMPB #$BB
+        BEQ poner_bcd2_apagado
+        BCLR YULS,$80   ;quitar bandera de bcd2 apagado
+continuar_conv_bin_bcd:
         Ldaa BIN1
         CMPA #$AA
         BNE revisar_bb
         MOVW #$AAAA,BCD1  ;poner ambos valores de BCD en AA para poner rayas
-        RTS
+        bra retorno_conv_bin_bcd
 revisar_bb:
         CMPA #$BB
         BNE seguir_conv_bin_bcd
         MOVW #$BBBB,BCD1  ;poner ambos valores de BCD en AA para poner rayas
-        RTS
-        
+        bra retorno_conv_bin_bcd
+poner_bcd2_apagado:
+        BSET YULS,$80   ;poner bandera de bcd2 apagado
+	BRA continuar_conv_bin_bcd
+
 seguir_conv_bin_bcd:
         Ldaa BIN1
         Jsr BIN_BCD
@@ -1014,7 +1020,7 @@ revisar_BCD2:
         Ldaa BCD2
         Cmpa #9
         Bls BCD2_es_menor_a_10
-        Rts
+        bra retorno_conv_bin_bcd
 BCD1_es_menor_a_10:
         Ldaa #$B0
         Eora BCD1
@@ -1024,13 +1030,19 @@ BCD2_es_menor_a_10:
         Ldaa #$B0
         Eora BCD2
         Staa BCD2
-        Rts
+        bra retorno_conv_bin_bcd
 es_cero:
         Movb #$B0,BCD1  ;poner 0
         Bra revisar_BCD2
 BCD2_es_cero:
         Movb #$B0,BCD2  ;poner 0
-        Rts
+        bra retorno_conv_bin_bcd
+        
+retorno_conv_bin_bcd:
+        BRCLR YULS,$80,mantener_bcd2_igual
+        MOVB #$BB,BCD2
+mantener_bcd2_igual:
+        RTS
 
 
                         ;*******************************************************
