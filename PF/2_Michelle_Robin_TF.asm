@@ -9,7 +9,7 @@
 ;       V1
 ;       AUTORES:
 ;                ROBIN GONZALEZ RICZ  B43011
-;               MICHELLE GUTIERREZ MUÑOZ B43195
+;               MICHELLE GUTIERREZ MUï¿½OZ B43195
 ;
 ;       DESCRIPCION:    Proyecto Final
 ;       Contador de vueltas y velocidad para un velodromo
@@ -154,8 +154,8 @@ RTII:           ds 2
         MOVB #$00,NumVueltas
         MOVB #$00,Vueltas
         MOVB #$00,ValorVueltas
-        MOVB $FF,Num_Array
-        MOVB $FF,Num_Array+1
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
         MOVB #$40,Banderas      ;iniciar en modo config
         MOVB #$00,Patron
         MOVB #$00,Cont_TCL
@@ -435,119 +435,7 @@ seguir_atd:
         STAB BRILLO ;obtenemos el BRILLO como un valor entre 5 y 95
         RTI
 
-                        ;*******************************************************
-CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
-                        ;*******************************************************
-                        ;Subrutina que atiende interrupciones al presionar los
-                        ;pulsadores SW5 en PH0 y SW2 en PH3
-                        ; PH3 representa el sensor S1
-                        ; PH0 representa el sensor S2
-                        ;ecuacion para obtener velocidad en Km/h:
-                        ;          9063/TICK_MED
-                        ;donde:
-                        ;9063 = 55*3600*46875/(1000*1024)
-                        ;1024/46875 = 0.021845 s = tiempo de TOI
-                        ;3600/1000 conversion a Km/h
-                        ;ecuacion para obtener velocidad promedio:
-                        ;       VelProm*(Vueltas-1)+Veloc
-                        ;       _____________________________
-                        ;                   Vueltas
-                        ;*******************************************************
-        Ldx PTHI ; debug
-        Inx
-        Stx PTHI
-        TST Cont_Reb
-        BNE retorno_calcular
-        Movb #80,Cont_Reb
- ;       BRSET YULS,$02,segundo_ingreso
- ;       BRSET PIFH,$08,poner_bit_3
- ;       BSET YULS,$01
-        ;BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
- ;       BRA retorno_primer_ingreso
-;poner_bit_3:
- ;       BSET YULS,$08
-        ;BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-;retorno_primer_ingreso:
- ;       MOVB #2,Cont_Reb
- ;       BSET YULS,$02
-;        BRA retorno_calcular
 
-;retorno_calcular_cont_reb_no_0:
-  ;      BRSET PIFH,$08,quitar_b_3
-        ;BSET PIFH,$01
- ;       BRA retorno_calcular
-;quitar_b_3:
-        ;BSET PIFH,$08
- ;       BRA retorno_calcular
-
-;segundo_ingreso:
-       ; BCLR YULS,$02
-        BRSET PIFH,$08,PH3
-        BRSET PIFH,$01,PHO
-        Bra retorno_calcular
-;ph0    ;BSET PIFH,$01
-PHO:
-        BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
-        ;BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
-        BCLR YULS,$10 ;borrar bandera de direccion
-        BCLR YULS,$04 ;borrar bandera de calculo
-        BCLR YULS,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-        LDX #9063
-        LDD TICK_MED
-        IDIV
-        XGDX
-        STAB Veloc
-        CMPB #35
-        BLO veloc_fuera_de_rango
-        CMPB #95
-        BHI veloc_fuera_de_rango
-
-        BSET YULS,$20 ;poner bandera de velocidad valida
-        CLRA
-        LDAB Vueltas
-        XGDX
-        LDAA VelProm
-        LDAB Vueltas
-        DECB
-        MUL
-        IDIV
-        STX CURIE
-
-        CLRA
-        LDAB Vueltas
-        XGDX
-        CLRA
-        LDAB Veloc
-        IDIV
-        XGDX
-        ADDD CURIE
-        STAB VelProm
-        BCLR Banderas,$20
-;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
-
-retorno_calcular:
-      ;  Bset PIFH,$09
-        LDAA #$FF
-        ANDA PIFH
-        STAA PIFH
-        RTI
-
-veloc_fuera_de_rango:
-        BCLR YULS,$20 ;quitar bit de velocidad valida
-        DEC Vueltas
-        BRA retorno_calcular
-
-PH3:
-        ;BSET PIFH,$08
-        ;BRCLR YULS,$08,retorno_calcular
-        BRSET YULS,$10,retorno_calcular
-        MOVW #0,TICK_MED
-        INC Vueltas
-        ;BCLR YULS,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-        BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
-        BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
-        ;BSET YULS,$40 ;poner bandera cambio de pantalla
-        Bra retorno_calcular
 
                         
                         ;*******************************************************
@@ -685,30 +573,56 @@ TCNT_ISR:               ;                   Subrutina TCNT_ISR
 ;        Beq TICK_EN_en_1
         LDX TICK_EN
         LDY TICK_DIS
-;continuar:
-        TBNE X,tick_en_no_0       ;salta si no es 0
+
+        TBEQ X,tick_en_es_0       ;salta si TICK_EN = 0
+        DEX
+        STX TICK_EN
+        BRA revisar_tick_dis
+tick_en_es_0:
         BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
-        BRA continuar_tick_dis
+revisar_tick_dis:
+        TBEQ Y,tick_dis_es_0       ;salta si TICK_DIS = 0
+        DEY
+        STY TICK_DIS
+        BRA retorno_tcnt
+
+;        BRA revisar_tick_dis
+tick_en_es_0:
+        BCLR BANDERAS,$08 ;borra bit 3 Pant_FLAG
+
+
+;continuar:
+ ;       DBNE X,tick_en_no_0       ;salta si no es 0
+ ;       BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
+
+;tick_en_no_0:
+        ;DBNE Y,tick_dis_no_0       ;salta si no es 0
+        ;BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
+
+;tick_dis_no_0:
+;        TBNE X,tick_en_no_0       ;salta si no es 0
+ ;       BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
+ ;       BRA continuar_tick_dis
 ;TICK_EN_en_1:
          ;PANT_FLAG=1
 ;        BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
 ;        Bset YULS,$40
 ;        BRA continuar
         
-tick_en_no_0:
-        DEX
-        STX TICK_EN
-continuar_tick_dis:
+;tick_en_no_0:
+;        DEX
+;        STX TICK_EN
+;continuar_tick_dis:
 ;        Cpd TICK_DIS
 ;        Beq TICK_DIS_en_1
 ;continuar2:
-        TBNE Y,tick_dis_no_0    ;salta si no es 0
-        BCLR BANDERAS,$08 ;borra bit 3
+;        TBNE Y,tick_dis_no_0    ;salta si no es 0
+;        BCLR BANDERAS,$08 ;borra bit 3 bandera Pant_Flag
 ;        Bset YULS,$40
-        BRA retorno_tcnt
-tick_dis_no_0:
-        DEY
-        STY TICK_DIS
+;        BRA retorno_tcnt
+;tick_dis_no_0:
+       ; DEY
+        ;STY TICK_DIS
 retorno_tcnt:
         RTI
 
@@ -716,7 +630,122 @@ retorno_tcnt:
 ;        BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
 ;        Bset YULS,$40
 ;        BRA continuar2
-         
+
+
+                        ;*******************************************************
+CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
+                        ;*******************************************************
+                        ;Subrutina que atiende interrupciones al presionar los
+                        ;pulsadores SW5 en PH0 y SW2 en PH3
+                        ; PH3 representa el sensor S1
+                        ; PH0 representa el sensor S2
+                        ;ecuacion para obtener velocidad en Km/h:
+                        ;          9063/TICK_MED
+                        ;donde:
+                        ;9063 = 55*3600*46875/(1000*1024)
+                        ;1024/46875 = 0.021845 s = tiempo de TOI
+                        ;3600/1000 conversion a Km/h
+                        ;ecuacion para obtener velocidad promedio:
+                        ;       VelProm*(Vueltas-1)+Veloc
+                        ;       _____________________________
+                        ;                   Vueltas
+                        ;*******************************************************
+        Ldx PTHI ; debug
+        Inx
+        Stx PTHI
+        TST Cont_Reb
+        BNE retorno_calcular
+        Movb #80,Cont_Reb
+ ;       BRSET YULS,$02,segundo_ingreso
+ ;       BRSET PIFH,$08,poner_bit_3
+ ;       BSET YULS,$01
+        ;BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+ ;       BRA retorno_primer_ingreso
+;poner_bit_3:
+ ;       BSET YULS,$08
+        ;BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+;retorno_primer_ingreso:
+ ;       MOVB #2,Cont_Reb
+ ;       BSET YULS,$02
+;        BRA retorno_calcular
+
+;retorno_calcular_cont_reb_no_0:
+  ;      BRSET PIFH,$08,quitar_b_3
+        ;BSET PIFH,$01
+ ;       BRA retorno_calcular
+;quitar_b_3:
+        ;BSET PIFH,$08
+ ;       BRA retorno_calcular
+
+;segundo_ingreso:
+       ; BCLR YULS,$02
+        BRSET PIFH,$08,PH3
+        BRSET PIFH,$01,PHO
+        Bra retorno_calcular
+;ph0    ;BSET PIFH,$01
+PHO:
+        BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
+        ;BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
+        BCLR YULS,$10 ;borrar bandera de direccion
+        BCLR YULS,$04 ;borrar bandera de calculo
+;        BCLR YULS,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        LDX #9063
+        LDD TICK_MED
+        IDIV
+        XGDX
+        STAB Veloc
+        CMPB #35
+        BLO veloc_fuera_de_rango
+        CMPB #95
+        BHI veloc_fuera_de_rango
+
+        BSET YULS,$20 ;poner bandera de velocidad valida
+        CLRA
+        LDAB Vueltas
+        XGDX
+        LDAA VelProm
+        LDAB Vueltas
+        DECB
+        MUL
+        IDIV
+        STX CURIE
+
+        CLRA
+        LDAB Vueltas
+        XGDX
+        CLRA
+        LDAB Veloc
+        IDIV
+        XGDX
+        ADDD CURIE
+        STAB VelProm
+        BCLR Banderas,$20
+;        BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
+
+retorno_calcular:
+      ;  Bset PIFH,$09
+        LDAA #$FF
+        ANDA PIFH
+        STAA PIFH
+        RTI
+
+veloc_fuera_de_rango:
+        BCLR YULS,$20 ;quitar bit de velocidad valida
+        DEC Vueltas
+        BRA retorno_calcular
+
+PH3:
+        ;BSET PIFH,$08
+        ;BRCLR YULS,$08,retorno_calcular
+        BRSET YULS,$10,retorno_calcular
+        MOVW #0,TICK_MED
+        INC Vueltas
+        ;BCLR YULS,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
+        BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
+        ;BSET YULS,$40 ;poner bandera cambio de pantalla
+        Bra retorno_calcular
+
 ;_______________________________________________________________________________
 ;
 ;*******************************************************************************
@@ -729,91 +758,6 @@ retorno_tcnt:
 ;                     Subrutinas nuevas para RunMeter 623
 ;*******************************************************************************
 
-                        ;*******************************************************
-MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
-                        ;*******************************************************
-                        ;Subrutina que lee valor de vueltas y desplega en panta-
-                        ;lla siempre y cuando este en el rango [3 , 23]
-                        ;Variables de entrada:
-                        ;ValorVueltas : numero de vueltas ingresadas
-                        ;Variables de salida:
-                        ;NumVueltas: vueltas validas ingresdas
-                        ;BIN1 y BIN2: valores a poner en pantalla 7 segmentos
-                        ;BIN1 displays 1 y 2
-                        ;BIN2 displays 3 y 4
-                        ;*******************************************************
-        Ldx Config ; debug
-        Inx
-        Stx Config
-        Brclr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
-        Bclr Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
-        Jsr BCD_BIN
-        Ldaa ValorVueltas
-        Cmpa #3
-        Blo no_valido
-        Cmpa #23
-        Bhi no_valido      ;si es mayor a 85 es invalida
-        Movb ValorVueltas,NumVueltas
-        Movb NumVueltas,BIN1
-;        CLR Cont_TCL
-        MOVB #$FF,Num_Array
-        MOVB #$FF,Num_Array+1
-        Rts
-
-no_valido:
-        Clr NumVueltas
-        RTS
-
-llamar_Tarea_Teclado:
-        Jsr Tarea_Teclado
-        Rts
-
-                        
-                        ;*******************************************************
-MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
-                        ;*******************************************************
-                        ;Subrutina que envia msg inical a LCD
-                        ;y se queda esperando a detectar ciclista en S1
-                        ;Variables de entrada:
-                        ;TEMP1
-                        ;Variables de salida: Vueltas
-                        ;VelProm
-                        ;Veloc
-                        ;TEMP1
-                        ;*******************************************************
-        Ldx Compe ; debug
-        Inx
-        Stx Compe
-        Brset YULS,$04,Ir_a_mensaje_calculo
-        TST Veloc
-        BEQ retorno_competencia
-        JSR PANT_CRTL
-retorno_competencia:
-        Rts
-Ir_a_mensaje_calculo:
-        ;Brclr YULS,$40,retorno_competencia
-        Ldx #MSGCALCULANDO_L1
-        Ldy #MSGCALCULANDO_L2
-        Bclr YULS,$04
-        Movb #$BB,BIN1
-        Movb #$BB,BIN2
-        Jsr CARGAR_LCD
-        Bra retorno_competencia
-        
-        
-                        ;*******************************************************
-MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
-                        ;*******************************************************
-                        ;Subrutina que desplega en pantallas vueltas y velocidad
-                        ;Variables de entrada: TEMP2.5
-                        ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
-                        ;*******************************************************
-        Ldx Res ; debug
-        Inx
-        Stx Res
-        Movb VelProm,BIN1
-        Movb Vueltas,BIN2
-        Rts
                         ;*******************************************************
 PANT_CRTL:              ;                  Subrutina PANT_CTRL
                         ;*******************************************************
@@ -913,21 +857,102 @@ Mensaje_esperando:
         Movb #$BB,BIN1
         Movb #$BB,BIN2
         Ldaa NumVueltas
-;        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRR
-        Cmpa Vueltas
-        LBeq Retorno_PANT_CRTL
+;        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        Cmpa Vueltas       
+        LBeq Retorno_PANT_CRTL ;final de todas las vueltas
+
         Bset PIEH,$09
         Bclr Banderas,$20
-        LBra Retorno_PANT_CRTL
+        LBra Retorno_PANT_CRTL ;retorno usual
         
+                       
+                        ;*******************************************************
+MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
+                        ;*******************************************************
+                        ;Subrutina que envia msg inical a LCD
+                        ;y se queda esperando a detectar ciclista en S1
+                        ;Variables de entrada:
+                        ;TEMP1
+                        ;Variables de salida: Vueltas
+                        ;VelProm
+                        ;Veloc
+                        ;TEMP1
+                        ;*******************************************************
+        Ldx Compe ; debug
+        Inx
+        Stx Compe
+        Brset YULS,$04,Ir_a_mensaje_calculo
+        TST Veloc
+        BEQ retorno_competencia
+        JSR PANT_CRTL
+retorno_competencia:
+        Rts
+Ir_a_mensaje_calculo:
+        ;Brclr YULS,$40,retorno_competencia
+        Ldx #MSGCALCULANDO_L1
+        Ldy #MSGCALCULANDO_L2
+        Bclr YULS,$04
+        Movb #$BB,BIN1
+        Movb #$BB,BIN2
+        Jsr CARGAR_LCD
+        Bra retorno_competencia
 
 
+                        ;*******************************************************
+MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
+                        ;*******************************************************
+                        ;Subrutina que lee valor de vueltas y desplega en panta-
+                        ;lla siempre y cuando este en el rango [3 , 23]
+                        ;Variables de entrada:
+                        ;ValorVueltas : numero de vueltas ingresadas
+                        ;Variables de salida:
+                        ;NumVueltas: vueltas validas ingresdas
+                        ;BIN1 y BIN2: valores a poner en pantalla 7 segmentos
+                        ;BIN1 displays 1 y 2
+                        ;BIN2 displays 3 y 4
+                        ;*******************************************************
+        Ldx Config ; debug
+        Inx
+        Stx Config
+        Brclr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
+        Bclr Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
+        Jsr BCD_BIN
+        Ldaa ValorVueltas
+        Cmpa #3
+        Blo no_valido
+        Cmpa #23
+        Bhi no_valido      ;si es mayor a 85 es invalida
+        Movb ValorVueltas,NumVueltas
+        Movb NumVueltas,BIN1
+;        CLR Cont_TCL
+        MOVB #$FF,Num_Array
+        MOVB #$FF,Num_Array+1
+        Rts
 
+no_valido:
+        Clr NumVueltas
+        RTS
+
+llamar_Tarea_Teclado:
+        Jsr Tarea_Teclado
+        Rts
 
         
-
         
-        
+                        ;*******************************************************
+MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
+                        ;*******************************************************
+                        ;Subrutina que desplega en pantallas vueltas y velocidad
+                        ;Variables de entrada: TEMP2.5
+                        ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
+                        ;*******************************************************
+        Ldx Res ; debug
+        Inx
+        Stx Res
+        Movb VelProm,BIN1
+        Movb Vueltas,BIN2
+        Rts
+             
                         ;*******************************************************
 MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;*******************************************************
@@ -1298,7 +1323,7 @@ FORMAR_ARRAY:           ;            Subrutina FORMAR_ARRAY
                         ;NumArray: arreglo de 2 teclas
                         ;COnt_TCL: cantidad de teclas ingresadas
                         ;*******************************************************
-        Ldx #Num_Array   ; Cargar dirección de Num_Array en el índice Y
+        Ldx #Num_Array   ; Cargar direcciï¿½n de Num_Array en el ï¿½ndice Y
         Ldaa #$0B
         Ldab Cont_TCL
         ;Incb
@@ -1312,7 +1337,7 @@ FORMAR_ARRAY:           ;            Subrutina FORMAR_ARRAY
         Cmpb Tecla_IN
         Beq poner_array_ok
         Ldab Cont_TCL
-        Movb Tecla_IN,b,x ; No sabemos si está bien
+        Movb Tecla_IN,b,x ; No sabemos si estï¿½ bien
         Inc Cont_TCL
         Bra Nodo_Final
 
