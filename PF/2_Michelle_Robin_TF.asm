@@ -798,8 +798,8 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
         Ldx #MSGCOMPETENCIA_L1
         Ldy #MSGCOMPETENCIA_L2
 ;        Bclr YULS,$40
-        Movb Veloc,BIN2
-        Movb Vueltas,BIN1
+        Movb Veloc,BIN1
+        Movb Vueltas,BIN2
         Jsr CARGAR_LCD
         Bra Retorno_PANT_CRTL
 
