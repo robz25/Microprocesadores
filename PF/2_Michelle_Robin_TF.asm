@@ -348,17 +348,18 @@ ir_a_resumen:
 seguir_resumen:
             JSR MODO_RESUMEN
             LBRA loop_main
+            
 ir_a_comp:
         ;activate TOI
             ;MOVB #$83,TSCR2
             BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
-            BCLR BANDERAS,$10
             Bset PIEH,$09 ; Habilitar de nuevo las interrupciones
             Movb #$BB,BIN2
             Movb #$BB,BIN1
-            Clr Vueltas
+            Movw #0,Veloc ; Borrar Veloc y Vueltas
             Clr VelProm
-            Clr Veloc
+            Bclr YULS,$3C ; Borrar Veloc Válida, Dirección, PantFlag y Habrá cálculo
+            Bclr Banderas,$38 ;Borrar CalcTicks, CambModo y PantFlag
             MOVB #$04,LEDS
             LDX #MSGINICIAL_L1
             LDY #MSGINICIAL_L2
