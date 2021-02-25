@@ -274,6 +274,7 @@ loopIniDsp:
         JSR SendCommand
         MOVB D2mS,Cont_Delay
         JSR Delay
+        
 ;_______________________________________________________________________________
 ;
 ;*******************************************************************************
@@ -1001,7 +1002,7 @@ revisar_bb:
         bra retorno_conv_bin_bcd
 poner_bcd2_apagado:
         BSET YULS,$80   ;poner bandera de bcd2 apagado
-	BRA continuar_conv_bin_bcd
+        BRA continuar_conv_bin_bcd
 
 seguir_conv_bin_bcd:
         Ldaa BIN1
