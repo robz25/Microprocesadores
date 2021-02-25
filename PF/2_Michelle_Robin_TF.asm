@@ -675,35 +675,36 @@ TCNT_ISR:               ;                   Subrutina TCNT_ISR
         Ldx TOI ; debug
         Inx
         Stx TOI
-	BSET TFLG2,$FF ;borrar solicitud de interrupcion  se borra con un 1 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+        BSET TFLG2,$FF ;borrar solicitud de interrupcion  se borra con un 1 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;BSET TFLG2,$80 ;borrar solicitud de interrupcion  se borra con un 1
         LDX TICK_MED
         INX
         STX TICK_MED
-        Ldd #2
-        Cpd TICK_EN
-        Beq TICK_EN_en_1
+;        Ldd #2
+;        Cpd TICK_EN
+;        Beq TICK_EN_en_1
         LDX TICK_EN
         LDY TICK_DIS
-continuar:
+;continuar:
         TBNE X,tick_en_no_0       ;salta si no es 0
-        BRA continuar_tick_dis
-TICK_EN_en_1:
-         ;PANT_FLAG=1
         BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
-        Bset YULS,$40
-        BRA continuar
+        BRA continuar_tick_dis
+;TICK_EN_en_1:
+         ;PANT_FLAG=1
+;        BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
+;        Bset YULS,$40
+;        BRA continuar
         
 tick_en_no_0:
         DEX
         STX TICK_EN
 continuar_tick_dis:
-        Cpd TICK_DIS
-        Beq TICK_DIS_en_1
-continuar2:
+;        Cpd TICK_DIS
+;        Beq TICK_DIS_en_1
+;continuar2:
         TBNE Y,tick_dis_no_0    ;salta si no es 0
         BCLR BANDERAS,$08 ;borra bit 3
-        Bset YULS,$40
+;        Bset YULS,$40
         BRA retorno_tcnt
 tick_dis_no_0:
         DEY
@@ -711,11 +712,11 @@ tick_dis_no_0:
 retorno_tcnt:
         RTI
 
-TICK_DIS_en_1:
-        BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
-        Bset YULS,$40
-        BRA continuar2
-	 
+;TICK_DIS_en_1:
+;        BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
+;        Bset YULS,$40
+;        BRA continuar2
+         
 ;_______________________________________________________________________________
 ;
 ;*******************************************************************************
@@ -779,12 +780,12 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;VelProm
                         ;Veloc
                         ;TEMP1
-	                ;*******************************************************
-	Ldx Compe ; debug
+                        ;*******************************************************
+        Ldx Compe ; debug
         Inx
         Stx Compe
         Brset YULS,$04,Ir_a_mensaje_calculo
-	TST Veloc
+        TST Veloc
         BEQ retorno_competencia
         JSR PANT_CRTL
 retorno_competencia:
@@ -845,10 +846,10 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
         Staa YULS
         Brclr YULS,$08,Pant_Flag_es_0
         Brclr YULS,$20,Activar_Alerta
-        Brclr YULS,$40,Retorno_PANT_CRTL
+;        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGCOMPETENCIA_L1
         Ldy #MSGCOMPETENCIA_L2
-        Bclr YULS,$40
+;        Bclr YULS,$40
         Movb Vueltas,BIN1
         Movb Veloc,BIN2
         Jsr CARGAR_LCD
@@ -882,10 +883,10 @@ Veloc_No_Valida:
         Bra Retorno_PANT_CRTL
 
 Activar_Alerta:
-        Brclr YULS,$40,Retorno_PANT_CRTL
+;        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGALERTA_L1
         Ldy #MSGALERTA_L2
-        Bclr YULS,$40
+;        Bclr YULS,$40
         Movb #$AA,BIN1
         Movb #$AA,BIN2
         Jsr CARGAR_LCD
@@ -907,16 +908,16 @@ Mensaje_esperando:
         ;Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGINICIAL_L1
         Ldy #MSGINICIAL_L2
-        Bclr YULS,$40
+        Jsr CARGAR_LCD
+;        Bclr YULS,$40
         Movb #$BB,BIN1
         Movb #$BB,BIN2
         Ldaa NumVueltas
-        Jsr CARGAR_LCD
+;        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRR
         Cmpa Vueltas
         LBeq Retorno_PANT_CRTL
         Bset PIEH,$09
         Bclr Banderas,$20
-        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRR
         LBra Retorno_PANT_CRTL
         
 
