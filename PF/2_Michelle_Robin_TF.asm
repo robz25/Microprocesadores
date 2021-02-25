@@ -690,8 +690,8 @@ PHO:
         BCLR YULS,$10 ;borrar bandera de direccion
         BCLR YULS,$04 ;borrar bandera de calculo
 ;        BCLR YULS,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-        LDX #9063
-        LDD TICK_MED
+        LDX TICK_MED
+        LDD #9063
         IDIV
         XGDX
         STAB Veloc
