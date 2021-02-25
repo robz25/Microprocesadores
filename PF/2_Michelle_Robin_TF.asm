@@ -29,7 +29,7 @@ EOM:        EQU        $FF      ;End Of Message byte para indicar EOM de fcc
 
             org         $1000
 
-BANDERAS:      ds 1 ;7=modo1, 6=modo0, 5=Calc_ticks,3=Pant_FLG,2=Array_OK,1=TCL_LEIDA,0=TCL_LISTA
+BANDERAS:      ds 1 ;7=modo1, 6=modo0, 5=Calc_ticks,4=CambMod,3=Pant_FLG,2=Array_OK,1=TCL_LEIDA,0=TCL_LISTA
 NumVueltas:    ds 1 ;
 ValorVueltas:  ds 1 ;???comentar que hace cada variable
 MAX_TCL:       db $02 ; Se define el valor maximo del arreglo de teclas
@@ -76,7 +76,6 @@ YULS:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: 
 CURIE:         ds  1
 CURIE2:         ds  1    ;variable temeporal 3
 HZD:         ds  1    ;usado para contador de  200 para ATD
-TEST:        ds 2
                         org $1040
 Teclas:        dB $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$00,$0E ; Tabla con los valores de Tecla
                         org $1050
@@ -114,6 +113,18 @@ MSGLIBRE_L1:                  fcc     "  RunMeter 623"
                 db EOM
 MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
                 db EOM
+                
+                org $1150
+Compe:           ds 2
+Config:           ds 2
+Res:            ds 2
+Lib:            ds 2
+PANT:           ds 2
+TOI:            ds 2
+PTHI:            ds 2
+RTII:           ds 2
+
+
 ;*******************************************************************************
 ;                     Declaracion de vectores de interrupcion
 ;*******************************************************************************
@@ -175,7 +186,14 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
         movw #$0000,CONT_7SEG
         MOVB #$00,Cont_Delay ;
         MOVB #200,CONT_200  ;Para contador de RTI que activa ATD para leer pot
-        MOVW #0,TEST
+        MOVW #0,Compe
+        MOVW #0,Config
+        MOVW #0,Res
+        MOVW #0,Lib
+        MOVW #0,PANT
+        MOVW #0,TOI
+        MOVW #0,PTHI
+        MOVW #0,RTII
 
 ;*******************************************************************************
 ;                          Configuracion de hardware
@@ -295,7 +313,7 @@ sin_cambios:
 comp:
             BRSET BANDERAS,$C0,ir_a_comp
             BRSET BANDERAS,$80,ir_a_resumen
-            CLR Veloc           ;no es cmop ni resumen
+            ;CLR Veloc           ;no es cmop ni resumen
             ;BCLR TEMP1,$80         ;borramos bandera para que active PTH
             CLR Vueltas
             MOVB #0,VelProm ;???porque sino indefine division Necesario para PROMEDIO '' cambio 1 a 0???
@@ -435,39 +453,42 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;       _____________________________
                         ;                   Vueltas
                         ;*******************************************************
-        Ldx TEST ; debug
+        Ldx PTHI ; debug
         Inx
-        Stx TEST
+        Stx PTHI
         TST Cont_Reb
-        BNE retorno_calcular_cont_reb_no_0
-        BRSET YULS,$02,segundo_ingreso
-        BRSET PIFH,$08,poner_bit_3
-        BSET YULS,$01
+        BNE retorno_calcular
+        Movb #80,Cont_Reb
+ ;       BRSET YULS,$02,segundo_ingreso
+ ;       BRSET PIFH,$08,poner_bit_3
+ ;       BSET YULS,$01
         ;BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-        BRA retorno_primer_ingreso
-poner_bit_3:
-        BSET YULS,$08
+ ;       BRA retorno_primer_ingreso
+;poner_bit_3:
+ ;       BSET YULS,$08
         ;BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-retorno_primer_ingreso:
-        MOVB #2,Cont_Reb
-        BSET YULS,$02
-        BRA retorno_calcular
+;retorno_primer_ingreso:
+ ;       MOVB #2,Cont_Reb
+ ;       BSET YULS,$02
+;        BRA retorno_calcular
 
-retorno_calcular_cont_reb_no_0:
-        BRSET PIFH,$08,quitar_b_3
+;retorno_calcular_cont_reb_no_0:
+  ;      BRSET PIFH,$08,quitar_b_3
         ;BSET PIFH,$01
-        BRA retorno_calcular
-quitar_b_3:
+ ;       BRA retorno_calcular
+;quitar_b_3:
         ;BSET PIFH,$08
-        BRA retorno_calcular
+ ;       BRA retorno_calcular
 
-segundo_ingreso:
-        BCLR YULS,$02
+;segundo_ingreso:
+       ; BCLR YULS,$02
         BRSET PIFH,$08,PH3
-;ph0
-        ;BSET PIFH,$01
+        BRSET PIFH,$01,PHO
+        Bra retorno_calcular
+;ph0    ;BSET PIFH,$01
+PHO:
         BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
-        BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
+        ;BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
         BCLR YULS,$10 ;borrar bandera de direccion
         BCLR YULS,$04 ;borrar bandera de calculo
         BCLR YULS,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
@@ -518,14 +539,14 @@ veloc_fuera_de_rango:
 
 PH3:
         ;BSET PIFH,$08
-        BRCLR YULS,$08,retorno_calcular
+        ;BRCLR YULS,$08,retorno_calcular
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
         INC Vueltas
         BCLR YULS,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
         BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
-        BSET YULS,$40 ;poner bandera cambio de pantalla
+        ;BSET YULS,$40 ;poner bandera cambio de pantalla
         Bra retorno_calcular
 
                         
@@ -535,6 +556,9 @@ RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;Subrutina que cuenta 1 ms y cuanta 200 ms para llamar a
                         ;ATD07
                         ;*******************************************************
+        Ldx RTII ; debug
+        Inx
+        Stx RTII
         BSET CRGFLG,$80 ;borrar solicitud de interrupcion
         INC HZD
         LDAA #200
@@ -648,22 +672,35 @@ TCNT_ISR:               ;                   Subrutina TCNT_ISR
                         ;pantalla LCD
                         ;Timer Overflow Interrupt cada 0.021845 s
                         ;*******************************************************
-        BSET TFLG2,$FF ;borrar solicitud de interrupcion  se borra con un 1 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+        Ldx TOI ; debug
+        Inx
+        Stx TOI
+	BSET TFLG2,$FF ;borrar solicitud de interrupcion  se borra con un 1 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
         ;BSET TFLG2,$80 ;borrar solicitud de interrupcion  se borra con un 1
         LDX TICK_MED
         INX
         STX TICK_MED
+        Ldd #2
+        Cpd TICK_EN
+        Beq TICK_EN_en_1
         LDX TICK_EN
         LDY TICK_DIS
+continuar:
         TBNE X,tick_en_no_0       ;salta si no es 0
-        ;PANT_FLAG=1
+        BRA continuar_tick_dis
+TICK_EN_en_1:
+         ;PANT_FLAG=1
         BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
         Bset YULS,$40
-        BRA continuar_tick_dis
+        BRA continuar
+        
 tick_en_no_0:
         DEX
         STX TICK_EN
 continuar_tick_dis:
+        Cpd TICK_DIS
+        Beq TICK_DIS_en_1
+continuar2:
         TBNE Y,tick_dis_no_0    ;salta si no es 0
         BCLR BANDERAS,$08 ;borra bit 3
         Bset YULS,$40
@@ -673,7 +710,12 @@ tick_dis_no_0:
         STY TICK_DIS
 retorno_tcnt:
         RTI
-         
+
+TICK_DIS_en_1:
+        BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
+        Bset YULS,$40
+        BRA continuar2
+	 
 ;_______________________________________________________________________________
 ;
 ;*******************************************************************************
@@ -699,6 +741,9 @@ MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
                         ;BIN1 displays 1 y 2
                         ;BIN2 displays 3 y 4
                         ;*******************************************************
+        Ldx Config ; debug
+        Inx
+        Stx Config
         Brclr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
         Bclr Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
         Jsr BCD_BIN
@@ -734,12 +779,27 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;VelProm
                         ;Veloc
                         ;TEMP1
-                        ;*******************************************************
-        TST Veloc
+	                ;*******************************************************
+	Ldx Compe ; debug
+        Inx
+        Stx Compe
+        Brset YULS,$04,Ir_a_mensaje_calculo
+	TST Veloc
         BEQ retorno_competencia
         JSR PANT_CRTL
 retorno_competencia:
         Rts
+Ir_a_mensaje_calculo:
+        ;Brclr YULS,$40,retorno_competencia
+        Ldx #MSGCALCULANDO_L1
+        Ldy #MSGCALCULANDO_L2
+        Bclr YULS,$04
+        Movb #$BB,BIN1
+        Movb #$BB,BIN2
+        Jsr CARGAR_LCD
+        Bra retorno_competencia
+        
+        
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
@@ -747,6 +807,9 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
+        Ldx Res ; debug
+        Inx
+        Stx Res
         Movb VelProm,BIN1
         Movb Vueltas,BIN2
         Rts
@@ -767,8 +830,11 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
                         ;Variables de salida:
                         ;BIN1 y BIN2: mensajes para pantalla
                         ;*******************************************************
+        Ldx PANT ; debug
+        Inx
+        Stx PANT
         Brclr Banderas,$20,Calcular_Ticks
-        Brclr Banderas,$10,Pant_Flag_es_0
+        Brclr Banderas,$08,Pant_Flag_es_0
         Brclr YULS,$20,Activar_Alerta
         Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGCOMPETENCIA_L1
@@ -817,15 +883,15 @@ Activar_Alerta:
         Bra Retorno_PANT_CRTL
         
 Pant_Flag_es_0:
-        Brclr YULS,$04,Mensaje_esperando
-        Brclr YULS,$40,Retorno_PANT_CRTL
-        Ldx #MSGCALCULANDO_L1
-        Ldy #MSGCALCULANDO_L2
-        Bclr YULS,$40
-        Movb #$BB,BIN1
-        Movb #$BB,BIN2
-        Jsr CARGAR_LCD
-        Bra Retorno_PANT_CRTL
+ ;       Brclr YULS,$04,Mensaje_esperando
+ ;       Brclr YULS,$40,Retorno_PANT_CRTL
+ ;       Ldx #MSGCALCULANDO_L1
+ ;       Ldy #MSGCALCULANDO_L2
+ ;       Bclr YULS,$40
+ ;       Movb #$BB,BIN1
+ ;       Movb #$BB,BIN2
+ ;       Jsr CARGAR_LCD
+ ;       Bra Retorno_PANT_CRTL
         
         
 Mensaje_esperando:
@@ -840,7 +906,7 @@ Mensaje_esperando:
         Cmpa Vueltas
         LBeq Retorno_PANT_CRTL
         Bset PIEH,$09
-        ;Bclr Banderas,$20
+        Bset Banderas,$20
         LBra Retorno_PANT_CRTL
         
 
@@ -857,7 +923,9 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;Subrutina que espera al cambio de otro modo
                         ;Variables de entrada: TEMP1.6 bandera de cambio de modo
                         ;Variables de salida: TEMP1.6
-                        ;*******************************************************
+        Ldx Lib ; debug
+        Inx
+        Stx Lib                ;*******************************************************
         Movb #$AA,BIN1
         Movb #$AA,BIN2
         Rts
