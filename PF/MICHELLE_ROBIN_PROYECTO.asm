@@ -6,7 +6,7 @@
 ;*******************************************************************************
 ;                                  RUN METER623
 ;*******************************************************************************
-;       V1
+;       V8
 ;       AUTORES:
 ;                ROBIN GONZALEZ RICZ  B43011
 ;               MICHELLE GUTIERREZ MU?OZ B43195
@@ -30,52 +30,53 @@ EOM:        EQU        $FF      ;End Of Message byte para indicar EOM de fcc
             org         $1000
 
 BANDERAS:      ds 1 ;7=modo1, 6=modo0, 5=Calc_ticks,4=CambMod,3=Pant_FLG,2=Array_OK,1=TCL_LEIDA,0=TCL_LISTA
-NumVueltas:    ds 1 ;
-ValorVueltas:  ds 1 ;???comentar que hace cada variable
+NumVueltas:    ds 1 ;cantidad de vueltas a contar
+ValorVueltas:  ds 1 ;vueltas ingresadas en configuracion
 MAX_TCL:       db $02 ; Se define el valor maximo del arreglo de teclas
-Tecla:         ds 1 ; Se define la variable de tipo tecla.
-Tecla_IN:      ds 1 ;
-Cont_Reb:      ds 1 ;
-Cont_TCL:      ds 1 ;
-Patron:        ds 1 ;
-Num_Array:     ds 2 ;
-BRILLO:        ds 1 ;
-POT:           ds 1 ;
-TICK_EN:       ds 2 ;
-TICK_DIS:      ds 2 ;
-Veloc:         ds 1 ;
-Vueltas:       ds 1 ;
-VelProm:       ds 1 ;
-TICK_MED:      ds 2 ;
-BIN1:          ds 1 ;
-BIN2:          ds 1 ;
-BCD1:          ds 1 ;
-BCD2:          ds 1 ;
-BCD_L:         ds 1 ;
-BCD_H:         ds 1 ;
-TEMP:          ds 1 ;
-LOW:           ds 1 ;
-DISP1:         ds 1 ;
-DISP2:         ds 1 ;
-DISP3:         ds 1 ;
-DISP4:         ds 1 ;
-LEDS:          ds 1 ;
-CONT_DIG:      ds 1 ;
-CONT_TICKS:    ds 1 ;
-DT:            ds 1 ;
-CONT_7SEG:     ds 2 ;
-CONT_200:      db 200 ;
-Cont_Delay:    ds 1 ;
-D2mS:          dB 100 ;
-D260uS:        dB 13 ; 14?rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-D40uS:         dB 2 ;
-Clear_LCD:     dB $01 ;
-ADD_L1:        dB $80 ;
-ADD_L2:        dB $C0 ;
-YULS:         ds  1    ;Otras banderas7: vueltas_es_NumVueltas,4= CambioMOD, 3: LCD_configurada ,1: Calc_flag
-CURIE:         ds  1
-CURIE2:         ds  1    ;variable temeporal 3
-HZD:         ds  1    ;usado para contador de  200 para ATD
+Tecla:         ds 1 ; Se define la variable de tipo tecla
+Tecla_IN:      ds 1 ; Tecla que se ingreso en la iteracion anterior
+Cont_Reb:      ds 1 ;contador para rebotes al leer botones
+Cont_TCL:      ds 1 ;contador de teclas ingresadas
+Patron:        ds 1 ;Patron para revisar el teclado matricial
+Num_Array:     ds 2 ;Arreglo de teclas ingresadas
+BRILLO:        ds 1 ;Variable para controlar brillo de leds y 7 segmentos
+POT:           ds 1 ;variable de lectura del potenciometro
+TICK_EN:       ds 2 ;contador word para poner PantFLG
+TICK_DIS:      ds 2 ;contador word para borrar PantFLG
+Veloc:         ds 1 ;Byte para guardar velocidad actual
+Vueltas:       ds 1 ;Variable para guardar cantidad de vueltas dadas
+VelProm:       ds 1 ;Guarda promedio de velocidad
+TICK_MED:      ds 2 ;Word para contar tiempo entre presion de ph3 y ph0
+BIN1:          ds 1 ;numero para poner en derecha de pantalla en binario
+BIN2:          ds 1 ;numero para poner en izquierda de pantalla en binario
+BCD1:          ds 1 ;numero para poner en derecha de pantalla en bcd
+BCD2:          ds 1 ;numero para poner en izquierda de pantalla en bcd
+BCD_L:         ds 1 ;Byte utilizado para guardar conversion de binario a bcd
+BCD_H:         ds 1 ;diay esto no lo usamos pero igual hay que ponerlo
+TEMP:          ds 1 ;varaible temporal para calculo a bcd
+LOW:           ds 1 ;usado en bin bcd como variable temporal
+DISP1:         ds 1 ;valor en 7 seg a poner en disp1
+DISP2:         ds 1 ;valor en 7 seg a poner en disp2
+DISP3:         ds 1 ;valor en 7 seg a poner en disp3
+DISP4:         ds 1 ;valor en 7 seg a poner en disp4
+LEDS:          ds 1 ;valor a poner en las 8 leds
+CONT_DIG:      ds 1 ;contador de digitos/leds que enciende oc4
+CONT_TICKS:    ds 1 ;contador de 100 mS en OC4
+DT:            ds 1 ;variable innecesaria para brillo
+CONT_7SEG:     ds 2 ;contador de 5000 para cambiar valores en pantalla
+CONT_200:      db 200 ;cantidad de entradas en RTI para activad ADT0
+Cont_Delay:    ds 1 ;contador delays en oc4
+D2mS:          dB 100 ;cantidad de entradas en oc4 para esperar 2 ms
+D260uS:        dB 13 ;cantidad de entradas en oc4 para esperar 260 us
+D40uS:         dB 2 ;cantidad de entradas en oc4 para esperar 40 us
+Clear_LCD:     dB $01 ;comando para borrar pantalla LCD
+ADD_L1:        dB $80 ;comando para direccionar LCD a linea 1 en memoria
+ADD_L2:        dB $C0 ;comando para direccionar LCD a linea 1 en memoria
+;adicionales
+YULS:          ds  1 ;7: apagarBIN2, 5=velocidadValida, 4=Direccion, 3:PantFLG, 2:habraCalculo
+CURIE:         ds  1 ;variable word para guardar primer parte de calculo de prom
+CURIE2:        ds  1
+HZD:           ds  1 ;usado para contador de  200 para ATD
                         org $1040
 Teclas:        dB $01,$02,$03,$04,$05,$06,$07,$08,$09,$0B,$00,$0E ; Tabla con los valores de Tecla
                         org $1050
@@ -114,16 +115,6 @@ MSGLIBRE_L1:                  fcc     "  RunMeter 623"
 MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
                 db EOM
 
-
-                org $1150
-Compe:           ds 2
-Config:           ds 2
-Res:            ds 2
-Lib:            ds 2
-PANT:           ds 2
-TOI:            ds 2
-PTHI:            ds 2
-RTII:           ds 2
 
 ;_______________________________________________________________________________
 ;
@@ -423,9 +414,6 @@ RTI_ISR:                ;                   Subrutina RTI_ISR
                         ;Subrutina que cuenta 1 ms y cuanta 200 ms para llamar a
                         ;ATD07
                         ;*******************************************************
-        ;Ldx RTII ; debug
-        ;Inx
-        ;Stx RTII
         BSET CRGFLG,$80 ;borrar solicitud de interrupcion
         INC HZD
         LDAA HZD
@@ -499,28 +487,24 @@ Antes_de_retornar:
 CONT_DIG_es_8:
         Movb DISP2,PORTB
         MOVB #$0D,PTP
-;        Bset PTP,$0D   ;PTP.[3:0] <- $D
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_4:
         Movb DISP3,PORTB
         MOVB #$0B,PTP
-;        Bset PTP,$0B ;PTP.[3:0] <- $B
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_2:
         Movb DISP4,PORTB
         MOVB #$07,PTP
-;        Bset PTP,$07 ;PTP.[2:0] <- 7
         Bset PTJ,$2
         Bra Antes_de_retornar
 
 CONT_DIG_es_1:
         Movb LEDS,PORTB
         MOVB #$0F,PTP
-;        Bset PTP,$F
         BClr PTJ,$2
         Bra Antes_de_retornar
 
@@ -538,9 +522,6 @@ TCNT_ISR:               ;                   Subrutina TCNT_ISR
                         ;pantalla LCD
                         ;Timer Overflow Interrupt cada 0.021845 s
                         ;*******************************************************
-        Ldx TOI ; debug
-        Inx
-        Stx TOI
         BSET TFLG2,$80 ;borrar solicitud de interrupcion  se borra con un 1
         LDX TICK_MED
         INX
@@ -591,9 +572,6 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
         BRSET PIFH,$01,PHO
         Bra retorno_calcular
 PHO:
-        Ldx RTII ; debug
-        Inx
-        Stx RTII
         BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
         BCLR YULS,$10 ;borrar bandera de direccion
         BCLR YULS,$04 ;borrar bandera de calculo
@@ -642,9 +620,6 @@ veloc_fuera_de_rango:
         BRA retorno_calcular
 
 PH3:
-        Ldx PTHI ; debug
-        Inx
-        Stx PTHI
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
         INC Vueltas
@@ -681,9 +656,6 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
                         ;Variables de salida:
                         ;BIN1 y BIN2: mensajes para pantalla
                         ;*******************************************************
-        Ldx PANT ; debug
-        Inx
-        Stx PANT
         Brclr Banderas,$20,Calcular_Ticks
         Ldaa #$08
         Ldab #$08
@@ -766,9 +738,6 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
                         ;Veloc
                         ;TEMP1
                         ;*******************************************************
-        Ldx Compe ; debug
-        Inx
-        Stx Compe
         Brset YULS,$04,Ir_a_mensaje_calculo
         TST Veloc
         BEQ retorno_competencia
@@ -798,9 +767,6 @@ MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
                         ;BIN1 displays 1 y 2
                         ;BIN2 displays 3 y 4
                         ;*******************************************************
-        Ldx Config ; debug
-        Inx
-        Stx Config
         Brclr Banderas,$04,llamar_Tarea_Teclado   ; Se moidifica Array_Ok con m?scara $04
         Bclr Banderas,$04   ;no hay forma de validar si se ingresaron 2 numeros en TT
         Jsr BCD_BIN
@@ -824,7 +790,6 @@ llamar_Tarea_Teclado:
         Rts
 
 
-
                         ;*******************************************************
 MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;*******************************************************
@@ -832,9 +797,6 @@ MODO_RESUMEN:           ;                 Subrutina MODO_RESUMEN
                         ;Variables de entrada: TEMP2.5
                         ;Variables de salida: LEDS, BIN1, BIN2, TEMP2.5
                         ;*******************************************************
-        Ldx Res ; debug
-        Inx
-        Stx Res
         Movb VelProm,BIN1
         Movb Vueltas,BIN2
         Rts
@@ -845,9 +807,7 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;Subrutina que espera al cambio de otro modo
                         ;Variables de entrada: TEMP1.6 bandera de cambio de modo
                         ;Variables de salida: TEMP1.6
-        Ldx Lib ; debug
-        Inx
-        Stx Lib                ;*******************************************************
+	                ;*******************************************************
         Movb #$AA,BIN1
         Movb #$AA,BIN2
         Rts
