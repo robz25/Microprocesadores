@@ -270,117 +270,106 @@ loopIniDsp:
 ;*******************************************************************************
 ;_______________________________________________________________________________
 
-            LDX #MSGConfig_L1
-            LDY #MSGConfig_L2
-            JSR CARGAR_LCD
+        LDX #MSGConfig_L1
+        LDY #MSGConfig_L2
+        JSR CARGAR_LCD
 
 config_loop:
-            JSR MODO_CONFIGURACION
-            TST NumVueltas
-            BEQ config_loop
+        JSR MODO_CONFIGURACION
+        TST NumVueltas
+        BEQ config_loop
 loop_main:
-            LDAA PTIH
-            anda #$C0
-            LDAB BANDERAS
-            ANDB #$C0
-            CBA
-            BEQ sin_cambios
-            BCLR BANDERAS,$C0
-            Oraa BANDERAS
-            STAA BANDERAS
-            BSET BANDERAS,$10
-            BRA comp
+        LDAA PTIH
+        anda #$C0
+        LDAB BANDERAS
+        ANDB #$C0
+        CBA
+        BEQ sin_cambios
+        BCLR BANDERAS,$C0
+        Oraa BANDERAS
+        STAA BANDERAS
+        BSET BANDERAS,$10
+        BRA comp
 sin_cambios:
-            BCLR BANDERAS,$10
+        BCLR BANDERAS,$10
 comp:
-            BRSET BANDERAS,$C0,ir_a_comp
-            BRSET BANDERAS,$80,ir_a_resumen
-            ;CLR Veloc           ;no es cmop ni resumen
-            ;BCLR TEMP1,$80         ;borramos bandera para que active PTH
-            CLR Vueltas
-            MOVB #0,VelProm ;???porque sino indefine division Necesario para PROMEDIO '' cambio 1 a 0???
-            ;BRCLR BANDERAS,$40,conf
-            ;MOVB #$03,TSCR2
-            ;BCLR $0F,PIEH
-            ;BCLR $0F,PIFH
+        BRSET BANDERAS,$C0,ir_a_comp
+        BRSET BANDERAS,$80,ir_a_resumen
+        CLR Veloc ;borrar Veloc pues salimos del modo competencia
+        CLR Vueltas
+        MOVB #0,VelProm ;borrar promedio
 
 conf:
-            BRSET BANDERAS,$40,trampolin_config
-            BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
-            BCLR PIEH,$09   ;apago interrupciones PTH
-            BCLR CRGINT,$80 ;apagamos RTI
-            BCLR TSCR2,$80 ;apagamos TCNT
-            BCLR BANDERAS,$10
-            LDX #MSGLIBRE_L1
-            LDY #MSGLIBRE_L2
-            MOVB #$01,LEDS
-            JSR CARGAR_LCD
+        BRSET BANDERAS,$40,trampolin_config
+        BRCLR BANDERAS,$10,seguir_libre ;salir si no cambio el modo
+        BCLR PIEH,$09   ;apago interrupciones PTH
+        BCLR CRGINT,$80 ;apagamos RTI
+        BCLR TSCR2,$80 ;apagamos TCNT
+        BCLR BANDERAS,$10
+        MOVW #0,TICK_DIS
+        MOVW #0,TICK_EN
+        LDX #MSGLIBRE_L1
+        LDY #MSGLIBRE_L2
+        MOVB #$01,LEDS
+        JSR CARGAR_LCD
 seguir_libre:
-            JSR MODO_LIBRE
-            LBRA loop_main
+        JSR MODO_LIBRE
+        LBRA loop_main
 
 ir_a_resumen:
-            BRCLR BANDERAS,$10,seguir_resumen
-            BCLR BANDERAS,$10
-            BCLR PIEH,$09   ;apago interrupciones PTH
-            BCLR CRGINT,$80 ;apagamos RTI
-            BCLR TSCR2,$80   ;apago interrupcion TCNT
-            ;BCLR $0F,PIFH
-            MOVB #$08,LEDS
-            LDX #MSGRESUMEN_L1
-            LDY #MSGRESUMEN_L2
-            JSR CARGAR_LCD
+        BRCLR BANDERAS,$10,seguir_resumen
+        BCLR BANDERAS,$10
+        BCLR PIEH,$09   ;apago interrupciones PTH
+        BCLR CRGINT,$80 ;apagamos RTI
+        BCLR TSCR2,$80   ;apago interrupcion TCNT
+        MOVW #0,TICK_DIS
+        MOVW #0,TICK_EN
+        MOVB #$08,LEDS
+        LDX #MSGRESUMEN_L1
+        LDY #MSGRESUMEN_L2
+        JSR CARGAR_LCD
 seguir_resumen:
-            JSR MODO_RESUMEN
-            LBRA loop_main
+        JSR MODO_RESUMEN
+        LBRA loop_main
 
 trampolin_config:
         BRA ir_a_config
         
 ir_a_comp:
-        ;activate TOI
-            ;MOVB #$83,TSCR2
-            BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
-            Bset PIEH,$09 ; Habilitar de nuevo las interrupciones PTH
-            BSET TSCR2,$80 ;Habilitar interrupciones TCNT
-            BSET CRGINT,$80 ;Habilitar interrupcion RTI
-            MOVW #$BBBB,BIN1 ;poner $BB en BIN2 y BIN2
-            Movw #0,Veloc ; Borrar Veloc y Vueltas
-            Clr VelProm
-            Bclr YULS,$3C ; Borrar Veloc V?lida, Direcci?n, PantFlag y Habr? c?lculo
-            Bclr Banderas,$38 ;Borrar CalcTicks, CambModo y PantFlag
-            MOVB #$04,LEDS
-            LDX #MSGINICIAL_L1
-            LDY #MSGINICIAL_L2
-            JSR CARGAR_LCD
+        BRCLR BANDERAS,$10,seguir_comp    ;ssalta si no ha cambiado el modo
+        Bset PIEH,$09 ; Habilitar de nuevo las interrupciones PTH
+        BSET TSCR2,$80 ;Habilitar interrupciones TCNT
+        BSET CRGINT,$80 ;Habilitar interrupcion RTI
+        MOVW #$BBBB,BIN1 ;poner $BB en BIN2 y BIN2
+        Movw #0,Veloc ; Borrar Veloc y Vueltas
+        Clr VelProm
+        Bclr YULS,$3C ; Borrar Veloc V?lida, Direcci?n, PantFlag y Habr? c?lculo
+        Bclr Banderas,$38 ;Borrar CalcTicks, CambModo y PantFlag
+        MOVB #$04,LEDS
+        LDX #MSGINICIAL_L1
+        LDY #MSGINICIAL_L2
+        JSR CARGAR_LCD
 seguir_comp:
-            JSR MODO_COMPETENCIA
-            LBRA loop_main
+        JSR MODO_COMPETENCIA
+        LBRA loop_main
 
 ir_a_config:
-            BRCLR BANDERAS,$10,seguir_config    ;ssalta si no ha cambiado el modo
-            BCLR BANDERAS,$10
-            BCLR $09,PIEH   ;apago interrupciones PTH
-            BCLR TSCR2,$80 ;apagamos TCNT
-            Bset CRGINT,$80 ;encendemos RTI
-            MOVB #$02,LEDS
-            MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
-            MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
-            MOVW 0,TICK_DIS
-            MOVW 0,TICK_EN
-            ;MOVB #0,ValorVueltas    ;vueltas ingresadas son 0
-            LDX #MSGConfig_L1
-            LDY #MSGConfig_L2
-            JSR CARGAR_LCD
+        BRCLR BANDERAS,$10,seguir_config    ;ssalta si no ha cambiado el modo
+        BCLR BANDERAS,$10
+        BCLR PIEH,$09   ;apago interrupciones PTH
+        BCLR TSCR2,$80 ;apagamos TCNT
+        Bset CRGINT,$80 ;encendemos RTI
+        MOVB #$02,LEDS
+        MOVB NumVueltas,BIN1    ;mostramos numero de vueltas actuales
+        MOVB #$BB,BIN2  ;apagamos segmentos izquierdos
+        MOVW #0,TICK_DIS
+        MOVW #0,TICK_EN
+        LDX #MSGConfig_L1
+        LDY #MSGConfig_L2
+        JSR CARGAR_LCD
 seguir_config:
-            JSR MODO_CONFIGURACION
-            LBRA loop_main
-
-
-
-
-
-
+        JSR MODO_CONFIGURACION
+        LBRA loop_main
 
 ;_______________________________________________________________________________
 ;
@@ -477,7 +466,6 @@ aumentar_CONT_7SEG:    ;aumentar cont7_seg
         Ldd CONT_7SEG
         Addd #1
         Std CONT_7SEG
-;        Ldd #5000
         Cpd #5000
         BNE Antes_de_revisar_CONT_DIG
         Movw #$0,CONT_7SEG ;Si uso move word se pone 0 cont7seg +1 ?
@@ -553,17 +541,12 @@ TCNT_ISR:               ;                   Subrutina TCNT_ISR
         Ldx TOI ; debug
         Inx
         Stx TOI
-        BSET TFLG2,$FF ;borrar solicitud de interrupcion  se borra con un 1 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        ;BSET TFLG2,$80 ;borrar solicitud de interrupcion  se borra con un 1
+        BSET TFLG2,$80 ;borrar solicitud de interrupcion  se borra con un 1
         LDX TICK_MED
         INX
         STX TICK_MED
-;        Ldd #2
-;        Cpd TICK_EN
-;        Beq TICK_EN_en_1
         LDX TICK_EN
         LDY TICK_DIS
-
         TBEQ X,tick_en_es_0       ;salta si TICK_EN = 0
         DEX
         STX TICK_EN
@@ -576,51 +559,11 @@ revisar_tick_dis:
         STY TICK_DIS
         BRA retorno_tcnt
 
-;        BRA revisar_tick_dis
 tick_dis_es_0:
         BCLR BANDERAS,$08 ;borra bit 3 Pant_FLAG
 
-
-;continuar:
- ;       DBNE X,tick_en_no_0       ;salta si no es 0
- ;       BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
-
-;tick_en_no_0:
-        ;DBNE Y,tick_dis_no_0       ;salta si no es 0
-        ;BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
-
-;tick_dis_no_0:
-;        TBNE X,tick_en_no_0       ;salta si no es 0
- ;       BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
- ;       BRA continuar_tick_dis
-;TICK_EN_en_1:
-         ;PANT_FLAG=1
-;        BSET BANDERAS,$08 ;poner bit 3 Pant_FLAG
-;        Bset YULS,$40
-;        BRA continuar
-
-;tick_en_no_0:
-;        DEX
-;        STX TICK_EN
-;continuar_tick_dis:
-;        Cpd TICK_DIS
-;        Beq TICK_DIS_en_1
-;continuar2:
-;        TBNE Y,tick_dis_no_0    ;salta si no es 0
-;        BCLR BANDERAS,$08 ;borra bit 3 bandera Pant_Flag
-;        Bset YULS,$40
-;        BRA retorno_tcnt
-;tick_dis_no_0:
-       ; DEY
-        ;STY TICK_DIS
 retorno_tcnt:
         RTI
-
-;TICK_DIS_en_1:
-;        BCLR BANDERAS,$08 ;poner bit 3 Pant_FLAG
-;        Bset YULS,$40
-;        BRA continuar2
-
 
                         ;*******************************************************
 CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
@@ -640,46 +583,20 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ;       _____________________________
                         ;                   Vueltas
                         ;*******************************************************
-
         TST Cont_Reb
         BNE retorno_calcular
         Movb #80,Cont_Reb
- ;       BRSET YULS,$02,segundo_ingreso
- ;       BRSET PIFH,$08,poner_bit_3
- ;       BSET YULS,$01
-        ;BSET PIFH,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
- ;       BRA retorno_primer_ingreso
-;poner_bit_3:
- ;       BSET YULS,$08
-        ;BSET PIFH,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-;retorno_primer_ingreso:
- ;       MOVB #2,Cont_Reb
- ;       BSET YULS,$02
-;        BRA retorno_calcular
 
-;retorno_calcular_cont_reb_no_0:
-  ;      BRSET PIFH,$08,quitar_b_3
-        ;BSET PIFH,$01
- ;       BRA retorno_calcular
-;quitar_b_3:
-        ;BSET PIFH,$08
- ;       BRA retorno_calcular
-
-;segundo_ingreso:
-       ; BCLR YULS,$02
         BRSET PIFH,$08,PH3
         BRSET PIFH,$01,PHO
         Bra retorno_calcular
-;ph0    ;BSET PIFH,$01
 PHO:
         Ldx RTII ; debug
         Inx
         Stx RTII
         BRCLR YULS,$10,retorno_calcular ;salta si es el primer sensor activado
-        ;BRCLR YULS,$01,retorno_calcular ;salta si no se leyo ph0 en entrada anterior
         BCLR YULS,$10 ;borrar bandera de direccion
         BCLR YULS,$04 ;borrar bandera de calculo
-;        BCLR YULS,$01   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         LDX TICK_MED
         LDD #9063
         IDIV
@@ -714,7 +631,6 @@ PHO:
         BCLR PIEH,$09   ;apagar interrupciones key wakeups en ph0 y ph3
 
 retorno_calcular:
-      ;  Bset PIFH,$09
         LDAA #$FF
         ANDA PIFH
         STAA PIFH
@@ -729,15 +645,11 @@ PH3:
         Ldx PTHI ; debug
         Inx
         Stx PTHI
-        ;BSET PIFH,$08
-        ;BRCLR YULS,$08,retorno_calcular
         BRSET YULS,$10,retorno_calcular
         MOVW #0,TICK_MED
         INC Vueltas
-        ;BCLR YULS,$08   ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         BSET YULS,$10 ;indicar que ya paso por sensor 1 (direccion)
         BSET YULS,$04 ;poner bandera de calculo para poner mensaje en pant_ctrl
-        ;BSET YULS,$40 ;poner bandera cambio de pantalla
         Bra retorno_calcular
 
 ;_______________________________________________________________________________
@@ -784,10 +696,8 @@ PANT_CRTL:              ;                  Subrutina PANT_CTRL
         Staa YULS
         Brclr YULS,$08,Mensaje_esperando
         Brclr YULS,$20,Activar_Alerta
-;        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGCOMPETENCIA_L1
         Ldy #MSGCOMPETENCIA_L2
-;        Bclr YULS,$40
         Movb Veloc,BIN1
         Movb Vueltas,BIN2
         Jsr CARGAR_LCD
@@ -821,25 +731,21 @@ Veloc_No_Valida:
         Bra Retorno_PANT_CRTL
 
 Activar_Alerta:
-;        Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGALERTA_L1
         Ldy #MSGALERTA_L2
-;        Bclr YULS,$40
         Movb #$AA,BIN1
         Movb #$AA,BIN2
         Jsr CARGAR_LCD
         Bra Retorno_PANT_CRTL
 
 Mensaje_esperando:
-        ;Brclr YULS,$40,Retorno_PANT_CRTL
         Ldx #MSGINICIAL_L1
         Ldy #MSGINICIAL_L2
         Jsr CARGAR_LCD
-;        Bclr YULS,$40
         Movb #$BB,BIN1
         Movb #$BB,BIN2
         Ldaa NumVueltas
-        Clr Veloc ;RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+        Clr Veloc
         Cmpa Vueltas
         LBeq Retorno_PANT_CRTL ;final de todas las vueltas
 
@@ -870,7 +776,6 @@ MODO_COMPETENCIA:       ;                Subrutina MODO_COMPETENCIA
 retorno_competencia:
         Rts
 Ir_a_mensaje_calculo:
-        ;Brclr YULS,$40,retorno_competencia
         Ldx #MSGCALCULANDO_L1
         Ldy #MSGCALCULANDO_L2
         Bclr YULS,$04
@@ -906,7 +811,6 @@ MODO_CONFIGURACION:     ;            Subrutina MODO_CONFIGURACION
         Bhi no_valido      ;si es mayor a 85 es invalida
         Movb ValorVueltas,NumVueltas
         Movb NumVueltas,BIN1
-;        CLR Cont_TCL
         MOVB #$FF,Num_Array
         MOVB #$FF,Num_Array+1
         Rts
@@ -959,9 +863,7 @@ CONV_BIN_BCD:           ;                Subrutina CONV_BIN_BCD
                         ;teclado presentes en las variables BIN1 y BIN2, los
                         ;guarda en BCD1 y BCD2
                         ;*******************************************************
-        ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        ;si no se apaga un numero revisar logica para apgar numeros de forma independiente
-   LDAB BIN2
+	LDAB BIN2
         CMPB #$BB
         BEQ poner_bcd2_apagado
         BCLR YULS,$80   ;quitar bandera de bcd2 apagado
@@ -1022,7 +924,6 @@ retorno_conv_bin_bcd:
 mantener_bcd2_igual:
         RTS
 
-
                         ;*******************************************************
 BCD_7SEG:               ;                 Subrutina BCD_7SEG
                         ;*******************************************************
@@ -1061,10 +962,7 @@ BCD_BIN:                ;                Subrutina BCD_BIN
                         ;Subrutina que toma el valor en Num_Array y lo convierete
                         ;a binario guardando en ValorVueltas
                         ;*******************************************************
-;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        ;si quiero poner 3 tengro que ingresar 03 o puedo poner solo 3 ?
-
-       BRSET Num_Array+1,$FF,un_solo_digito
+	BRSET Num_Array+1,$FF,un_solo_digito
         Ldx #Num_Array
         Ldab #$A
         Ldaa 1,X+
@@ -1073,47 +971,50 @@ BCD_BIN:                ;                Subrutina BCD_BIN
         Aba
         Staa ValorVueltas
         Rts
-un_solo_digito:               ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        MOVB Num_Array,ValorVueltas        ;rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-        RTS
+un_solo_digito:
+        MOVB Num_Array,ValorVueltas
+	RTS
 
                         ;*******************************************************
 BIN_BCD:                ;                Subrutina BIN_BCD
                         ;*******************************************************
-                        ;Subrutina que
+                        ;Subrutina que convierte de binario a BCD
+                        ;Entadas: se recibe BIN en R1
+                        ;Salidas: BCD_L
                         ;*******************************************************
-         Ldab #7
-         Movb #0,BCD_L
-Loop1:   Lsla
-         Rol BCD_L
-         Staa TEMP
-         Ldaa #$0F
-         Anda BCD_L
-         Cmpa #5
-         Blo no_mayor_a_5
-         Adda #3
+        Ldab #7
+        Movb #0,BCD_L
+Loop1:  Lsla
+        Rol BCD_L
+        Staa TEMP
+        Ldaa #$0F
+        Anda BCD_L
+        Cmpa #5
+        Blo no_mayor_a_5
+        Adda #3
 no_mayor_a_5:
-         Staa LOW
-         Ldaa #$F0
-         Anda BCD_L
-         Cmpa #$50
-         Blo no_mayor_a_50
-         Adda #$30
+        Staa LOW
+        Ldaa #$F0
+        Anda BCD_L
+        Cmpa #$50
+        Blo no_mayor_a_50
+        Adda #$30
 no_mayor_a_50:
-         Adda LOW
-         Staa BCD_L
-         Ldaa TEMP
-         Decb
-         Tstb
-         Bne Loop1
-         Lsla
-         Rol BCD_L
-         Rts
+        Adda LOW
+        Staa BCD_L
+        Ldaa TEMP
+        Decb
+        Tstb
+        Bne Loop1
+        Lsla
+        Rol BCD_L
+	Rts
 
 ;*******************************************************************************
 ;                         Subrutinas de pantalla LCD
 ;*******************************************************************************
 
+                        ;*******************************************************
 Cargar_LCD:             ;                 Subrutina Cargar_LCD
                         ;*******************************************************
                         ;Envia datos a al pantalla LCD
@@ -1131,7 +1032,7 @@ Cargar_LCD:             ;                 Subrutina Cargar_LCD
         JSR Delay
 loop_L1:
         LDAA 1,X+
-        CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
+        CMPA #EOM;NUMERAL-> Hay que poner numeral si uso un valor definido con EQU
         BEQ inicio_L2
         JSR SendData
         MOVB D40uS,Cont_Delay
@@ -1145,7 +1046,7 @@ inicio_L2:
         JSR Delay
 loop_L2:
         LDAA 1,Y+
-        CMPA #EOM          ; NUMERAL NUMERAL NUMERAL -> Hay que poner numeral si uso un valor definido con EQU
+        CMPA #EOM
         BEQ retorno_cargar_LCD
         JSR SendData
         MOVB D40uS,Cont_Delay
@@ -1154,7 +1055,7 @@ loop_L2:
 
 retorno_cargar_LCD:
         RTS
-
+                        ;*******************************************************
 SendCommand:            ;                 Subrutina SendCommand
                         ;*******************************************************
                         ;Envia comandos a la memoria de la pantalla LCD
