@@ -156,13 +156,13 @@ RTII:           ds 2
         MOVB #$00,ValorVueltas
         MOVB #$FF,Num_Array
         MOVB #$FF,Num_Array+1
-        MOVB #$40,Banderas      ;iniciar en modo config
+        MOVB #$00,Banderas      ;iniciar en 0
         MOVB #$00,Patron
         MOVB #$00,Cont_TCL
         MOVB #$00,Cont_Reb
         MOVB #$00,LEDS
         MOVB #$00,BIN1
-        MOVB #$BB,BIN2
+        MOVB #$00,BIN2
         MOVB #$00,BRILLO
         MOVB #1,CONT_DIG
         MOVB #$00,CONT_TICKS
