@@ -196,7 +196,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
 
         ;Configurar interrupcion Timer Overflow Interrupt
         MOVB #$80,TSCR1        ;Poner 1 en TEN Timer enable bit y de Timer Status Control Reg 1, sin ffca
-        BSET TSCR2,$83        ;Poner 1 en TOO Timer Overflow Interrupt (habilita)
+        BSET TSCR2,$83        ;Poner 1 en TOI Timer Overflow Interrupt (habilita)
                               ;y 2 en Prescalador = 8 de Timer Status Control Reg 2
 
         ;Configurar interrupcion OC4 Output Compare en canal 4
@@ -223,7 +223,7 @@ MSGLIBRE_L2:                  fcc     "   MODO LIBRE"
        ;Configurar ATD 0
         MOVB #$C2,ATD0CTL2      ;enciende ADC 0, al leer borra banderas, enciende INTs
         ;pongo en 1 bit AFFC que permite borrado de bandera al leer regs de datos
-        LDAA #180               ;???espero +10 ms, 10 : 160
+        LDAA #180               ;espero +10 ms, 10 : 160
 esperar_10ms:
         DBNE A,esperar_10ms
         MOVB #$30,ATD0CTL3      ;FIFO OFF, se haran 6 conversiones
@@ -555,8 +555,6 @@ CALCULAR:               ;                   Subrutina CALCULAR/PTH_ISR
                         ; PH0 representa el sensor S2
                         ;ecuacion para obtener velocidad en Km/h:
                         ;          9063/TICK_MED
-                        ;donde:
-                        ;9063 = 55*3600*46875/(1000*1024)
                         ;1024/46875 = 0.021845 s = tiempo de TOI
                         ;3600/1000 conversion a Km/h
                         ;ecuacion para obtener velocidad promedio:
@@ -807,7 +805,7 @@ MODO_LIBRE:             ;                  Subrutina MODO_LIBRE
                         ;Subrutina que espera al cambio de otro modo
                         ;Variables de entrada: TEMP1.6 bandera de cambio de modo
                         ;Variables de salida: TEMP1.6
-	                ;*******************************************************
+                        ;*******************************************************
         Movb #$AA,BIN1
         Movb #$AA,BIN2
         Rts
@@ -823,7 +821,7 @@ CONV_BIN_BCD:           ;                Subrutina CONV_BIN_BCD
                         ;teclado presentes en las variables BIN1 y BIN2, los
                         ;guarda en BCD1 y BCD2
                         ;*******************************************************
-	LDAB BIN2
+        LDAB BIN2
         CMPB #$BB
         BEQ poner_bcd2_apagado
         BCLR YULS,$80   ;quitar bandera de bcd2 apagado
